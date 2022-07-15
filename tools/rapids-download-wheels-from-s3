@@ -1,0 +1,14 @@
+#!/bin/bash
+# A utility script that downloads wheel artifacts from S3 to /tmp/wheelhouse
+set -e
+
+PKG_TYPE="wheel_python"
+
+# Preapre empty dir to extract wheel tarball to
+WHEEL_DEST_DIR="/tmp/wheelhouse"
+mkdir -p "${WHEEL_DEST_DIR}"
+
+# Generate S3 path to download
+S3_DOWNLOAD_PATH=$(rapids-s3-path "${PKG_TYPE}")
+
+rapids-download-from-s3 "${S3_DOWNLOAD_PATH}" "${WHEEL_DEST_DIR}"

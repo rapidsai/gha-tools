@@ -1,0 +1,13 @@
+#!/bin/bash
+# A utility script that tars up the /tmp/wheelhouse directory and uploads it to S3
+set -e
+
+PKG_TYPE="wheel_python"
+
+# Where cibuildwheel artifacts are output
+PATH_TO_TAR_UP="/tmp/wheelhouse"
+
+# Generate destination S3 path
+S3_DEST_PATH=$(rapids-s3-path "${PKG_TYPE}")
+
+rapids-upload-to-s3 "${PATH_TO_TAR_UP}" "${S3_DEST_PATH}"

@@ -1,0 +1,23 @@
+#!/bin/bash
+# A utility script that downloads an artifact archive from S3, untars it,
+# and prints the location where it was untarred.
+# Positional Arguments:
+#   1) s3 path to download
+#   2) location to untar it to
+set -eo pipefail
+
+. rapids-bash-functions
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo_stderr "Must specify both input arguments: S3_DOWNLOAD_PATH and UNTAR_DEST"
+  exit 1
+fi
+
+S3_DOWNLOAD_PATH="$1"
+UNTAR_DEST="$2"
+
+echo_stderr "Downloading and decompressing ${S3_DOWNLOAD_PATH} into ${UNTAR_DEST}"
+aws s3 cp --only-show-errors "${S3_DOWNLOAD_PATH}" - | tar xzf - -C "${UNTAR_DEST}" --strip-components=2
+
+# echo path to untarred contents
+echo -n "${UNTAR_DEST}"

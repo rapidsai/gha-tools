@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# gpuci_mamba_retry
+#
+# Compatibility wrapper that calls to the new rapids-mamba-retry script
+
+# Configurable env vars GPUCI_* are re-exported as RAPIDS_*
+
+echo "'gpuci_mamba_retry' is deprecated, please use 'rapids-mamba-retry' instead" >&2
+
+# alias old GPUCI_ env vars to new RAPIDS_ equivalents if they are set
+
+if [[ -v GPUCI_MAMBA_RETRY_MAX ]]; then
+  export RAPIDS_MAMBA_RETRY_MAX="${GPUCI_MAMBA_RETRY_MAX}"
+fi
+
+if [[ -v GPUCI_MAMBA_RETRY_SLEEP ]]; then
+  export RAPIDS_MAMBA_RETRY_SLEEP="${GPUCI_MAMBA_RETRY_SLEEP}"
+fi
+
+rapids-mamba-retry "$@"

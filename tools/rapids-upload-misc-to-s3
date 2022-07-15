@@ -1,0 +1,30 @@
+#!/bin/bash
+# A utility script that tars up an arbitrary directory or file and uploads it to S3
+# Positional Arguments:
+#   1) the path to the directory or file to tar up
+#   2) the name of the artifact (final will be `${repo_name}_${artifact_name}.tar.gz`)
+set -eo pipefail
+
+. rapids-bash-functions
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  echo_stderr "Must specify both input arguments: FILE_TO_UPLOAD and ARTIFACT_NAME"
+  exit 1
+fi
+
+FILE_TO_UPLOAD="$1"
+ARTIFACT_NAME="$2"
+
+if [[ -d "${FILE_TO_UPLOAD}" ]]; then
+  echo_stderr "Misc/one-off uploads support files only, not directories"
+  exit 1
+fi
+
+# Generate destination S3 path
+S3_DEST_PATH=$(rapids-s3-path "${ARTIFACT_NAME}")
+
+echo_stderr "Uploading ${FILE_TO_UPLOAD} to ${S3_DEST_PATH}"
+
+aws s3 cp --only-show-errors "${FILE_TO_UPLOAD}" "${S3_DEST_PATH}"
+
+echo_stderr "Browse uploaded file: ${S3_DEST_PATH/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}"

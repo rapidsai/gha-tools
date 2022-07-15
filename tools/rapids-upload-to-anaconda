@@ -1,0 +1,54 @@
+#!/bin/bash
+# A utility script that find all of the conda packages within a folder and
+# uploads them to Anaconda.org
+# Positional Arguments:
+#   1) a directory path to search for conda packages
+set -e
+
+SEARCH_DIR="$1"
+
+if [ -z "${SEARCH_DIR}" ]; then
+  echo "Please provide a search directory."
+  exit 1
+fi
+
+if [ ! -d "${SEARCH_DIR}" ]; then
+  echo "Directory ${SEARCH_DIR} does not exist."
+  exit 1
+fi
+
+PKGS_TO_UPLOAD=$(find "${SEARCH_DIR}" -name "*.tar.bz2")
+if [ -z "${PKGS_TO_UPLOAD}" ]; then
+  echo "Couldn't find any packages to upload in: ${SEARCH_DIR}."
+  ls -l "${SEARCH_DIR}/"*
+  exit 1
+fi
+
+case "${BUILD_TYPE}" in
+  branch)
+    ;&
+  nightly)
+    ;;
+  *)
+    echo 'Only branch builds and nightly builds are uploaded to Anaconda.org'
+    exit 1
+    ;;
+esac
+
+CONDA_USERNAME="rapidsai-nightly"
+CONDA_TOKEN="${NIGHTLY_CONDA_TOKEN}"
+if [[ "${GIT_BRANCH}" == "main" ]]; then
+  CONDA_USERNAME="rapidsai"
+  CONDA_TOKEN="${STABLE_CONDA_TOKEN}"
+fi
+
+echo "Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}" 1>&2 # echo to stderr
+# shellcheck disable=SC2086
+anaconda \
+  -t "${CONDA_TOKEN}" \
+  upload \
+  -u "${CONDA_USERNAME}" \
+  --label "${CONDA_UPLOAD_LABEL:-main}" \
+  --skip-existing \
+  --no-progress \
+  ${PKGS_TO_UPLOAD}

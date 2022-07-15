@@ -1,0 +1,17 @@
+#!/bin/bash
+# A utility script that examines environment variables provided
+# by Jenkins to make some environment changes depending on whether
+# a nightly or stable build is occurring.
+set -e
+
+# Remove nightly channels if we are building main branch
+if [[ "${GITHUB_REF_NAME}" = "main" ]]; then
+  conda config --system --remove channels rapidsai-nightly
+  conda config --system --remove channels dask/label/dev
+fi
+
+# If nightly build, append current YYMMDD to version
+if [[ "${BUILD_TYPE}" != "pull-request" && "${GITHUB_REF_NAME}" = branch-* ]] ; then
+  VERSION_SUFFIX=$(date +%y%m%d)
+  export VERSION_SUFFIX
+fi

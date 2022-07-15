@@ -1,0 +1,29 @@
+#!/bin/bash
+# A utility script that tars up `/tmp/conda-bld-output` and uploads it to S3
+# Positional Arguments:
+#   1) a string of "cpp" or "python" which determines which conda artifact
+#      should be uploaded
+set -eo pipefail
+
+PKG_TYPE="$1"
+case "${PKG_TYPE}" in
+  cpp)
+    ;&
+  python)
+    ;;
+  *)
+    echo 'Pass "cpp" or "python" as an argument.'
+    exit 1
+    ;;
+esac
+
+# Prepend `conda_` to PKG_TYPE
+PKG_TYPE="conda_$PKG_TYPE"
+
+# Where conda build artifacts are output
+PATH_TO_TAR_UP="/tmp/conda-bld-output"
+
+# Generate destination S3 path
+S3_DEST_PATH=$(rapids-s3-path "${PKG_TYPE}")
+
+rapids-upload-to-s3 "${PATH_TO_TAR_UP}" "${S3_DEST_PATH}"

@@ -1,0 +1,31 @@
+#!/bin/bash
+# A utility script that downloads a conda artifact archive from S3, untars it,
+# and prints the location where it was untarred.
+# Positional Arguments:
+#   1) a string of "cpp" or "python" which determines which conda artifact
+#      should be downloaded
+set -e
+
+PKG_TYPE="$1"
+case "${PKG_TYPE}" in
+  cpp)
+    ;&
+  python)
+    ;;
+  *)
+    echo 'Pass "cpp" or "python" as an argument.'
+    exit 1
+    ;;
+esac
+
+# Prepare empty dir to extract tarball to
+CHANNEL="/tmp/${PKG_TYPE}_channel"
+mkdir -p "${CHANNEL}"
+
+# Prepend `conda_` to PKG_TYPE for rapids-s3-path function
+PKG_TYPE="conda_$PKG_TYPE"
+
+# Generate S3 path to download
+S3_DOWNLOAD_PATH=$(rapids-s3-path "${PKG_TYPE}")
+
+rapids-download-from-s3 "${S3_DOWNLOAD_PATH}" "${CHANNEL}"

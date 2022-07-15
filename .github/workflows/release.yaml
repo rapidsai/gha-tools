@@ -1,0 +1,34 @@
+name: release main
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/*"
+      - ".github/workflows/release.yaml"
+
+jobs:
+  release:
+    env:
+      RELEASE_FILE_NAME: tools.tar.gz
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Package Scripts
+        run: |
+          tar -czf ${{ env.RELEASE_FILE_NAME }} -C ./tools .
+      - name: Compute Next Tag Name
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0)
+          NEXT_PATCH_VERSION=$(echo ${LAST_TAG} | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          echo "NEXT_PATCH_VERSION=$NEXT_PATCH_VERSION" >> $GITHUB_ENV
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ${{ env.RELEASE_FILE_NAME }}
+          tag_name: ${{ env.NEXT_PATCH_VERSION }}

@@ -1,0 +1,56 @@
+#!/bin/bash
+set -e
+
+REPO_NAME=$(basename "${GIT_URL}" .git)
+ORG_NAME=$(basename "$(dirname "${GIT_URL}")")
+
+echo "Retrieving base branch from GitHub API:"
+# For PRs, $GIT_BRANCH is like:
+# pull-request/989
+PR_NUM="${GIT_BRANCH##*/}"
+[[ -n "$GH_TOKEN" ]] && CURL_HEADERS=('-H' "Authorization: token ${GH_TOKEN}")
+RESP=$(
+curl \
+    -H "Accept: application/vnd.github.v3+json" \
+    "${CURL_HEADERS[@]}" \
+    "https://api.github.com/repos/${ORG_NAME}/${REPO_NAME}/pulls/${PR_NUM}"
+)
+BASE_BRANCH=$(echo "${RESP}" | jq -r '.base.ref')
+
+DIFF_FILES=$(mktemp)
+LARGE_FILES=$(mktemp)
+trap 'rm -f ${DIFF_FILES} ${LARGE_FILES}' EXIT
+FILESIZE_LIMIT=5242880
+RETVAL=0
+
+# Activate rapids environment for Git LFS access
+# shellcheck disable=SC1091
+. /opt/conda/etc/profile.d/conda.sh
+conda activate rapids
+
+# Get list of files changed in current PR
+git fetch origin
+git diff --name-only origin/"${BASE_BRANCH}"..HEAD > "${DIFF_FILES}"
+
+echo "### Comparing ${BASE_BRANCH} to HEAD:"
+echo '### Files modified in current PR'
+while read -r FILE; do
+    echo "Size check ${FILE}"
+    if [ -f "${FILE}" ]; then
+        if [ "$(du -b "${FILE}" | awk '{print $1}')" -gt "${FILESIZE_LIMIT}" ]; then
+            RETVAL=1
+            echo "${FILE}" >> "${LARGE_FILES}"
+        fi
+    fi
+done < "${DIFF_FILES}"
+
+if [ "${RETVAL}" == 1 ]; then
+    echo "### Files exceeding the ${FILESIZE_LIMIT} size limit. Please see documentation for"
+    echo "### large file handling:  https://docs.rapids.ai/resources/git/#large-files-and-git"
+    cat "${LARGE_FILES}"
+    echo "###"
+else
+    echo "### All files under the ${FILESIZE_LIMIT} size limit"
+fi
+
+exit $RETVAL
