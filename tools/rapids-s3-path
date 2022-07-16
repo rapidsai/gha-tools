@@ -14,7 +14,19 @@
 #      intended for misc artifacts that are not CPP or Python artifacts
 set -e
 
+. rapids-bash-functions
+
 repo_name="${GITHUB_REPOSITORY##*/}"
+
+if [ -z "$1" ]; then
+  echo_stderr "Must specify input argument: PKG_TYPE"
+  exit 1
+fi
+
+if [[ ! -v BUILD_TYPE ]]; then
+  echo_stderr "Env var BUILD_TYPE must be set"
+  exit 1
+fi
 
 # This function formats the s3 path for an artifact from RAPIDS CI
 #
@@ -29,18 +41,13 @@ repo_name="${GITHUB_REPOSITORY##*/}"
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/<REPO_NAME>_<PKG_NAME>
 function format_s3_path {
+  if [ -z "$1" ] || [ -z "$2" ]; then
+    echo_stderr "Must supply two arguments: BUILD_TYPE, PKG_NAME"
+    return 1
+  fi
+
   build_type="$1"
   pkg_name="$2"
-
-  if [ -z "${build_type}" ]; then
-    echo_stderr "Must supply BUILD_TYPE as first argument"
-    return 1
-  fi
-
-  if [ -z "${pkg_name}" ]; then
-    echo_stderr "Must supply PKG_NAME as second argument"
-    return 1
-  fi
 
   s3_directory_id=""
   s3_prefix=""
@@ -61,7 +68,7 @@ function format_s3_path {
       s3_prefix="nightly"
       ;;
     *)
-      echo_stderr "please pass a valid BUILD_TYPE as first argument"
+      echo_stderr "please pass a valid BUILD_TYPE"
       exit 1
       ;;
   esac
@@ -77,7 +84,7 @@ function format_s3_path {
   echo -n "${s3_path}"
 }
 
-function validate_package_type {
+function format_package_name {
   pkg_type="$1"
   append_pyver=0
   append_arch=0
@@ -100,37 +107,39 @@ function validate_package_type {
       append_pyver=1
       ;;
     *)
-      echo "Using input '${pkg_type}' as a custom file" >&2
+      echo_stderr "Using input '${pkg_type}' as a custom file"
       is_tarball=0
       ;;
   esac
 
+  pkg_name="${pkg_type}"
+
   # for python package types, add pyver
   if (( $append_pyver == 1 )); then
-    if [ -v "${PY_VER}" ]; then
+    if [[ ! -v "${PY_VER}" ]]; then
       echo_stderr "PY_VER must be set"
       exit 1
     fi
 
-    pkg_type+="_${PY_VER/./}"
+    pkg_name+="_${PY_VER/./}"
   fi
 
   # for cpp or python package types, add arch
   if (( $append_arch == 1 )); then
-    pkg_type+="_$(arch)"
+    pkg_name+="_$(arch)"
   fi
 
   # for cpp or python package types, its a tarball, append .tar.gz and prepend project name
   if (( $is_tarball == 1 )); then
-    pkg_type="${repo_name}_${pkg_type}.tar.gz"
+    pkg_name="${repo_name}_${pkg_name}.tar.gz"
   fi
 
   # misc package types just have the package name pass through unchanged
-  echo -n "${pkg_type}"
+  echo -n "${pkg_name}"
 }
 
-PKG_TYPE="$(validate_package_type $1)"
+PKG_NAME="$(format_package_name $1)"
 
-S3_PATH="$(format_s3_path $BUILD_TYPE $PKG_TYPE)"
+S3_PATH="$(format_s3_path $BUILD_TYPE $PKG_NAME)"
 
 echo -n "${S3_PATH}"

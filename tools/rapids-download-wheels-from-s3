@@ -1,11 +1,21 @@
 #!/bin/bash
 # A utility script that downloads wheel artifacts from S3 to /wheelhouse
+# Positional Arguments:
+#   1) dest dir to download and extract wheels to
 set -e
+
+. rapids-bash-functions
+
+if [ -z "$1" ]; then
+  echo_stderr "Must specify input argument: WHEEL_DEST_DIR"
+  exit 1
+fi
 
 PKG_TYPE="wheel_python"
 
 # Preapre empty dir to extract wheel tarball to
-WHEEL_DEST_DIR="/wheelhouse"
+WHEEL_DEST_DIR="$1"
+
 mkdir -p "${WHEEL_DEST_DIR}"
 
 # Generate S3 path to download

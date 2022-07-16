@@ -1,11 +1,20 @@
 #!/bin/bash
-# A utility script that tars up the /wheelhouse directory and uploads it to S3
+# A utility script that tars up a wheel directory and uploads it to S3
+# Positional Arguments:
+#   1) wheel path to tar up
 set -e
+
+. rapids-bash-functions
+
+if [ -z "$1" ]; then
+  echo_stderr "Must specify input argument: PATH_TO_TAR_UP"
+  exit 1
+fi
 
 PKG_TYPE="wheel_python"
 
 # Where cibuildwheel artifacts are output
-PATH_TO_TAR_UP="/wheelhouse"
+PATH_TO_TAR_UP="$1"
 
 # Generate destination S3 path
 S3_DEST_PATH=$(rapids-s3-path "${PKG_TYPE}")
