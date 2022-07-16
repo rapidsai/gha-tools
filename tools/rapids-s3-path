@@ -116,8 +116,8 @@ function format_package_name {
 
   # for python package types, add pyver
   if (( $append_pyver == 1 )); then
-    if [[ ! -v "${PY_VER}" ]]; then
-      echo_stderr "PY_VER must be set"
+    if [[ ! -v PY_VER ]]; then
+      echo_stderr "Env var PY_VER must be set"
       exit 1
     fi
 
