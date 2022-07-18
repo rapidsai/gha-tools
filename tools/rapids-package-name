@@ -28,7 +28,7 @@ case "${pkg_type}" in
     append_pyver=1
     ;;
   *)
-    rapids-echo-stderr "${ECHO_PREFIX}Nonstandard package type '${pkg_type}', passing it through directly"
+    rapids-echo-stderr "${ECHO_PREFIX}Nonstandard package type '${pkg_type}'"
     exit 1
     ;;
 esac

@@ -12,10 +12,8 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit 1
 fi
 
-package_name="$1"
 path_to_tar_up="$2"
-
-s3_dest_path="$(rapids-s3-path ${package_name})"
+s3_dest_path="$(rapids-s3-path)/$1"
 
 if [ -d "${path_to_tar_up}" ]; then
   rapids-echo-stderr "${ECHO_PREFIX}Path to upload is a directory, creating .tar.gz"
@@ -28,6 +26,7 @@ elif [ -f "${path_to_tar_up}" ]; then
   rapids-echo-stderr "${ECHO_PREFIX}Path to upload is a file, uploading it directly"
 
   aws s3 cp --only-show-errors "${path_to_tar_up}" "${s3_dest_path}"
+
   browsable_url="${s3_dest_path}"
 fi
 
