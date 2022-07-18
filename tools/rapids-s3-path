@@ -17,11 +17,6 @@ set -eo pipefail
 
 ECHO_PREFIX="    [rapids-s3-path] "
 
-if [ -z "$1" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Must specify input argument: PKG_NAME"
-  exit 1
-fi
-
 if [[ ! -v BUILD_TYPE ]]; then
   rapids-echo-stderr "${ECHO_PREFIX}Env var BUILD_TYPE must be set"
   exit 1
