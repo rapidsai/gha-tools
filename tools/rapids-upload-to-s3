@@ -28,6 +28,9 @@ elif [ -f "${path_to_tar_up}" ]; then
   aws s3 cp --only-show-errors "${path_to_tar_up}" "${s3_dest_path}"
 
   browsable_url="${s3_dest_path}"
+else
+  rapids-echo-stderr "${ECHO_PREFIX}Path '$path_to_tar_up' is not a directory or file"
+  exit 1
 fi
 
 rapids-echo-stderr "${ECHO_PREFIX}Browse uploads: ${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}"

@@ -15,7 +15,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
   exit 1
 fi
 
-s3_dl_path="$(rapids-s3-path)/$1"
+s3_dl_path="$(rapids-s3-path)$1"
 
 untar_dest="$2"
 mkdir -p "${untar_dest}"
