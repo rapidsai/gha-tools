@@ -6,8 +6,8 @@
 #      should be downloaded
 set -e
 
-PKG_TYPE="$1"
-case "${PKG_TYPE}" in
+pkg_type="$1"
+case "${pkg_type}" in
   cpp)
     ;&
   python)
@@ -18,14 +18,12 @@ case "${PKG_TYPE}" in
     ;;
 esac
 
-# Prepare empty dir to extract tarball to
-CHANNEL="/tmp/${PKG_TYPE}_channel"
-mkdir -p "${CHANNEL}"
-
 # Prepend `conda_` to PKG_TYPE for rapids-s3-path function
-PKG_TYPE="conda_$PKG_TYPE"
+pkg_type="conda_${pkg_type}"
 
-# Generate S3 path to download
-S3_DOWNLOAD_PATH=$(rapids-s3-path "${PKG_TYPE}")
+pkg_name="$(rapids-package-name $pkg_type)"
 
-rapids-download-from-s3 "${S3_DOWNLOAD_PATH}" "${CHANNEL}"
+# Prepare empty dir to extract tarball to
+channel="/tmp/${pkg_type}_channel"
+
+rapids-download-from-s3 "${pkg_name}" "${channel}"

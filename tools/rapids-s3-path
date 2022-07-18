@@ -3,32 +3,8 @@
 # by Jenkins to print out an S3 path where the expected artifact
 # should be.
 # Positional Arguments:
-#   1) a string which determines which artifact path should be returned
-#
-#      if the string is one of "conda_cpp", "conda_python", "wheel_python",
-#      $(arch) will be appended 
-#      
-#      if the string is "conda_python", ${PY_VER/./} will be appended
-#
-#      any other string is unmodified, but has to be non-empty
-#      intended for misc artifacts that are not CPP or Python artifacts
-set -e
-
-. rapids-bash-functions
-
-repo_name="${GITHUB_REPOSITORY##*/}"
-
-if [ -z "$1" ]; then
-  echo_stderr "Must specify input argument: PKG_TYPE"
-  exit 1
-fi
-
-if [[ ! -v BUILD_TYPE ]]; then
-  echo_stderr "Env var BUILD_TYPE must be set"
-  exit 1
-fi
-
-# This function formats the s3 path for an artifact from RAPIDS CI
+#   1) package_name: the name of the package to download
+#      created by rapids-package-name
 #
 # The output format should be one of the following:
 #
@@ -40,106 +16,63 @@ fi
 
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/<REPO_NAME>_<PKG_NAME>
-function format_s3_path {
-  if [ -z "$1" ] || [ -z "$2" ]; then
-    echo_stderr "Must supply two arguments: BUILD_TYPE, PKG_NAME"
-    return 1
-  fi
+set -eou pipefail
 
-  build_type="$1"
-  pkg_name="$2"
+ECHO_PREFIX="    [rapids-s3-path] "
 
-  s3_directory_id=""
-  s3_prefix=""
+if [ -z "$1" ]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Must specify input argument: PKG_NAME"
+  exit 1
+fi
 
-  case "${build_type}" in
-    pull-request)
-      # For PRs, $GITHUB_REF_NAME is like:
-      # 1058/merge
-      s3_directory_id="${GITHUB_REF_NAME%%/*}"
-      s3_prefix="ci"
-      ;;
-    branch)
-      s3_directory_id="${GITHUB_REF_NAME}"
-      s3_prefix="ci"
-      ;;
-    nightly)
-      s3_directory_id="$(date +%F)"
-      s3_prefix="nightly"
-      ;;
-    *)
-      echo_stderr "please pass a valid BUILD_TYPE"
-      exit 1
-      ;;
-  esac
+if [[ ! -v BUILD_TYPE ]]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Env var BUILD_TYPE must be set"
+  exit 1
+fi
 
-  short_hash=${GITHUB_SHA:0:7}
+if [[ ! -v GITHUB_SHA ]]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_SHA must be set"
+  exit 1
+fi
 
-  s3_path="s3://rapids-downloads/${s3_prefix}/${repo_name}/"
-  if [[ "${build_type}" != "nightly" ]]; then
-    s3_path+="${build_type}/"
-  fi
-  s3_path+="${s3_directory_id}/${short_hash}/${pkg_name}"
-  
-  echo -n "${s3_path}"
-}
+if [[ ! -v GITHUB_REPOSITORY ]]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_REPOSITORY must be set"
+  exit 1
+fi
+repo_name="${GITHUB_REPOSITORY##*/}"
 
-function format_package_name {
-  pkg_type="$1"
-  append_pyver=0
-  append_arch=0
-  is_tarball=1
+pkg_name="$1"
 
-  case "${pkg_type}" in
-    "")
-      echo_stderr 'Please pass a non-empty string as an argument.'
-      exit 1
-      ;;
-    conda_cpp)
-      append_arch=1
-      ;;
-    conda_python)
-      append_arch=1
-      append_pyver=1
-      ;;
-    wheel_python)
-      append_arch=1
-      append_pyver=1
-      ;;
-    *)
-      echo_stderr "Using input '${pkg_type}' as a custom file"
-      is_tarball=0
-      ;;
-  esac
+s3_directory_id=""
+s3_prefix=""
 
-  pkg_name="${pkg_type}"
+case "${BUILD_TYPE}" in
+  pull-request)
+    # For PRs, $GITHUB_REF_NAME is like:
+    # 1058/merge
+    s3_directory_id="${GITHUB_REF_NAME%%/*}"
+    s3_prefix="ci"
+    ;;
+  branch)
+    s3_directory_id="${GITHUB_REF_NAME}"
+    s3_prefix="ci"
+    ;;
+  nightly)
+    s3_directory_id="$(date +%F)"
+    s3_prefix="nightly"
+    ;;
+  *)
+    rapids-echo-stderr "please pass a valid BUILD_TYPE"
+    exit 1
+    ;;
+esac
 
-  # for python package types, add pyver
-  if (( $append_pyver == 1 )); then
-    if [[ ! -v PY_VER ]]; then
-      echo_stderr "Env var PY_VER must be set"
-      exit 1
-    fi
+short_hash=${GITHUB_SHA:0:7}
 
-    pkg_name+="_${PY_VER/./}"
-  fi
+s3_path="s3://rapids-downloads/${s3_prefix}/${repo_name}/"
+if [[ "${BUILD_TYPE}" != "nightly" ]]; then
+  s3_path+="${BUILD_TYPE}/"
+fi
+s3_path+="${s3_directory_id}/${short_hash}/${pkg_name}"
 
-  # for cpp or python package types, add arch
-  if (( $append_arch == 1 )); then
-    pkg_name+="_$(arch)"
-  fi
-
-  # for cpp or python package types, its a tarball, append .tar.gz and prepend project name
-  if (( $is_tarball == 1 )); then
-    pkg_name="${repo_name}_${pkg_name}.tar.gz"
-  fi
-
-  # misc package types just have the package name pass through unchanged
-  echo -n "${pkg_name}"
-}
-
-PKG_NAME="$(format_package_name $1)"
-
-S3_PATH="$(format_s3_path $BUILD_TYPE $PKG_NAME)"
-
-echo -n "${S3_PATH}"
+echo -n "${s3_path}"

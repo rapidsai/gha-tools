@@ -2,22 +2,27 @@
 # A utility script that downloads an artifact archive from S3, untars it,
 # and prints the location where it was untarred.
 # Positional Arguments:
-#   1) s3 path to download
+#   1) package name to generate s3 path for
 #   2) location to untar it to
-set -eo pipefail
+set -eou pipefail
 
-. rapids-bash-functions
+ECHO_PREFIX="    [rapids-download-from-s3] "
+
+repo_name="${GITHUB_REPOSITORY##*/}"
 
 if [ -z "$1" ] || [ -z "$2" ]; then
-  echo_stderr "Must specify both input arguments: S3_DOWNLOAD_PATH and UNTAR_DEST"
+  rapids-echo-stderr "${ECHO_PREFIX}Must specify input arguments: PKG_NAME and UNTAR_DEST"
   exit 1
 fi
 
-S3_DOWNLOAD_PATH="$1"
-UNTAR_DEST="$2"
+pkg_name="$1"
+s3_dl_path=$(rapids-s3-path $pkg_name)
 
-echo_stderr "Downloading and decompressing ${S3_DOWNLOAD_PATH} into ${UNTAR_DEST}"
-aws s3 cp --only-show-errors "${S3_DOWNLOAD_PATH}" - | tar xzf - -C "${UNTAR_DEST}"
+untar_dest="$2"
+mkdir -p "${untar_dest}"
+
+rapids-echo-stderr "${ECHO_PREFIX}Downloading and decompressing ${s3_dl_path} into ${untar_dest}"
+aws s3 cp --only-show-errors "${s3_dl_path}" - | tar xzf - -C "${untar_dest}"
 
 # echo path to untarred contents
-echo -n "${UNTAR_DEST}"
+echo -n "${untar_dest}"

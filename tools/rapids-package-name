@@ -1,0 +1,55 @@
+#!/bin/bash
+# A utility script that generates a package name from a package type
+# Positional Arguments:
+#   1) package type
+set -eo pipefail
+
+ECHO_PREFIX="    [rapids-package-name] "
+
+if [[ ! -v GITHUB_REPOSITORY ]]; then
+    rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_REPOSITORY must be set"
+    exit 1
+fi
+repo_name="${GITHUB_REPOSITORY##*/}"
+
+if [ -z "$1" ]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Must specify input arguments: PKG_TYPE"
+  exit 1
+fi
+
+pkg_type="$1"
+
+append_pyver=0
+
+case "${pkg_type}" in
+  conda_cpp)
+    ;;
+  conda_python|wheel_python)
+    append_pyver=1
+    ;;
+  *)
+    rapids-echo-stderr "${ECHO_PREFIX}Nonstandard package type '${pkg_type}', passing it through directly"
+    echo -n "${pkg_type}"
+    exit 0
+    ;;
+esac
+
+pkg_name="${pkg_type}"
+
+# for python package types, add pyver
+if (( $append_pyver == 1 )); then
+  if [[ ! -v PY_VER ]]; then
+    rapids-echo-stderr "${ECHO_PREFIX}Env var PY_VER must be set"
+    exit 1
+  fi
+
+  pkg_name+="_${PY_VER/./}"
+fi
+
+# for cpp and python package types, always append arch
+pkg_name+="_$(arch)"
+
+# for cpp and python package types, its a tarball, append .tar.gz and prepend project name
+pkg_name="${repo_name}_${pkg_name}.tar.gz"
+
+echo -n "${pkg_name}"
