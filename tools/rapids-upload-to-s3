@@ -13,7 +13,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 path_to_tar_up="$2"
-s3_dest_path="$(rapids-s3-path)/$1"
+s3_dest_path="$(rapids-s3-path)$1"
 
 if [ -d "${path_to_tar_up}" ]; then
   rapids-echo-stderr "${ECHO_PREFIX}Path to upload is a directory, creating .tar.gz"
