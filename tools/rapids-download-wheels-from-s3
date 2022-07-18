@@ -2,7 +2,7 @@
 # A utility script that downloads wheel artifacts from S3 to /wheelhouse
 # Positional Arguments:
 #   1) dest dir to download and extract wheels to
-set -eou pipefail
+set -eo pipefail
 
 pkg_name="$(rapids-package-name wheel_python)"
 

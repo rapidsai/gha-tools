@@ -16,7 +16,7 @@
 
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/<REPO_NAME>_<PKG_NAME>
-set -eou pipefail
+set -eo pipefail
 
 ECHO_PREFIX="    [rapids-s3-path] "
 

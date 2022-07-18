@@ -4,7 +4,7 @@
 # Positional Arguments:
 #   1) package name to generate s3 path for
 #   2) location to untar it to
-set -eou pipefail
+set -eo pipefail
 
 ECHO_PREFIX="    [rapids-download-from-s3] "
 

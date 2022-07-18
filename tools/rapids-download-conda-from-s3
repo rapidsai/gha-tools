@@ -13,7 +13,7 @@ case "${pkg_type}" in
   python)
     ;;
   *)
-    echo 'Pass "cpp" or "python" as an argument.'
+    rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
     exit 1
     ;;
 esac

@@ -3,7 +3,7 @@
 # Positional Arguments:
 #   1) package name
 #   2) path to tar up
-set -eou pipefail
+set -eo pipefail
 
 ECHO_PREFIX="    [rapids-upload-to-s3] "
 
