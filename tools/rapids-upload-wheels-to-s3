@@ -4,19 +4,6 @@
 #   1) wheel path to tar up
 set -e
 
-. rapids-bash-functions
+pkg_name="$(rapids-package-name wheel_python)"
 
-if [ -z "$1" ]; then
-  echo_stderr "Must specify input argument: PATH_TO_TAR_UP"
-  exit 1
-fi
-
-PKG_TYPE="wheel_python"
-
-# Where cibuildwheel artifacts are output
-PATH_TO_TAR_UP="$1"
-
-# Generate destination S3 path
-S3_DEST_PATH=$(rapids-s3-path "${PKG_TYPE}")
-
-rapids-upload-to-s3 "${PATH_TO_TAR_UP}" "${S3_DEST_PATH}"
+rapids-upload-to-s3 "${pkg_name}" "$@"

@@ -4,7 +4,7 @@
 # should be.
 # Positional Arguments:
 #   1) package_name: the name of the package to download
-#      created by rapids-package-name
+#      (create it with rapids-package-name)
 #
 # The output format should be one of the following:
 #

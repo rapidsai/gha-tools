@@ -5,8 +5,8 @@
 #      should be uploaded
 set -eo pipefail
 
-PKG_TYPE="$1"
-case "${PKG_TYPE}" in
+pkg_type="$1"
+case "${pkg_type}" in
   cpp)
     ;&
   python)
@@ -18,12 +18,10 @@ case "${PKG_TYPE}" in
 esac
 
 # Prepend `conda_` to PKG_TYPE
-PKG_TYPE="conda_$PKG_TYPE"
+pkg_type="conda_$pkg_type"
+pkg_name="$(rapids-package-name $pkg_type)"
 
 # Where conda build artifacts are output
-PATH_TO_TAR_UP="/tmp/conda-bld-output"
+path_to_tar_up="/tmp/conda-bld-output"
 
-# Generate destination S3 path
-S3_DEST_PATH=$(rapids-s3-path "${PKG_TYPE}")
-
-rapids-upload-to-s3 "${PATH_TO_TAR_UP}" "${S3_DEST_PATH}"
+rapids-upload-to-s3 "${pkg_name}" "${path_to_tar_up}"

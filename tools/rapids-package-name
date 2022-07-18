@@ -29,8 +29,7 @@ case "${pkg_type}" in
     ;;
   *)
     rapids-echo-stderr "${ECHO_PREFIX}Nonstandard package type '${pkg_type}', passing it through directly"
-    echo -n "${pkg_type}"
-    exit 0
+    exit 1
     ;;
 esac
 
