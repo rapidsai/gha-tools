@@ -1,3 +1,11 @@
+# This file is intended for reusable bash functions shared across
+# the tools in the https://github.com/rapidsai/gha-tools repo
+# It is sourced in the tool scripts with `. rapids-bash-functions`
+
+
+# Echo to stderr helper function
+# $0 is the running script, and `basename $0` strips the parent directory
+# this way it prints [tool-name] instead of [/path/to/tool-name]
 function echo_stderr {
     echo "    [$(basename $0)] $*" >&2
 }
