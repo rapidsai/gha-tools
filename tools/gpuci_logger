@@ -4,6 +4,6 @@
 #
 # Compatibility wrapper that calls to the new rapids-logger script
 
-echo "'gpuci_logger' is deprecated, please use 'rapids-logger' instead" >&2
+rapids-echo-stderr "'gpuci_logger' is deprecated, please use 'rapids-logger' instead"
 
 rapids-logger "$@"
