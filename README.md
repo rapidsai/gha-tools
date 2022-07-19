@@ -1,12 +1,10 @@
 # gha-tools
 
-User tools for use in RAPIDS GitHub Actions workflows.
+User tools for RAPIDS GitHub Actions workflows.
 
 ### Install gha-tools
 
-Files related to packaging the tools repo itself as a conda package have been removed. It can be installed from GitHub directly with git clone or wget commands.
-
-Example of GitHub Actions syntax to install and set up `gha-tools`:
+This tools repo can be installed from GitHub directly with git clone or wget commands. Examples:
 ```yml
 - name: Download gha-tools with git clone
   run: |
