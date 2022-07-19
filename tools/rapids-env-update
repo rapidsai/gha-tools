@@ -11,7 +11,7 @@ if [[ "${GITHUB_REF_NAME}" = "main" ]]; then
 fi
 
 # If nightly build, append current YYMMDD to version
-if [[ "${BUILD_TYPE}" != "pull-request" && "${GITHUB_REF_NAME}" = branch-* ]] ; then
+if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" && "${GITHUB_REF_NAME}" = branch-* ]] ; then
   VERSION_SUFFIX=$(date +%y%m%d)
   export VERSION_SUFFIX
 fi

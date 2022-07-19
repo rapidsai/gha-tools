@@ -17,8 +17,8 @@ set -eo pipefail
 
 ECHO_PREFIX="    [rapids-s3-path] "
 
-if [[ ! -v BUILD_TYPE ]]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Env var BUILD_TYPE must be set"
+if [[ ! -v RAPIDS_BUILD_TYPE ]]; then
+  rapids-echo-stderr "${ECHO_PREFIX}Env var RAPIDS_BUILD_TYPE must be set"
   exit 1
 fi
 
@@ -36,7 +36,7 @@ repo_name="${GITHUB_REPOSITORY##*/}"
 s3_directory_id=""
 s3_prefix=""
 
-case "${BUILD_TYPE}" in
+case "${RAPIDS_BUILD_TYPE}" in
   pull-request)
     # For PRs, we are using the 'trusted jobs on untrusted forks' paradigm
     # by copying PRs to branches named pull-request/$PRNUM
@@ -55,7 +55,7 @@ case "${BUILD_TYPE}" in
     s3_prefix="nightly"
     ;;
   *)
-    rapids-echo-stderr "please pass a valid BUILD_TYPE"
+    rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
     exit 1
     ;;
 esac
@@ -63,8 +63,8 @@ esac
 short_hash=${GITHUB_SHA:0:7}
 
 s3_path="s3://rapids-downloads/${s3_prefix}/${repo_name}/"
-if [[ "${BUILD_TYPE}" != "nightly" ]]; then
-  s3_path+="${BUILD_TYPE}/"
+if [[ "${RAPIDS_BUILD_TYPE}" != "nightly" ]]; then
+  s3_path+="${RAPIDS_BUILD_TYPE}/"
 fi
 s3_path+="${s3_directory_id}/${short_hash}/"
 
