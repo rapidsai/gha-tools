@@ -4,16 +4,16 @@
 #   1) package type
 set -eo pipefail
 
-ECHO_PREFIX="    [rapids-package-name] "
+echo_prefix="    [rapids-package-name] "
 
 if [[ ! -v GITHUB_REPOSITORY ]]; then
-    rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_REPOSITORY must be set"
+    rapids-echo-stderr "${echo_prefix}Env var GITHUB_REPOSITORY must be set"
     exit 1
 fi
 repo_name="${GITHUB_REPOSITORY##*/}"
 
 if [ -z "$1" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Must specify input arguments: PKG_TYPE"
+  rapids-echo-stderr "${echo_prefix}Must specify input arguments: PKG_TYPE"
   exit 1
 fi
 
@@ -28,7 +28,7 @@ case "${pkg_type}" in
     append_pyver=1
     ;;
   *)
-    rapids-echo-stderr "${ECHO_PREFIX}Nonstandard package type '${pkg_type}'"
+    rapids-echo-stderr "${echo_prefix}Nonstandard package type '${pkg_type}'"
     exit 1
     ;;
 esac
@@ -38,7 +38,7 @@ pkg_name="${pkg_type}"
 # for python package types, add pyver
 if (( $append_pyver == 1 )); then
   if [[ ! -v RAPIDS_PY_VER ]]; then
-    rapids-echo-stderr "${ECHO_PREFIX}Env var RAPIDS_PY_VER must be set"
+    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_PY_VER must be set"
     exit 1
   fi
 

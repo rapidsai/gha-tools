@@ -15,20 +15,20 @@
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
 set -eo pipefail
 
-ECHO_PREFIX="    [rapids-s3-path] "
+echo_prefix="    [rapids-s3-path] "
 
 if [[ ! -v RAPIDS_BUILD_TYPE ]]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Env var RAPIDS_BUILD_TYPE must be set"
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_BUILD_TYPE must be set"
   exit 1
 fi
 
 if [[ ! -v GITHUB_SHA ]]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_SHA must be set"
+  rapids-echo-stderr "${echo_prefix}Env var GITHUB_SHA must be set"
   exit 1
 fi
 
 if [[ ! -v GITHUB_REPOSITORY ]]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Env var GITHUB_REPOSITORY must be set"
+  rapids-echo-stderr "${echo_prefix}Env var GITHUB_REPOSITORY must be set"
   exit 1
 fi
 repo_name="${GITHUB_REPOSITORY##*/}"
@@ -39,7 +39,7 @@ s3_prefix=""
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request)
     # For PRs, we are using the 'trusted jobs on untrusted forks' paradigm
-    # by copying PRs to branches named pull-request/$PRNUM
+    # by copying PRs to branches named pull-request/$prnum
     # more info:
     #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
     #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/

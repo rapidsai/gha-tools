@@ -5,28 +5,28 @@
 #   1) a directory path to search for conda packages
 set -e
 
-ECHO_PREFIX="    [rapids-upload-to-anaconda] "
-SEARCH_DIR="$1"
+echo_prefix="    [rapids-upload-to-anaconda] "
+search_dir="$1"
 
-if [ -z "${SEARCH_DIR}" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Please provide a search directory."
+if [ -z "${search_dir}" ]; then
+  rapids-echo-stderr "${echo_prefix}Please provide a search directory."
   exit 1
 fi
 
 if [ ! -v CONDA_TOKEN ] | [ -z "${CONDA_TOKEN}" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Env var CONDA_TOKEN must be set and not empty"
+  rapids-echo-stderr "${echo_prefix}Env var CONDA_TOKEN must be set and not empty"
   exit 1
 fi
 
-if [ ! -d "${SEARCH_DIR}" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Directory ${SEARCH_DIR} does not exist."
+if [ ! -d "${search_dir}" ]; then
+  rapids-echo-stderr "${echo_prefix}Directory ${search_dir} does not exist."
   exit 1
 fi
 
-PKGS_TO_UPLOAD=$(find "${SEARCH_DIR}" -name "*.tar.bz2")
-if [ -z "${PKGS_TO_UPLOAD}" ]; then
-  rapids-echo-stderr "${ECHO_PREFIX}Couldn't find any packages to upload in: ${SEARCH_DIR}."
-  ls -l "${SEARCH_DIR}/"*
+pkgs_to_upload=$(find "${search_dir}" -name "*.tar.bz2")
+if [ -z "${pkgs_to_upload}" ]; then
+  rapids-echo-stderr "${echo_prefix}Couldn't find any packages to upload in: ${search_dir}."
+  ls -l "${search_dir}/"*
   exit 1
 fi
 
@@ -36,12 +36,12 @@ case "${RAPIDS_BUILD_TYPE}" in
   nightly)
     ;;
   *)
-    rapids-echo-stderr "${ECHO_PREFIX}Only branch builds and nightly builds are uploaded to Anaconda.org"
+    rapids-echo-stderr "${echo_prefix}Only branch builds and nightly builds are uploaded to Anaconda.org"
     exit 1
     ;;
 esac
 
-rapids-echo-stderr "${ECHO_PREFIX}Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
+rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${pkgs_to_upload}"
 # shellcheck disable=SC2086
 anaconda \
   -t "${CONDA_TOKEN}" \
@@ -49,4 +49,4 @@ anaconda \
   --label "${CONDA_UPLOAD_LABEL:-main}" \
   --skip-existing \
   --no-progress \
-  ${PKGS_TO_UPLOAD}
+  ${pkgs_to_upload}
