@@ -31,6 +31,7 @@ if [[ ! -v GITHUB_REPOSITORY ]]; then
   rapids-echo-stderr "${echo_prefix}Env var GITHUB_REPOSITORY must be set"
   exit 1
 fi
+
 repo_name="${GITHUB_REPOSITORY##*/}"
 
 s3_directory_id=""

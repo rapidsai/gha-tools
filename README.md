@@ -22,13 +22,22 @@ Example of GitHub Actions syntax to install and set up `gha-tools`:
 
 ### Environment variables and variable naming conventions
 
-Diverging from gpuci-tools, in gha-tools we want to start prepending `RAPIDS_*` to our own RAPIDS-specific environment variables, to distinguish them from external environment variables such as `GITHUB_*` ones that are set by GHA (GitHub Actions).
+Diverging from gpuci-tools, in gha-tools we want to start prepending `RAPIDS_*` to our own RAPIDS-specific environment variables, to distinguish them from external environment variables such as `GITHUB_*` ones that are set by GHA (GitHub Actions):
 
-For example, `BUILD_TYPE` becomes `RAPIDS_BUILD_TYPE` and `PY_VER` becomes `RAPIDS_PY_VER`.
+* `BUILD_TYPE` -> `RAPIDS_BUILD_TYPE`
+* `PY_VER` -> `RAPIDS_PY_VER`
+* `GH_TOKEN` -> `RAPIDS_GH_TOKEN`
+
+In GitHub Actions, the [default secret GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow) can be used by setting:
+```
+env:
+  RAPIDS_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
 
 Exceptions are:
-* To maintain backwards-compatibility with previous usages, the variables MAMBA_BIN and CONDA_EXE remain as they are
-* The Jenkins variables GH_TOKEN, GIT_URL, GIT_BRANCH are preserved, but since gha-tools is not meant for Jenkins, they should probably be replaced with the GHA equivalent
+1. The variable `MAMBA_BIN`, which remain as-is to maintain backwards-compatiblity
+2. Variables named `GPUCI_*`, which are re-exported to their `RAPIDS_*` equivalents during the gpuci deprecation
+3. Variables named `CONDA_*`, which already have a prefix indicating their functional purpose
 
 Variables local to the script should be in lowercase to not mix them up with environment variables (although it's still legal shell syntax).
 

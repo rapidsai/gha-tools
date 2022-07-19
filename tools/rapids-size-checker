@@ -1,19 +1,24 @@
 #!/bin/bash
 set -e
 
-repo_name=$(basename "${GIT_URL}" .git)
-org_name=$(basename "$(dirname "${GIT_URL}")")
+echo_prefix="    [rapids-size-checker] "
+
+if [ -v RAPIDS_GH_TOKEN ] || [ -z "${RAPIDS_GH_TOKEN}" ]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_GH_TOKEN must be set and not empty"
+  exit 1
+fi
 
 echo "Retrieving base branch from GitHub API:"
 # For PRs, $GIT_BRANCH is like:
 # pull-request/989
-pr_num="${GIT_BRANCH##*/}"
-[[ -n "$GH_TOKEN" ]] && curl_headers=('-H' "Authorization: token ${GH_TOKEN}")
+pr_num="${GITHUB_REF_NAME##*/}"
+
+curl_headers=('-H' "Authorization: token ${RAPIDS_GH_TOKEN}")
 resp=$(
 curl \
     -H "Accept: application/vnd.github.v3+json" \
     "${curl_headers[@]}" \
-    "https://api.github.com/repos/${org_name}/${repo_name}/pulls/${pr_num}"
+    "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${pr_num}"
 )
 base_branch=$(echo "${resp}" | jq -r '.base.ref')
 
