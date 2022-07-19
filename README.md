@@ -20,6 +20,18 @@ Example of GitHub Actions syntax to install and set up `gha-tools`:
     wget https://github.com/rapidsai/gha-tools/releases/latest/download/tools.tar.gz -O - | tar -xz -C /usr/local/bin
 ```
 
+### Environment variables and variable naming conventions
+
+Diverging from gpuci-tools, in gha-tools we want to start prepending `RAPIDS_*` to our own RAPIDS-specific environment variables, to distinguish them from external environment variables such as `GITHUB_*` ones that are set by GHA (GitHub Actions).
+
+For example, `BUILD_TYPE` becomes `RAPIDS_BUILD_TYPE` and `PY_VER` becomes `RAPIDS_PY_VER`.
+
+Exceptions are:
+* To maintain backwards-compatibility with previous usages, the variables MAMBA_BIN and CONDA_EXE remain as they are
+* The Jenkins variables GH_TOKEN, GIT_URL, GIT_BRANCH are preserved, but since gha-tools is not meant for Jenkins, they should probably be replaced with the GHA equivalent
+
+Variables local to the script should be in lowercase to not mix them up with environment variables (although it's still legal shell syntax).
+
 ### gpuci deprecation
 
 All scripts called `gpuci_*`, configured with `GPUCI_*` env vars, are now called `rapids-*` with the equivalent `RAPIDS_*` env vars
@@ -38,5 +50,6 @@ The `--mamba*` command-line options and `MAMBA*` env vars are re-exported to the
 
 Some enhancements have been made to the S3 tools for interacting with [downloads.rapids.ai](https://github.com/rapidsai/downloads):
 * Added support for uploading and downloading wheel tarballs (built with cibuildwheel) using `rapids-upload-wheels-to-s3` and `rapids-download-wheels-from-s3`
-* Added support for misc one-off file uploads (**not directory! single files only**) with `rapids-upload-misc-to-s3`
+* Added support for misc one-off file uploads (**not directory! single files only**) by calling `rapids-upload-to-s3` directly
 * Print the human-browsable `https://downloads.rapids.ai/...` URL in the logs for convenience
+* `rapids-package-name` takes a package type and generates the name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
