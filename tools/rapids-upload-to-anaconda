@@ -13,7 +13,7 @@ if [ -z "${search_dir}" ]; then
   exit 1
 fi
 
-if [ ! -v CONDA_TOKEN ] | [ -z "${CONDA_TOKEN}" ]; then
+if [ ! -v CONDA_TOKEN ] || [ -z "${CONDA_TOKEN}" ]; then
   rapids-echo-stderr "${echo_prefix}Env var CONDA_TOKEN must be set and not empty"
   exit 1
 fi

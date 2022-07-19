@@ -36,7 +36,7 @@ esac
 pkg_name="${pkg_type}"
 
 # for python package types, add pyver
-if (( $append_pyver == 1 )); then
+if (( append_pyver == 1 )); then
   if [[ ! -v RAPIDS_PY_VER ]]; then
     rapids-echo-stderr "${echo_prefix}Env var RAPIDS_PY_VER must be set"
     exit 1

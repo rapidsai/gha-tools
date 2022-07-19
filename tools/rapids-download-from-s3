@@ -8,8 +8,6 @@ set -eo pipefail
 
 echo_prefix="    [rapids-download-from-s3] "
 
-repo_name="${GITHUB_REPOSITORY##*/}"
-
 if [ -z "$1" ] || [ -z "$2" ]; then
   rapids-echo-stderr "${echo_prefix}Must specify input arguments: PKG_NAME and UNTAR_DEST"
   exit 1
