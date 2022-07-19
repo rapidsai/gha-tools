@@ -13,8 +13,8 @@ if [ -z "${search_dir}" ]; then
   exit 1
 fi
 
-if [ ! -v CONDA_TOKEN ] || [ -z "${CONDA_TOKEN}" ]; then
-  rapids-echo-stderr "${echo_prefix}Env var CONDA_TOKEN must be set and not empty"
+if [ ! -v RAPIDS_CONDA_TOKEN ] || [ -z "${RAPIDS_CONDA_TOKEN}" ]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_CONDA_TOKEN must be set and not empty"
   exit 1
 fi
 
@@ -44,9 +44,9 @@ esac
 rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${pkgs_to_upload}"
 # shellcheck disable=SC2086
 anaconda \
-  -t "${CONDA_TOKEN}" \
+  -t "${RAPIDS_CONDA_TOKEN}" \
   upload \
-  --label "${CONDA_UPLOAD_LABEL:-main}" \
+  --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
   --skip-existing \
   --no-progress \
   ${pkgs_to_upload}

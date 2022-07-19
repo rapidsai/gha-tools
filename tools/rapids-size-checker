@@ -9,7 +9,7 @@ if [ -v RAPIDS_GH_TOKEN ] || [ -z "${RAPIDS_GH_TOKEN}" ]; then
 fi
 
 echo "Retrieving base branch from GitHub API:"
-# For PRs, $GIT_BRANCH is like:
+# For PRs, the branch name is like:
 # pull-request/989
 pr_num="${GITHUB_REF_NAME##*/}"
 

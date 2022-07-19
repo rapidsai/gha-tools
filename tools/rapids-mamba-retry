@@ -2,9 +2,12 @@
 #
 # rapids-mamba-retry
 #
-# Same as rapids-conda-retry, but sets CONDA_EXE="mamba" to combine both scripts
+# Same as rapids-conda-retry, but sets RAPIDS_CONDA_EXE="mamba" to combine both scripts
 #
 # Configurable options are set using the following env vars:
+#
+# RAPIDS_MAMBA_BIN             - override the mamba binary
+#                                Default is "mamba"
 #
 # RAPIDS_MAMBA_RETRY_MAX       - set to a positive integer to set the max number of retry
 #                                attempts (attempts after the initial try).
@@ -20,7 +23,7 @@
 
 set -o pipefail
 
-export CONDA_EXE=${MAMBA_BIN:=mamba}
+export RAPIDS_CONDA_EXE=${RAPIDS_MAMBA_BIN:=mamba}
 
 if [[ -v RAPIDS_MAMBA_RETRY_MAX ]]; then
   export RAPIDS_CONDA_RETRY_MAX="${RAPIDS_MAMBA_RETRY_MAX}"

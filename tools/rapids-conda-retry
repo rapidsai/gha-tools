@@ -14,6 +14,9 @@
 #
 # Configurable options are set using the following env vars:
 #
+# RAPIDS_CONDA_EXE             - override the conda executable
+#                                Default is "conda"
+#
 # RAPIDS_CONDA_RETRY_MAX       - set to a positive integer to set the max number of retry
 #                                attempts (attempts after the initial try).
 #                                Default is 3 retries
@@ -53,7 +56,7 @@ args=""
 # Temporarily set this to something else (eg. a script called "testConda" that
 # prints "CondaHTTPError:" and exits with 1) for testing this script.
 #condaCmd=./testConda
-condaCmd=${CONDA_EXE:=conda}
+condaCmd=${RAPIDS_CONDA_EXE:=conda}
 
 # Function to run conda and check output for specific retryable errors
 # input variables:
@@ -98,7 +101,7 @@ function runConda {
             retryingMsg="Retrying, found 'Multi-download failed' in output..."
             needToRetry=1
         else
-            rapids-echo-stderr "${echo_prefix}Exiting, no retryable ${CONDA_EXE} errors detected: 'ChecksumMismatchError:' or 'CondaHTTPError:' or 'JSONDecodeError:' or 'ChunkedEncodingError:' or 'CondaMultiError:' or 'EOFError:' or 'Multi-download failed'"
+            rapids-echo-stderr "${echo_prefix}Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: 'ChecksumMismatchError:' or 'CondaHTTPError:' or 'JSONDecodeError:' or 'ChunkedEncodingError:' or 'CondaMultiError:' or 'EOFError:' or 'Multi-download failed'"
         fi
 
         if (( needToRetry == 1 )) && \
