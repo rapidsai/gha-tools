@@ -38,9 +38,12 @@ s3_prefix=""
 
 case "${BUILD_TYPE}" in
   pull-request)
-    # For PRs, $GITHUB_REF_NAME is like:
-    # 1058/merge
-    s3_directory_id="${GITHUB_REF_NAME%%/*}"
+    # For PRs, we are using the 'trusted jobs on untrusted forks' paradigm
+    # by copying PRs to branches named pull-request/$PRNUM
+    # more info:
+    #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
+    #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/
+    s3_directory_id="${GITHUB_REF_NAME##*/}"
     s3_prefix="ci"
     ;;
   branch)
