@@ -1,0 +1,36 @@
+#!/bin/bash
+# A utility script that tars up a specified directory and uploads it to S3
+# Positional Arguments:
+#   1) package name
+#   2) path to tar up
+set -eo pipefail
+
+echo_prefix="    [rapids-upload-to-s3] "
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  rapids-echo-stderr "${echo_prefix}Must specify both input arguments: PACKAGE_NAME and PATH_TO_TAR_UP"
+  exit 1
+fi
+
+path_to_tar_up="$2"
+s3_dest_path="$(rapids-s3-path)$1"
+
+if [ -d "${path_to_tar_up}" ]; then
+  rapids-echo-stderr "${echo_prefix}Path to upload is a directory, creating .tar.gz"
+
+  # Tar.gz to stdout and pipe that to the s3 command, no need for a local file
+  tar czfv - -C "${path_to_tar_up}" . | aws s3 cp --only-show-errors - "${s3_dest_path}"
+  
+  browsable_url="$(dirname "${s3_dest_path}")/"
+elif [ -f "${path_to_tar_up}" ]; then
+  rapids-echo-stderr "${echo_prefix}Path to upload is a file, uploading it directly"
+
+  aws s3 cp --only-show-errors "${path_to_tar_up}" "${s3_dest_path}"
+
+  browsable_url="${s3_dest_path}"
+else
+  rapids-echo-stderr "${echo_prefix}Path '$path_to_tar_up' is not a directory or file"
+  exit 1
+fi
+
+rapids-echo-stderr "${echo_prefix}Browse uploads: ${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}"

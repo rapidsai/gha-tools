@@ -1,0 +1,52 @@
+#!/bin/bash
+# A utility script that find all of the conda packages within a folder and
+# uploads them to Anaconda.org
+# Positional Arguments:
+#   1) a directory path to search for conda packages
+set -e
+
+echo_prefix="    [rapids-upload-to-anaconda] "
+search_dir="$1"
+
+if [ -z "${search_dir}" ]; then
+  rapids-echo-stderr "${echo_prefix}Please provide a search directory."
+  exit 1
+fi
+
+if [ ! -v RAPIDS_CONDA_TOKEN ] || [ -z "${RAPIDS_CONDA_TOKEN}" ]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_CONDA_TOKEN must be set and not empty"
+  exit 1
+fi
+
+if [ ! -d "${search_dir}" ]; then
+  rapids-echo-stderr "${echo_prefix}Directory ${search_dir} does not exist."
+  exit 1
+fi
+
+pkgs_to_upload=$(find "${search_dir}" -name "*.tar.bz2")
+if [ -z "${pkgs_to_upload}" ]; then
+  rapids-echo-stderr "${echo_prefix}Couldn't find any packages to upload in: ${search_dir}."
+  ls -l "${search_dir}/"*
+  exit 1
+fi
+
+case "${RAPIDS_BUILD_TYPE}" in
+  branch)
+    ;&
+  nightly)
+    ;;
+  *)
+    rapids-echo-stderr "${echo_prefix}Only branch builds and nightly builds are uploaded to Anaconda.org"
+    exit 1
+    ;;
+esac
+
+rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${pkgs_to_upload}"
+# shellcheck disable=SC2086
+anaconda \
+  -t "${RAPIDS_CONDA_TOKEN}" \
+  upload \
+  --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
+  --skip-existing \
+  --no-progress \
+  ${pkgs_to_upload}

@@ -1,0 +1,49 @@
+#!/bin/bash
+#
+# rapids-mamba-retry
+#
+# Same as rapids-conda-retry, but sets RAPIDS_CONDA_EXE="mamba" to combine both scripts
+#
+# Configurable options are set using the following env vars:
+#
+# RAPIDS_MAMBA_BIN             - override the mamba binary
+#                                Default is "mamba"
+#
+# RAPIDS_MAMBA_RETRY_MAX       - set to a positive integer to set the max number of retry
+#                                attempts (attempts after the initial try).
+#                                Default is 3 retries
+#
+# RAPIDS_MAMBA_RETRY_SLEEP     - set to a positive integer to set the duration, in
+#                                seconds, to wait between retries.
+#                                Default is a 10 second sleep
+#
+# These are copied to RAPIDS_CONDA_RETRY_MAX and RAPIDS_CONDA_RETRY_SLEEP
+#
+# Similarly, the options `--mambaretry_...` are copied to their `--condaretry_...` equivalents
+
+set -o pipefail
+
+export RAPIDS_CONDA_EXE=${RAPIDS_MAMBA_BIN:=mamba}
+
+if [[ -v RAPIDS_MAMBA_RETRY_MAX ]]; then
+  export RAPIDS_CONDA_RETRY_MAX="${RAPIDS_MAMBA_RETRY_MAX}"
+fi
+
+if [[ -v RAPIDS_MAMBA_RETRY_SLEEP ]]; then
+  export RAPIDS_CONDA_RETRY_SLEEP="${RAPIDS_MAMBA_RETRY_SLEEP}"
+fi
+
+# Rename --mambaretry_... options to --condaretry_...
+for arg in "$@"; do
+   opt=${arg%%=*}
+   val=${arg##*=}
+   if [[ ${opt} == "--mambaretry_max_retries" ]]; then
+      args="${args} --condaretry_max_retries=${val}"
+   elif [[ ${opt} == "--mambaretry_sleep_interval" ]]; then
+      args="${args} --condaretry_sleep_interval=${val}"
+   else
+      args="${args} ${arg}"
+   fi
+done
+
+rapids-conda-retry "$@"

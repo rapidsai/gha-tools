@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# rapids-logger
+#
+# provides a logging mechanism for scripts to report progress
+#
+function rapids-logger {
+  ts=$(date '+%x %T')
+  # shellcheck disable=SC2000
+  msg_cnt=$(echo "$@" | wc -c)
+  width=$((msg_cnt+6))
+  bar=""
+  for ((i = 0 ; i <= width ; i++)); do
+    bar="${bar}─"
+  done
+
+  echo -e "\n\033[32mRAPIDS logger\033[0m » [$ts]"
+  echo -e "\033[32m┌${bar}┐\033[0m"
+  echo -e "\033[32m|    $*    |\033[0m"
+  echo -e "\033[32m└${bar}┘\033[0m\n"
+}
+
+rapids-logger "$@"

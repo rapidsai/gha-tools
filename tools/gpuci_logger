@@ -1,0 +1,9 @@
+#!/bin/bash
+#
+# gpuci_logger
+#
+# Compatibility wrapper that calls to the new rapids-logger script
+
+rapids-echo-stderr "'gpuci_logger' is deprecated, please use 'rapids-logger' instead"
+
+rapids-logger "$@"

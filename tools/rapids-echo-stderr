@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+# Echo to stderr helper function
+echo "$*" >&2

@@ -1,0 +1,61 @@
+#!/bin/bash
+set -e
+
+echo_prefix="    [rapids-size-checker] "
+
+if [ -v RAPIDS_GH_TOKEN ] || [ -z "${RAPIDS_GH_TOKEN}" ]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_GH_TOKEN must be set and not empty"
+  exit 1
+fi
+
+echo "Retrieving base branch from GitHub API:"
+# For PRs, the branch name is like:
+# pull-request/989
+pr_num="${GITHUB_REF_NAME##*/}"
+
+curl_headers=('-H' "Authorization: token ${RAPIDS_GH_TOKEN}")
+resp=$(
+curl \
+    -H "Accept: application/vnd.github.v3+json" \
+    "${curl_headers[@]}" \
+    "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${pr_num}"
+)
+base_branch=$(echo "${resp}" | jq -r '.base.ref')
+
+diff_files=$(mktemp)
+large_files=$(mktemp)
+trap 'rm -f ${diff_files} ${large_files}' EXIT
+filesize_limit=5242880
+retval=0
+
+# Activate rapids environment for Git LFS access
+# shellcheck disable=SC1091
+. /opt/conda/etc/profile.d/conda.sh
+conda activate rapids
+
+# Get list of files changed in current PR
+git fetch origin
+git diff --name-only origin/"${base_branch}"..HEAD > "${diff_files}"
+
+echo "### Comparing ${base_branch} to HEAD:"
+echo '### Files modified in current PR'
+while read -r file_name; do
+    echo "Size check ${file_name}"
+    if [ -f "${file_name}" ]; then
+        if [ "$(du -b "${file_name}" | awk '{print $1}')" -gt "${filesize_limit}" ]; then
+            retval=1
+            echo "${file_name}" >> "${large_files}"
+        fi
+    fi
+done < "${diff_files}"
+
+if [ "${retval}" == 1 ]; then
+    echo "### Files exceeding the ${filesize_limit} size limit. Please see documentation for"
+    echo "### large file handling:  https://docs.rapids.ai/resources/git/#large-files-and-git"
+    cat "${large_files}"
+    echo "###"
+else
+    echo "### All files under the ${filesize_limit} size limit"
+fi
+
+exit $retval

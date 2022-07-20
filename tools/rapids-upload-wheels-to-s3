@@ -1,0 +1,9 @@
+#!/bin/bash
+# A utility script that tars up a wheel directory and uploads it to S3
+# Positional Arguments:
+#   1) wheel path to tar up
+set -e
+
+pkg_name="$(rapids-package-name wheel_python)"
+
+rapids-upload-to-s3 "${pkg_name}" "$@"
