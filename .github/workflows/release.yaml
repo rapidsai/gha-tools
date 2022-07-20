@@ -24,7 +24,7 @@ jobs:
           tar -czf ${{ env.RELEASE_FILE_NAME }} -C ./tools .
       - name: Compute Next Tag Name
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0)
+          LAST_TAG=$(git describe --tags --abbrev=0 || echo "0.0.0")
           NEXT_PATCH_VERSION=$(echo ${LAST_TAG} | awk -F. -v OFS=. '{$NF += 1 ; print}')
           echo "NEXT_PATCH_VERSION=$NEXT_PATCH_VERSION" >> $GITHUB_ENV
       - name: Release
