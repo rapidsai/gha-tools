@@ -41,10 +41,8 @@ esac
 pkg_name="${pkg_type}"
 
 # for wheels, add the python wheel name if env var is set
-if (( append_wheelname )); then
-  if [[ -v RAPIDS_PY_WHEEL_NAME ]]; then
-    pkg_name+="_${RAPIDS_PY_WHEEL_NAME}"
-  fi
+if (( append_wheelname )) && [[ -v RAPIDS_PY_WHEEL_NAME ]] && [[ "${RAPIDS_PY_WHEEL_NAME}" != "" ]]; then
+  pkg_name+="_${RAPIDS_PY_WHEEL_NAME}"
 fi
 
 # for python package types, add pyver
