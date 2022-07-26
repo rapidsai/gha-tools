@@ -20,12 +20,17 @@ fi
 pkg_type="$1"
 
 append_pyver=0
+append_wheelname=0
 
 case "${pkg_type}" in
   conda_cpp)
     ;;
-  conda_python|wheel_python)
+  conda_python)
     append_pyver=1
+    ;;
+  wheel_python)
+    append_pyver=1
+    append_wheelname=1
     ;;
   *)
     rapids-echo-stderr "${echo_prefix}Nonstandard package type '${pkg_type}'"
@@ -35,6 +40,11 @@ esac
 
 pkg_name="${pkg_type}"
 
+# for wheels, add the python wheel name if env var is set
+if (( append_wheelname )) && [[ -v RAPIDS_PY_WHEEL_NAME ]] && [[ "${RAPIDS_PY_WHEEL_NAME}" != "" ]]; then
+  pkg_name+="_${RAPIDS_PY_WHEEL_NAME}"
+fi
+
 # for python package types, add pyver
 if (( append_pyver == 1 )); then
   if [[ ! -v RAPIDS_PY_VER ]]; then
@@ -42,7 +52,7 @@ if (( append_pyver == 1 )); then
     exit 1
   fi
 
-  pkg_name+="_${RAPIDS_PY_VER/./}"
+  pkg_name+="_${RAPIDS_PY_VER//./}"
 fi
 
 # for cpp and python package types, always append arch
