@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# rapids-check-env
+#
+# prints summary of environment
+#
+
+rapids-logger "Get env"
+env
+
+rapids-logger "Check python version"
+python --version
+
+rapids-logger "Check conda environment"
+conda info
+conda config --show-sources
+conda list --show-channel-urls
