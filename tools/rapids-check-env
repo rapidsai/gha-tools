@@ -6,7 +6,7 @@
 #
 
 rapids-logger "Get env"
-env
+env | sort
 
 rapids-logger "Check python version"
 python --version
