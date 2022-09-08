@@ -26,7 +26,7 @@ In gha-tools we introduced some variable naming conventions:
 List of variables that have had a `RAPIDS_*` prefix added, which should be reflected by consumers switching from gpuci-tools to gha-tools:
 * `CONDA_EXE`, `CONDA_TOKEN`, `CONDA_UPLOAD_LABEL` -> `RAPIDS_CONDA_EXE`, `RAPIDS_CONDA_TOKEN`, `RAPIDS_CONDA_UPLOAD_LABEL`
 * `MAMBA_BIN` -> `RAPIDS_MAMBA_BIN`
-* `PY_VER` -> `RAPIDS_PY_VER`
+* `PY_VER` -> `RAPIDS_PY_VERSION`
 * `BUILD_TYPE` -> `RAPIDS_BUILD_TYPE`
 * `GH_TOKEN` -> `RAPIDS_GH_TOKEN`
 

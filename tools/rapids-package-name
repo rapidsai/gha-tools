@@ -47,12 +47,12 @@ fi
 
 # for python package types, add pyver
 if (( append_pyver == 1 )); then
-  if [[ ! -v RAPIDS_PY_VER ]]; then
-    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_PY_VER must be set"
+  if [[ ! -v RAPIDS_PY_VERSION ]]; then
+    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_PY_VERSION must be set"
     exit 1
   fi
 
-  pkg_name+="_${RAPIDS_PY_VER//./}"
+  pkg_name+="_${RAPIDS_PY_VERSION//./}"
 fi
 
 # for cpp and python package types, always append arch
