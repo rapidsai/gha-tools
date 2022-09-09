@@ -22,17 +22,17 @@ if [[ ! -v RAPIDS_BUILD_TYPE ]]; then
   exit 1
 fi
 
-if [[ ! -v GITHUB_SHA ]]; then
-  rapids-echo-stderr "${echo_prefix}Env var GITHUB_SHA must be set"
+if [[ ! -v RAPIDS_SHA ]]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_SHA must be set"
   exit 1
 fi
 
-if [[ ! -v GITHUB_REPOSITORY ]]; then
-  rapids-echo-stderr "${echo_prefix}Env var GITHUB_REPOSITORY must be set"
+if [[ ! -v RAPIDS_REPOSITORY ]]; then
+  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_REPOSITORY must be set"
   exit 1
 fi
 
-repo_name="${GITHUB_REPOSITORY##*/}"
+repo_name="${RAPIDS_REPOSITORY##*/}"
 
 s3_directory_id=""
 s3_prefix=""
@@ -44,11 +44,11 @@ case "${RAPIDS_BUILD_TYPE}" in
     # more info:
     #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
     #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/
-    s3_directory_id="${GITHUB_REF_NAME##*/}"
+    s3_directory_id="${RAPIDS_REF_NAME##*/}"
     s3_prefix="ci"
     ;;
   branch)
-    s3_directory_id="${GITHUB_REF_NAME}"
+    s3_directory_id="${RAPIDS_REF_NAME}"
     s3_prefix="ci"
     ;;
   nightly)
@@ -61,7 +61,7 @@ case "${RAPIDS_BUILD_TYPE}" in
     ;;
 esac
 
-short_hash=${GITHUB_SHA:0:7}
+short_hash=${RAPIDS_SHA:0:7}
 
 s3_path="s3://rapids-downloads/${s3_prefix}/${repo_name}/"
 if [[ "${RAPIDS_BUILD_TYPE}" != "nightly" ]]; then

@@ -6,11 +6,11 @@ set -eo pipefail
 
 echo_prefix="    [rapids-package-name] "
 
-if [[ ! -v GITHUB_REPOSITORY ]]; then
-    rapids-echo-stderr "${echo_prefix}Env var GITHUB_REPOSITORY must be set"
+if [[ ! -v RAPIDS_REPOSITORY ]]; then
+    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_REPOSITORY must be set"
     exit 1
 fi
-repo_name="${GITHUB_REPOSITORY##*/}"
+repo_name="${RAPIDS_REPOSITORY##*/}"
 
 if [ -z "$1" ]; then
   rapids-echo-stderr "${echo_prefix}Must specify input arguments: PKG_TYPE"
