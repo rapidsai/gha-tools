@@ -28,11 +28,6 @@ trap 'rm -f ${diff_files} ${large_files}' EXIT
 filesize_limit=5242880
 retval=0
 
-# Activate rapids environment for Git LFS access
-# shellcheck disable=SC1091
-. /opt/conda/etc/profile.d/conda.sh
-conda activate rapids
-
 # Get list of files changed in current PR
 git fetch origin
 git diff --name-only origin/"${base_branch}"..HEAD > "${diff_files}"
