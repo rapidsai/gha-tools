@@ -20,7 +20,7 @@ if [ -d "${path_to_tar_up}" ]; then
 
   # Tar.gz to stdout and pipe that to the s3 command, no need for a local file
   tar czfv - -C "${path_to_tar_up}" . | aws s3 cp --only-show-errors - "${s3_dest_path}"
-  
+
   browsable_url="$(dirname "${s3_dest_path}")/"
 elif [ -f "${path_to_tar_up}" ]; then
   rapids-echo-stderr "${echo_prefix}Path to upload is a file, uploading it directly"
@@ -33,4 +33,11 @@ else
   exit 1
 fi
 
-rapids-echo-stderr "${echo_prefix}Browse uploads: ${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}"
+ARTIFACTS_URL=${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}
+
+if [ -f "${GITHUB_STEP_SUMMARY}" ]; then
+  echo "## Artifacts URL" >> "${GITHUB_STEP_SUMMARY}"
+  echo "${ARTIFACTS_URL}" >> "${GITHUB_STEP_SUMMARY}"
+fi
+
+rapids-echo-stderr "${echo_prefix}Browse uploads: ${ARTIFACTS_URL}"
