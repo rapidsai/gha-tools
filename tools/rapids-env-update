@@ -4,14 +4,14 @@
 # a nightly or stable build is occurring.
 set -e
 
-# Remove nightly channels if we are building main branch
-if [[ "${GITHUB_REF_NAME}" = "main" ]]; then
+# Remove nightly channels if build is a stable build
+if rapids-is-stable-build; then
   conda config --system --remove channels rapidsai-nightly
   conda config --system --remove channels dask/label/dev
 fi
 
-# If nightly build, append current YYMMDD to version
-if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" && "${GITHUB_REF_NAME}" = branch-* ]] ; then
+# If nightly or branch build, append current YYMMDD to version
+if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" ]] && ! ./tools/rapids-is-stable-build; then
   VERSION_SUFFIX=$(date +%y%m%d)
   export VERSION_SUFFIX
 fi
