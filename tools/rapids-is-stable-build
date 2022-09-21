@@ -1,0 +1,14 @@
+#!/bin/bash
+# A utility script that examines environment variables provided by
+# GitHub Actions to determine whether the current build is a "stable" build.
+# A "stable" build occurs when the GITHUB_REF environment variable matches
+# the pattern "refs/tags/vYY.MM.PP".
+# Example:
+#    if ./tools/rapids-is-stable-build; then echo "hi"; fi
+set -e
+
+if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]{2}.[0-9]{2}.[0-9]{2}$ ]]; then
+  exit 0
+fi
+
+exit 1

@@ -5,8 +5,12 @@ on:
     paths:
       - "tools/*"
 
+defaults:
+  run:
+    shell: bash
+
 jobs:
-  shellcheck:
+  checks:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -15,3 +19,23 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: "./tools"
+      - name: Check Permissions
+        run: |
+          # Executable bit indices
+          USER_EXEC_IND=3
+          GROUP_EXEC_IND=6
+          ELSE_EXEC_IND=9
+
+          for FILE in tools/*; do
+            PERMISSIONS=$(stat -c "%A" "${FILE}")
+            for IND in "${USER_EXEC_IND}" "${GROUP_EXEC_IND}" "${ELSE_EXEC_IND}"; do
+              EXEC_PERM="${PERMISSIONS:$IND:1}"
+              if [ "${EXEC_PERM}" != "x" ]; then
+                ls -l tools/
+                echo ""
+                echo "${FILE} does not have the correct permissions."
+                echo "Ensure are tools are executable by everyone and try again."
+                exit 1
+              fi
+            done
+          done
