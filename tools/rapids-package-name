@@ -56,7 +56,13 @@ if (( append_pyver == 1 )); then
 fi
 
 # for cpp and python package types, always append arch
-pkg_name+="_$(arch)"
+if [[ -v RAPIDS_PY_WHEEL_ARCH ]] && [[ "${RAPIDS_PY_WHEEL_ARCH}" != "" ]]; then
+  # use arch override if specified
+  pkg_name+="_${RAPIDS_PY_WHEEL_ARCH}"
+else
+  # otherwise use architecture of the host that's running the upload command
+  pkg_name+="_$(arch)"
+fi
 
 # for cpp and python package types, its a tarball, append .tar.gz and prepend project name
 pkg_name="${repo_name}_${pkg_name}.tar.gz"
