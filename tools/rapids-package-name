@@ -56,9 +56,9 @@ if (( append_pyver == 1 )); then
 fi
 
 # for cpp and python package types, always append arch
-if [[ -v RAPIDS_PY_WHEEL_ARCH ]] && [[ "${RAPIDS_PY_WHEEL_ARCH}" != "" ]]; then
+if [[ -v RAPIDS_ARCH ]] && [[ "${RAPIDS_ARCH}" != "" ]]; then
   # use arch override if specified
-  pkg_name+="_${RAPIDS_PY_WHEEL_ARCH}"
+  pkg_name+="_${RAPIDS_ARCH}"
 else
   # otherwise use architecture of the host that's running the upload command
   pkg_name+="_$(arch)"
