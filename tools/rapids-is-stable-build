@@ -4,7 +4,7 @@
 # A "stable" build occurs when the GITHUB_REF environment variable matches
 # the pattern "refs/tags/vYY.MM.PP".
 # Example:
-#    if ./tools/rapids-is-stable-build; then echo "hi"; fi
+#    if rapids-is-stable-build; then echo "hi"; fi
 set -e
 
 echo_prefix="    [rapids-is-stable-build]"
