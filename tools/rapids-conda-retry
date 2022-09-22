@@ -97,6 +97,9 @@ function runConda {
         elif grep -q EOFError: "${outfile}"; then
             retryingMsg="Retrying, found 'EOFError:' in output..."
             needToRetry=1
+        elif grep -q ConnectionError: "${outfile}"; then
+            retryingMsg="Retrying, found 'ConnectionError:' in output..."
+            needToRetry=1
         elif grep -q "Multi-download failed" "${outfile}"; then
             retryingMsg="Retrying, found 'Multi-download failed' in output..."
             needToRetry=1
