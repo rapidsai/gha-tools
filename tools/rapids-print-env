@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# rapids-check-env
+# rapids-print-env
 #
 # prints summary of environment
 #
