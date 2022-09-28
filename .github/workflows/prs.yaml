@@ -19,6 +19,7 @@ jobs:
         uses: ludeeus/action-shellcheck@master
         with:
           scandir: "./tools"
+          ignore_paths: "**.py"
       - name: Check Permissions
         run: |
           # Executable bit indices
