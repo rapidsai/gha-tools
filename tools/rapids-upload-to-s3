@@ -35,9 +35,4 @@ fi
 
 ARTIFACTS_URL=${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}
 
-if [ -f "${GITHUB_STEP_SUMMARY}" ]; then
-  echo "## Artifacts URL" >> "${GITHUB_STEP_SUMMARY}"
-  echo "${ARTIFACTS_URL}" >> "${GITHUB_STEP_SUMMARY}"
-fi
-
 rapids-echo-stderr "${echo_prefix}Browse uploads: ${ARTIFACTS_URL}"
