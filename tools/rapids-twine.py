@@ -64,6 +64,7 @@ if __name__ == '__main__':
     rapids_echo_stderr_fn(f"{echo_prefix}Normalizing '{wheel_base_version}' to '{wheel_base_version_normalized} to match setuptools...")
     wheel_base_version = wheel_base_version_normalized
 
+    next_success = True
     for wheel_file_name in os.listdir(wheel_dir):
         wheel_file_path = os.path.join(wheel_dir, wheel_file_name)
 
