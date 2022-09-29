@@ -14,23 +14,24 @@
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
 set -eo pipefail
+source rapids-constants
 
 echo_prefix="    [rapids-s3-path] "
 
-if [[ ! -v RAPIDS_BUILD_TYPE ]]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_BUILD_TYPE must be set"
-  exit 1
-fi
+REQUIRED_ENV_VARS=(
+  "RAPIDS_BUILD_TYPE"
+  "RAPIDS_SHA"
+  "RAPIDS_REPOSITORY"
+  "RAPIDS_REF_NAME"
+)
 
-if [[ ! -v RAPIDS_SHA ]]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_SHA must be set"
-  exit 1
-fi
+for VAR in "${REQUIRED_ENV_VARS[@]}"; do
+  if [[ -z "${!VAR}" ]]; then
+    rapids-echo-stderr "${echo_prefix}Env var ${VAR} must be set"
+    exit 1
+  fi
+done
 
-if [[ ! -v RAPIDS_REPOSITORY ]]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_REPOSITORY must be set"
-  exit 1
-fi
 
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
@@ -63,7 +64,7 @@ esac
 
 short_hash=${RAPIDS_SHA:0:7}
 
-s3_path="s3://rapids-downloads/${s3_prefix}/${repo_name}/"
+s3_path="s3://${RAPIDS_DOWNLOADS_BUCKET}/${s3_prefix}/${repo_name}/"
 if [[ "${RAPIDS_BUILD_TYPE}" != "nightly" ]]; then
   s3_path+="${RAPIDS_BUILD_TYPE}/"
 fi

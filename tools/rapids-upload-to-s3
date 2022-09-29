@@ -4,6 +4,7 @@
 #   1) package name
 #   2) path to tar up
 set -eo pipefail
+source rapids-constants
 
 echo_prefix="    [rapids-upload-to-s3] "
 
@@ -33,6 +34,6 @@ else
   exit 1
 fi
 
-ARTIFACTS_URL=${browsable_url/s3:\/\/rapids-downloads\//https:\/\/downloads.rapids.ai\/}
+ARTIFACTS_URL=${browsable_url/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//https:\/\/downloads.rapids.ai\/}
 
 rapids-echo-stderr "${echo_prefix}Browse uploads: ${ARTIFACTS_URL}"
