@@ -26,7 +26,8 @@ esac
 S3_PATH=$(rapids-s3-path)
 BUCKET_PREFIX=${S3_PATH/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//} # removes s3://rapids-downloads/ from s3://rapids-downloads/ci/rmm/...
 
-export CONDA_ARTIFACTS=$(
+# shellcheck disable=SC2016
+CONDA_ARTIFACTS=$(
   aws \
     --output json \
     s3api list-objects \
@@ -36,6 +37,7 @@ export CONDA_ARTIFACTS=$(
     --query 'Contents[?contains(Key, `conda`)].Key' \
     | jq -c
 )
+export CONDA_ARTIFACTS
 
 for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
   FILENAME=$(basename "${OBJ}")
