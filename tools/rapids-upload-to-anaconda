@@ -1,32 +1,13 @@
 #!/bin/bash
-# A utility script that find all of the conda packages within a folder and
-# uploads them to Anaconda.org
-# Positional Arguments:
-#   1) a directory path to search for conda packages
+# A utility script that uploads all the conda packages from a
+# GitHub Actions workflow run to Anaconda.org
 set -e
+source rapids-constants
 
 echo_prefix="    [rapids-upload-to-anaconda] "
-search_dir="$1"
-
-if [ -z "${search_dir}" ]; then
-  rapids-echo-stderr "${echo_prefix}Please provide a search directory."
-  exit 1
-fi
 
 if [ ! -v RAPIDS_CONDA_TOKEN ] || [ -z "${RAPIDS_CONDA_TOKEN}" ]; then
   rapids-echo-stderr "${echo_prefix}Env var RAPIDS_CONDA_TOKEN must be set and not empty"
-  exit 1
-fi
-
-if [ ! -d "${search_dir}" ]; then
-  rapids-echo-stderr "${echo_prefix}Directory ${search_dir} does not exist."
-  exit 1
-fi
-
-pkgs_to_upload=$(find "${search_dir}" -name "*.tar.bz2")
-if [ -z "${pkgs_to_upload}" ]; then
-  rapids-echo-stderr "${echo_prefix}Couldn't find any packages to upload in: ${search_dir}."
-  ls -l "${search_dir}/"*
   exit 1
 fi
 
@@ -41,12 +22,50 @@ case "${RAPIDS_BUILD_TYPE}" in
     ;;
 esac
 
-rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${pkgs_to_upload}"
-# shellcheck disable=SC2086
-anaconda \
-  -t "${RAPIDS_CONDA_TOKEN}" \
-  upload \
-  --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
-  --skip-existing \
-  --no-progress \
-  ${pkgs_to_upload}
+
+S3_PATH=$(rapids-s3-path)
+BUCKET_PREFIX=${S3_PATH/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//} # removes s3://rapids-downloads/ from s3://rapids-downloads/ci/rmm/...
+
+export CONDA_ARTIFACTS=$(
+  aws \
+    --output json \
+    s3api list-objects \
+    --bucket "${RAPIDS_DOWNLOADS_BUCKET}" \
+    --prefix "${BUCKET_PREFIX}" \
+    --page-size 100 \
+    --query 'Contents[?contains(Key, `conda`)].Key' \
+    | jq -c
+)
+
+for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
+  FILENAME=$(basename "${OBJ}")
+  FILENAME_NO_EXT="${FILENAME%%.*}"
+  S3_URI="${S3_PATH}${FILENAME}"
+  UNTAR_DEST="${FILENAME_NO_EXT}"
+
+  rapids-echo-stderr "${echo_prefix}Untarring ${S3_URI} into ${UNTAR_DEST}"
+  mkdir -p "${UNTAR_DEST}"
+  aws s3 cp --only-show-errors "${S3_URI}" - | tar xzf - -C "${UNTAR_DEST}"
+
+  # don't upload tests packages (e.g. librmm-tests)
+  PKGS_TO_UPLOAD=$(find "${UNTAR_DEST}" -name "*.tar.bz2" ! -name "*-tests-*")
+
+  if [ -z "${PKGS_TO_UPLOAD}" ]; then
+    rapids-echo-stderr "${echo_prefix}Couldn't find any packages to upload in: ${UNTAR_DEST}."
+    tree "${UNTAR_DEST}/"*
+    exit 1
+  fi
+
+  rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
+
+  # shellcheck disable=SC2086
+  anaconda \
+    -t "${RAPIDS_CONDA_TOKEN}" \
+    upload \
+    --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
+    --skip-existing \
+    --no-progress \
+    ${PKGS_TO_UPLOAD}
+
+  echo ""
+done
