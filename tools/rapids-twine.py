@@ -12,6 +12,7 @@ import os
 import sys
 import shutil
 import tempfile
+from setuptools.extern import packaging
 
 echo_prefix="    [rapids-twine.py] "
 max_build_tags=5
@@ -57,6 +58,12 @@ if __name__ == '__main__':
 
     wheel_base_version = os.environ["RAPIDS_PY_WHEEL_VERSIONEER_OVERRIDE"]
 
+    # replace override with pypi-normalized string e.g. 22.10.00a --> 22.10.0a0
+    wheel_base_version_normalized = str(packaging.version.Version(wheel_base_version))
+
+    rapids_echo_stderr_fn(f"{echo_prefix}Normalizing '{wheel_base_version}' to '{wheel_base_version_normalized} to match setuptools...")
+    wheel_base_version = wheel_base_version_normalized
+
     for wheel_file_name in os.listdir(wheel_dir):
         wheel_file_path = os.path.join(wheel_dir, wheel_file_name)
 
@@ -92,3 +99,6 @@ if __name__ == '__main__':
                 if not next_success and not next_increment_build_tag:
                     # non-409 failure here, bail
                     sys.exit(1)
+
+    if not next_success:
+        sys.exit(1)
