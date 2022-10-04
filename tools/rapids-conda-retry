@@ -103,8 +103,20 @@ function runConda {
         elif grep -q "Multi-download failed" "${outfile}"; then
             retryingMsg="Retrying, found 'Multi-download failed' in output..."
             needToRetry=1
+        elif grep -q "Timeout was reached" "${outfile}"; then
+            retryingMsg="Retrying, found 'Timeout was reached' in output..."
+            needToRetry=1
         else
-            rapids-echo-stderr "${echo_prefix}Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: 'ChecksumMismatchError:' or 'CondaHTTPError:' or 'JSONDecodeError:' or 'ChunkedEncodingError:' or 'CondaMultiError:' or 'EOFError:' or 'Multi-download failed'"
+            rapids-echo-stderr "${echo_prefix}Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
+'ChecksumMismatchError:', \
+'ChunkedEncodingError:', \
+'CondaHTTPError:', \
+'CondaMultiError:', \
+'ConnectionError:', \
+'EOFError:', \
+'JSONDecodeError:', \
+'Multi-download failed', \
+'Timeout was reached'"
         fi
 
         if (( needToRetry == 1 )) && \
