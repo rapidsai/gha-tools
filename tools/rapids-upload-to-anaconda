@@ -3,13 +3,9 @@
 # GitHub Actions workflow run to Anaconda.org
 set -e
 source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda"
 
-echo_prefix="    [rapids-upload-to-anaconda] "
-
-if [ ! -v RAPIDS_CONDA_TOKEN ] || [ -z "${RAPIDS_CONDA_TOKEN}" ]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_CONDA_TOKEN must be set and not empty"
-  exit 1
-fi
+rapids-require-env-var "RAPIDS_CONDA_TOKEN"
 
 case "${RAPIDS_BUILD_TYPE}" in
   branch)
@@ -17,7 +13,7 @@ case "${RAPIDS_BUILD_TYPE}" in
   nightly)
     ;;
   *)
-    rapids-echo-stderr "${echo_prefix}Only branch builds and nightly builds are uploaded to Anaconda.org"
+    rapids-echo-stderr "Only branch builds and nightly builds are uploaded to Anaconda.org"
     exit 1
     ;;
 esac
@@ -45,7 +41,7 @@ for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
   S3_URI="${S3_PATH}${FILENAME}"
   UNTAR_DEST="${FILENAME_NO_EXT}"
 
-  rapids-echo-stderr "${echo_prefix}Untarring ${S3_URI} into ${UNTAR_DEST}"
+  rapids-echo-stderr "Untarring ${S3_URI} into ${UNTAR_DEST}"
   mkdir -p "${UNTAR_DEST}"
   aws s3 cp --only-show-errors "${S3_URI}" - | tar xzf - -C "${UNTAR_DEST}"
 
@@ -53,12 +49,12 @@ for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
   PKGS_TO_UPLOAD=$(find "${UNTAR_DEST}" -name "*.tar.bz2" ! -name "*-tests-*")
 
   if [ -z "${PKGS_TO_UPLOAD}" ]; then
-    rapids-echo-stderr "${echo_prefix}Couldn't find any packages to upload in: ${UNTAR_DEST}."
+    rapids-echo-stderr "Couldn't find any packages to upload in: ${UNTAR_DEST}."
     tree "${UNTAR_DEST}/"*
     exit 1
   fi
 
-  rapids-echo-stderr "${echo_prefix}Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
+  rapids-echo-stderr "Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
 
   # shellcheck disable=SC2086
   anaconda \

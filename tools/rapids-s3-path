@@ -15,23 +15,11 @@
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
 set -eo pipefail
 source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-s3-path"
 
-echo_prefix="    [rapids-s3-path] "
-
-REQUIRED_ENV_VARS=(
-  "RAPIDS_BUILD_TYPE"
-  "RAPIDS_SHA"
-  "RAPIDS_REPOSITORY"
-  "RAPIDS_REF_NAME"
-)
-
-for VAR in "${REQUIRED_ENV_VARS[@]}"; do
-  if [[ -z "${!VAR}" ]]; then
-    rapids-echo-stderr "${echo_prefix}Env var ${VAR} must be set"
-    exit 1
-  fi
-done
-
+rapids-require-env-var "RAPIDS_BUILD_TYPE"
+rapids-require-env-var "RAPIDS_SHA"
+rapids-require-env-var "RAPIDS_REPOSITORY"
 
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
@@ -45,15 +33,18 @@ case "${RAPIDS_BUILD_TYPE}" in
     # more info:
     #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
     #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/
+    rapids-require-env-var "RAPIDS_REF_NAME"
     s3_directory_id="${RAPIDS_REF_NAME##*/}"
     s3_prefix="ci"
     ;;
   branch)
+    rapids-require-env-var "RAPIDS_REF_NAME"
     s3_directory_id="${RAPIDS_REF_NAME}"
     s3_prefix="ci"
     ;;
   nightly)
-    s3_directory_id="$(date +%F)"
+    rapids-require-env-var "RAPIDS_NIGHTLY_DATE"
+    s3_directory_id="${RAPIDS_NIGHTLY_DATE}"
     s3_prefix="nightly"
     ;;
   *)
