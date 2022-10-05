@@ -4,13 +4,12 @@
 #   1) package type
 set -eo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-package-name"
-echo_prefix="    [${RAPIDS_SCRIPT_NAME}] "
 
 rapids-require-env-var "RAPIDS_REPOSITORY"
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
 if [ -z "$1" ]; then
-  rapids-echo-stderr "${echo_prefix}Must specify input arguments: PKG_TYPE"
+  rapids-echo-stderr "Must specify input arguments: PKG_TYPE"
   exit 1
 fi
 
@@ -30,7 +29,7 @@ case "${pkg_type}" in
     append_wheelname=1
     ;;
   *)
-    rapids-echo-stderr "${echo_prefix}Nonstandard package type '${pkg_type}'"
+    rapids-echo-stderr "Nonstandard package type '${pkg_type}'"
     exit 1
     ;;
 esac

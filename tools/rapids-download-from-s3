@@ -5,11 +5,10 @@
 #   1) package name to generate s3 path for
 #   2) location to untar it to
 set -eo pipefail
-
-echo_prefix="    [rapids-download-from-s3] "
+export RAPIDS_SCRIPT_NAME="rapids-download-from-s3"
 
 if [ -z "$1" ] || [ -z "$2" ]; then
-  rapids-echo-stderr "${echo_prefix}Must specify input arguments: PKG_NAME and UNTAR_DEST"
+  rapids-echo-stderr "Must specify input arguments: PKG_NAME and UNTAR_DEST"
   exit 1
 fi
 
@@ -18,7 +17,7 @@ s3_dl_path="$(rapids-s3-path)$1"
 untar_dest="$2"
 mkdir -p "${untar_dest}"
 
-rapids-echo-stderr "${echo_prefix}Downloading and decompressing ${s3_dl_path} into ${untar_dest}"
+rapids-echo-stderr "Downloading and decompressing ${s3_dl_path} into ${untar_dest}"
 aws s3 cp --only-show-errors "${s3_dl_path}" - | tar xzf - -C "${untar_dest}"
 
 # echo path to untarred contents

@@ -5,11 +5,10 @@
 #   2) path to tar up
 set -eo pipefail
 source rapids-constants
-
-echo_prefix="    [rapids-upload-to-s3] "
+export RAPIDS_SCRIPT_NAME="rapids-upload-to-s3"
 
 if [ -z "$1" ] || [ -z "$2" ]; then
-  rapids-echo-stderr "${echo_prefix}Must specify both input arguments: PACKAGE_NAME and PATH_TO_TAR_UP"
+  rapids-echo-stderr "Must specify both input arguments: PACKAGE_NAME and PATH_TO_TAR_UP"
   exit 1
 fi
 
@@ -17,23 +16,23 @@ path_to_tar_up="$2"
 s3_dest_path="$(rapids-s3-path)$1"
 
 if [ -d "${path_to_tar_up}" ]; then
-  rapids-echo-stderr "${echo_prefix}Path to upload is a directory, creating .tar.gz"
+  rapids-echo-stderr "Path to upload is a directory, creating .tar.gz"
 
   # Tar.gz to stdout and pipe that to the s3 command, no need for a local file
   tar czfv - -C "${path_to_tar_up}" . | aws s3 cp --only-show-errors - "${s3_dest_path}"
 
   browsable_url="$(dirname "${s3_dest_path}")/"
 elif [ -f "${path_to_tar_up}" ]; then
-  rapids-echo-stderr "${echo_prefix}Path to upload is a file, uploading it directly"
+  rapids-echo-stderr "Path to upload is a file, uploading it directly"
 
   aws s3 cp --only-show-errors "${path_to_tar_up}" "${s3_dest_path}"
 
   browsable_url="${s3_dest_path}"
 else
-  rapids-echo-stderr "${echo_prefix}Path '$path_to_tar_up' is not a directory or file"
+  rapids-echo-stderr "Path '$path_to_tar_up' is not a directory or file"
   exit 1
 fi
 
 ARTIFACTS_URL=${browsable_url/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//https:\/\/downloads.rapids.ai\/}
 
-rapids-echo-stderr "${echo_prefix}Browse uploads: ${ARTIFACTS_URL}"
+rapids-echo-stderr "Browse uploads: ${ARTIFACTS_URL}"

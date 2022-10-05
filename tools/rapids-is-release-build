@@ -6,12 +6,11 @@
 # Example:
 #    if rapids-is-release-build; then echo "hi"; fi
 set -e
-
-echo_prefix="    [rapids-is-release-build]"
+export RAPIDS_SCRIPT_NAME="rapids-is-release-build"
 
 if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]{2}.[0-9]{2}.[0-9]{2}$ ]]; then
-  rapids-echo-stderr "${echo_prefix} is release build"
+  rapids-echo-stderr "is release build"
   exit 0
 fi
-rapids-echo-stderr "${echo_prefix} is not release build"
+rapids-echo-stderr "is not release build"
 exit 1

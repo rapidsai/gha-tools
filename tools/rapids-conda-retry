@@ -26,8 +26,7 @@
 #                                Default is a 10 second sleep
 #
 set -o pipefail
-
-echo_prefix="    [rapids-conda-retry] "
+export RAPIDS_SCRIPT_NAME="rapids-conda-retry"
 
 condaretry_help="
 rapids-conda-retry options:
@@ -76,7 +75,7 @@ function runConda {
 
     if (( exitcode != 0 )); then
         # Show exit code
-        rapids-echo-stderr "${echo_prefix}conda returned exit code: ${exitcode}"
+        rapids-echo-stderr "conda returned exit code: ${exitcode}"
 
         if grep -q CondaHTTPError: "${outfile}"; then
             retryingMsg="Retrying, found 'CondaHTTPError:' in output..."
@@ -107,7 +106,7 @@ function runConda {
             retryingMsg="Retrying, found 'Timeout was reached' in output..."
             needToRetry=1
         else
-            rapids-echo-stderr "${echo_prefix}Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
+            rapids-echo-stderr "Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
 'ChecksumMismatchError:', \
 'ChunkedEncodingError:', \
 'CondaHTTPError:', \
@@ -122,12 +121,12 @@ function runConda {
         if (( needToRetry == 1 )) && \
            (( retries >= max_retries )); then
             # Catch instance where we run out of retries
-            rapids-echo-stderr "${echo_prefix}Exiting, reached max retries..."
+            rapids-echo-stderr "Exiting, reached max retries..."
         else
             # Give reason for retry
-            rapids-echo-stderr "${echo_prefix}${retryingMsg}"
+            rapids-echo-stderr "${retryingMsg}"
             if (( needToClean == 1 )); then
-                rapids-echo-stderr "${echo_prefix}Cleaning tarball cache before retrying..."
+                rapids-echo-stderr "Cleaning tarball cache before retrying..."
                 ${condaCmd} clean --tarballs -y
             fi
         fi
@@ -162,9 +161,9 @@ while (( needToRetry == 1 )) && \
       (( retries < max_retries )); do
 
    retries=$(( retries + 1 ))
-   rapids-echo-stderr "${echo_prefix}Waiting, retry ${retries} of ${max_retries} -> sleeping for ${sleep_interval} seconds..."
+   rapids-echo-stderr "Waiting, retry ${retries} of ${max_retries} -> sleeping for ${sleep_interval} seconds..."
    sleep "${sleep_interval}"
-   rapids-echo-stderr "${echo_prefix}Starting, retry ${retries} of ${max_retries} -> sleep done..."
+   rapids-echo-stderr "Starting, retry ${retries} of ${max_retries} -> sleep done..."
 
    # shellcheck disable=SC2086
    runConda ${args}

@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 export RAPIDS_SCRIPT_NAME="rapids-size-checker"
-echo_prefix="    [${RAPIDS_SCRIPT_NAME}] "
 
 rapids-require-env-var "RAPIDS_GH_TOKEN"
 
