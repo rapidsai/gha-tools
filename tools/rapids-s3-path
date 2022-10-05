@@ -53,7 +53,7 @@ case "${RAPIDS_BUILD_TYPE}" in
     s3_prefix="ci"
     ;;
   nightly)
-    s3_directory_id="$(date +%F)"
+    s3_directory_id="${RAPIDS_NIGHTLY_DATE}"
     s3_prefix="nightly"
     ;;
   *)
