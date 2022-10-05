@@ -3,13 +3,10 @@
 # GitHub Actions workflow run to Anaconda.org
 set -e
 source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda"
+echo_prefix="    [${RAPIDS_SCRIPT_NAME}] "
 
-echo_prefix="    [rapids-upload-to-anaconda] "
-
-if [ ! -v RAPIDS_CONDA_TOKEN ] || [ -z "${RAPIDS_CONDA_TOKEN}" ]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_CONDA_TOKEN must be set and not empty"
-  exit 1
-fi
+rapids-require-env-var "RAPIDS_CONDA_TOKEN"
 
 case "${RAPIDS_BUILD_TYPE}" in
   branch)

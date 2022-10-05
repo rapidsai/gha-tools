@@ -1,12 +1,9 @@
 #!/bin/bash
 set -e
+export RAPIDS_SCRIPT_NAME="rapids-size-checker"
+echo_prefix="    [${RAPIDS_SCRIPT_NAME}] "
 
-echo_prefix="    [rapids-size-checker] "
-
-if [ ! -v RAPIDS_GH_TOKEN ] || [ -z "${RAPIDS_GH_TOKEN}" ]; then
-  rapids-echo-stderr "${echo_prefix}Env var RAPIDS_GH_TOKEN must be set and not empty"
-  exit 1
-fi
+rapids-require-env-var "RAPIDS_GH_TOKEN"
 
 echo "Retrieving base branch from GitHub API:"
 # For PRs, the branch name is like:

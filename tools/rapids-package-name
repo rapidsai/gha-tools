@@ -3,13 +3,10 @@
 # Positional Arguments:
 #   1) package type
 set -eo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-package-name"
+echo_prefix="    [${RAPIDS_SCRIPT_NAME}] "
 
-echo_prefix="    [rapids-package-name] "
-
-if [[ ! -v RAPIDS_REPOSITORY ]]; then
-    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_REPOSITORY must be set"
-    exit 1
-fi
+rapids-require-env-var "RAPIDS_REPOSITORY"
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
 if [ -z "$1" ]; then
@@ -47,11 +44,7 @@ fi
 
 # for python package types, add pyver
 if (( append_pyver == 1 )); then
-  if [[ ! -v RAPIDS_PY_VERSION ]]; then
-    rapids-echo-stderr "${echo_prefix}Env var RAPIDS_PY_VERSION must be set"
-    exit 1
-  fi
-
+  rapids-require-env-var "RAPIDS_PY_VERSION"
   pkg_name+="_${RAPIDS_PY_VERSION//./}"
 fi
 
