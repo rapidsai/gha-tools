@@ -35,4 +35,4 @@ fi
 
 ARTIFACTS_URL=${browsable_url/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//https:\/\/downloads.rapids.ai\/}
 
-rapids-echo-stderr "Browse uploads: ${ARTIFACTS_URL}"
+rapids-echo-stderr "Browse uploads (NVIDIA Employee VPN Required): ${ARTIFACTS_URL}"
