@@ -12,7 +12,7 @@ grep -rlP \
   --include="*.txt" \
   --include="*.yaml" \
   "${SEARCH_PATTERN}" . | \
-  xargs rm
+  xargs rm || true
 
 rapids-dependency-file-generator --config "${CONFIG_FILE:-"dependencies.yaml"}"
 
