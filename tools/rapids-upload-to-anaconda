@@ -1,7 +1,7 @@
 #!/bin/bash
 # A utility script that uploads all the conda packages from a
 # GitHub Actions workflow run to Anaconda.org
-set -e
+set -eo pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda"
 
@@ -24,6 +24,7 @@ BUCKET_PREFIX=${S3_PATH/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//} # removes s3://rap
 
 # shellcheck disable=SC2016
 CONDA_ARTIFACTS=$(
+  set -eo pipefail;
   aws \
     --output json \
     s3api list-objects \
