@@ -2,11 +2,13 @@
 #
 # rapids-print-env
 #
-# prints summary of environment
-#
+# Prints summary of environment
 
-rapids-logger "Get env"
+rapids-logger "Print env"
 env | sort
+
+rapids-logger "Print arch"
+arch
 
 rapids-logger "Check python version"
 python --version
