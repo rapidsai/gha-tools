@@ -2,7 +2,7 @@
 # A utility script that generates a pip wheel version
 # Positional Arguments:
 #   1) package name
-set -eo pipefail
+set -exo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-pip-wheel-version"
 
 function distutilsNormalizeVersion {
@@ -18,6 +18,8 @@ if [ -z "$1" ]; then
   exit 1
 fi
 wheel_name="$1"
+
+echo "pwd is $(pwd)"
 
 latest_git_tag="$(git describe --tag --abbrev=0)"
 
