@@ -19,7 +19,7 @@ if [ -z "$1" ]; then
 fi
 wheel_name="$1"
 
-echo "pwd is $(pwd)"
+rapids-echo-stderr "pwd is $(pwd)"
 
 latest_git_tag="$(git describe --tag --abbrev=0)"
 
