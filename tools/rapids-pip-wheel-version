@@ -28,7 +28,7 @@ latest_git_tag="${latest_git_tag:1}"
 
 if [[ "${latest_git_tag}" != *"00a" ]]; then
   # stable case, no further logic
-  echo -n "$(distutilsNormalizeVersion ${latest_git_tag})"
+  echo -n "$(distutilsNormalizeVersion "${latest_git_tag}")"
   exit 0
 fi
 
@@ -38,7 +38,7 @@ fi
 latest_git_tag="${latest_git_tag::-1}"
 
 # normalize with distutils logic
-latest_git_tag="$(distutilsNormalizeVersion ${latest_git_tag})"
+latest_git_tag="$(distutilsNormalizeVersion "${latest_git_tag}")"
 
 # get latest version in internal index
 latest_version="$(curl --silent -L "${TWINE_REPOSITORY_URL}/${wheel_name}/json" -u "${TWINE_USERNAME}:${TWINE_PASSWORD}" | jq '."releases" | keys | sort | .[-1]' || echo 'none' )"

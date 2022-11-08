@@ -26,8 +26,8 @@ if [ "${build_tag}" != "" ]; then
   fi
 
   echo "Need to apply build tag ${build_tag}..."
-  for wheelfile in $(ls ${wheeldir}/*.whl); do
-    wheel_version=$(echo $wheelfile | cut -d'-' -f2)
+  for wheelfile in "${wheeldir}"/*.whl; do
+    wheel_version=$(echo "$wheelfile" | cut -d'-' -f2)
     replacement_wheel_version="${wheel_version}-${build_tag}"
     wheelnewfile="${wheelfile/$wheel_version/$replacement_wheel_version}"
 
@@ -35,4 +35,4 @@ if [ "${build_tag}" != "" ]; then
   done
 fi
 
-twine upload --disable-progress-bar --non-interactive ${wheeldir}/*.whl
+twine upload --disable-progress-bar --non-interactive "${wheeldir}"/*.whl
