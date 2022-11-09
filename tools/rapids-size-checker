@@ -1,8 +1,6 @@
 #!/bin/bash
-set -e
+set -eu
 export RAPIDS_SCRIPT_NAME="rapids-size-checker"
-
-rapids-require-env-var "RAPIDS_GH_TOKEN"
 
 echo "Retrieving base branch from GitHub API:"
 # For PRs, the branch name is like:
