@@ -9,50 +9,20 @@ function distutilsNormalizeVersion {
         echo -n "$(python3 -c "from setuptools.extern import packaging; print(packaging.version.Version('$1'))")"
 }
 
-rapids-require-env-var "TWINE_USERNAME"
-rapids-require-env-var "TWINE_PASSWORD"
-rapids-require-env-var "TWINE_REPOSITORY_URL"
-
-if [ -z "$1" ]; then
-  rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
-  exit 1
-fi
-wheel_name="$1"
-
 rapids-echo-stderr "pwd is $(pwd)"
 
 latest_git_tag="$(git describe --tag --abbrev=0)"
 
-# drop leading 'v'
-latest_git_tag="${latest_git_tag:1}"
+# drop letters ('v', 'a', etc.) from tag
+# v22.12.00a -> 22.12.00
+# v22.12.00 -> 22.12.00
 
-if [[ "${latest_git_tag}" != *"00a" ]]; then
-  # stable case, no further logic
-  echo -n "$(distutilsNormalizeVersion "${latest_git_tag}")"
-  exit 0
-fi
-
-# nightly/CI build case
-
-# drop trailing 'a'
-latest_git_tag="${latest_git_tag::-1}"
+latest_git_tag="${latest_git_tag//[a-z]/}"
 
 # normalize with distutils logic
 latest_git_tag="$(distutilsNormalizeVersion "${latest_git_tag}")"
 
-# get latest version in internal index
-latest_version="$(curl --silent -L "${TWINE_REPOSITORY_URL}/${wheel_name}/json" -u "${TWINE_USERNAME}:${TWINE_PASSWORD}" | jq '."releases" | keys | sort | .[-1]' || echo 'none' )"
-
-# append custom versioning scheme .$n
-
-# latest release matches current, increment
-if [[ "$latest_version" == "$latest_git_tag"* ]]; then
-  prerelease_num="$((${latest_version##*.}+1))"
-else
-  # fresh release
-  prerelease_num="0"
-fi
-
-versioneer_override="$latest_git_tag.$prerelease_num"
+# add epoch timestamp so more recent wheels are installed first
+versioneer_override="$latest_git_tag.$(date +%s)"
 
 echo -n "${versioneer_override}"
