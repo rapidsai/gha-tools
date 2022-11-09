@@ -1,9 +1,15 @@
 #!/bin/bash
 # A utility script that generates a pip wheel version
 # Positional Arguments:
-#   1) package name
+#   1) epoch timestamp
 set -exo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-pip-wheel-version"
+
+if [ -z "$1" ]; then
+  rapids-echo-stderr "Must specify input arguments: EPOCH_TIMESTAMP"
+  exit 1
+fi
+epoch_timestamp="$1"
 
 function distutilsNormalizeVersion {
         echo -n "$(python3 -c "from setuptools.extern import packaging; print(packaging.version.Version('$1'))")"
@@ -23,6 +29,6 @@ latest_git_tag="${latest_git_tag//[a-z]/}"
 latest_git_tag="$(distutilsNormalizeVersion "${latest_git_tag}")"
 
 # add epoch timestamp so more recent wheels are installed first
-versioneer_override="$latest_git_tag.$(date +%s)"
+versioneer_override="$latest_git_tag.$epoch_timestamp"
 
 echo -n "${versioneer_override}"
