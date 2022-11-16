@@ -1,0 +1,34 @@
+#!/bin/bash
+# A utility script that wraps twine to support build tags (PEP427)
+#        
+# Positional Arguments:
+#   1) wheel dir
+set -exou pipefail
+export RAPIDS_SCRIPT_NAME="rapids-twine"
+
+if [ -z "$1" ]; then
+  rapids-echo-stderr "Must specify input arguments: WHEEL_DIR"
+  exit 1
+fi
+wheeldir="$1"
+
+build_tag="${RAPIDS_PY_WHEEL_BUILD_TAG:-""}"
+
+if [ "${build_tag}" != "" ]; then
+  echo "Checking if build tag ${build_tag} is legal..."
+  if [[ "${build_tag}" =~ [^[:digit:]] ]]; then
+    rapids-echo-stderr "Build tag can only be digits"
+    exit 1
+  fi
+
+  echo "Need to apply build tag ${build_tag}..."
+  for wheelfile in "${wheeldir}"/*.whl; do
+    wheel_version=$(echo "$wheelfile" | cut -d'-' -f2)
+    replacement_wheel_version="${wheel_version}-${build_tag}"
+    wheelnewfile="${wheelfile/$wheel_version/$replacement_wheel_version}"
+
+    mv "${wheelfile}" "${wheelnewfile}"
+  done
+fi
+
+twine upload --disable-progress-bar --non-interactive "${wheeldir}"/*.whl
