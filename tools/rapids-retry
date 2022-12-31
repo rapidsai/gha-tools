@@ -39,7 +39,7 @@ function rapids-retry {
           (( retries < max_retries )); do
       ((retries++))
       rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..."
-      sleep ${sleep_interval}
+      sleep "${sleep_interval}"
       rapids-logger "rapids-retry: sleep done -> retrying..."
 
       ${command} "$@"
