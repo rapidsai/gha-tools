@@ -44,13 +44,12 @@ for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
   mkdir -p "${UNTAR_DEST}"
   aws s3 cp --only-show-errors "${S3_URI}" - | tar xzf - -C "${UNTAR_DEST}"
 
-  # don't upload tests packages (e.g. librmm-tests)
-  PKGS_TO_UPLOAD=$(find "${UNTAR_DEST}" -name "*.tar.bz2" ! -name "*-tests-*")
+  PKGS_TO_UPLOAD=$(rapids-find-anaconda-uploads.py "${UNTAR_DEST}")
 
   if [ -z "${PKGS_TO_UPLOAD}" ]; then
-    rapids-echo-stderr "Couldn't find any packages to upload in: ${UNTAR_DEST}."
-    tree "${UNTAR_DEST}/"*
-    exit 1
+    rapids-echo-stderr "Couldn't find any packages to upload in: ${UNTAR_DEST}"
+    ls -l "${UNTAR_DEST}/"*
+    continue
   fi
 
   rapids-echo-stderr "Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
