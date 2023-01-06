@@ -28,7 +28,14 @@ latest_git_tag="${latest_git_tag//[a-z]/}"
 # normalize with distutils logic
 latest_git_tag="$(distutilsNormalizeVersion "${latest_git_tag}")"
 
-# add epoch timestamp so more recent wheels are installed first
-versioneer_override="$latest_git_tag.$epoch_timestamp"
+versioneer_override=""
+
+if rapids-is-release-build; then
+  # for stable release, omit the epoch timestamp
+  versioneer_override="$latest_git_tag"
+else
+  # for nightlies, add epoch timestamp
+  versioneer_override="$latest_git_tag.$epoch_timestamp"
+fi
 
 echo -n "${versioneer_override}"
