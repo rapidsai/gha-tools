@@ -2,12 +2,20 @@
 # A utility script that examines environment variables provided
 # by Jenkins to make some environment changes depending on whether
 # a nightly or stable build is occurring.
-set -e
+set -euo pipefail
 
 # Remove nightly channels if build is a release build
 if rapids-is-release-build; then
   conda config --system --remove channels rapidsai-nightly
   conda config --system --remove channels dask/label/dev
+fi
+
+if [ "${CI:-false}" = "false" ]; then
+  # Configure sccache for read-only mode since no credentials
+  # are available in local builds.
+  export SCCACHE_S3_NO_CREDENTIALS=true
+  export PARALLEL_LEVEL=${PARALLEL_LEVEL:-$(nproc)}
+  export RAPIDS_BUILD_TYPE=${RAPIDS_BUILD_TYPE:-"pull-request"}
 fi
 
 # If nightly or branch build, append current YYMMDD to version
