@@ -17,6 +17,12 @@ case "${pkg_type}" in
     ;;
 esac
 
+if [ "${CI:-false}" = "false" ]; then
+  rapids-echo-stderr "Packages from local builds cannot be uploaded to S3."
+  rapids-echo-stderr "Open a PR to have successful builds uploaded."
+  exit 1
+fi
+
 # Prepend `conda_` to PKG_TYPE
 pkg_type="conda_$pkg_type"
 pkg_name="$(rapids-package-name "$pkg_type")"
