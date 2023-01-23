@@ -27,7 +27,7 @@ if [ "${CI:-false}" = "false" ]; then
   if [ -z "${RAPIDS_BUILD_TYPE:-}" ]; then
     {
       echo ""
-      read -p "Enter workflow type (one of: pull-request|branch|nightly): " RAPIDS_BUILD_TYPE
+      read -r -p "Enter workflow type (one of: pull-request|branch|nightly): " RAPIDS_BUILD_TYPE
       export RAPIDS_BUILD_TYPE
       echo ""
       echo "Suppress this prompt in the future by setting the 'RAPIDS_BUILD_TYPE' environment variable:"
@@ -39,7 +39,7 @@ if [ "${CI:-false}" = "false" ]; then
   if [ -z "${RAPIDS_REPOSITORY:-}" ]; then
     {
       echo ""
-      read -p "Enter org/repository name (e.g. rapidsai/cudf): " RAPIDS_REPOSITORY
+      read -r -p "Enter org/repository name (e.g. rapidsai/cudf): " RAPIDS_REPOSITORY
       export RAPIDS_REPOSITORY
       echo ""
       echo "Suppress this prompt in the future by setting the 'RAPIDS_REPOSITORY' environment variable:"
@@ -51,7 +51,7 @@ if [ "${CI:-false}" = "false" ]; then
   if [ -z "${RAPIDS_REF_NAME:-}" ]; then
     {
       echo ""
-      read -p "Enter pull-request number (e.g. 1546): " PR_NUMBER
+      read -r -p "Enter pull-request number (e.g. 1546): " PR_NUMBER
       RAPIDS_REF_NAME=pull-request/${PR_NUMBER}
       export RAPIDS_REF_NAME
       echo ""
@@ -70,7 +70,7 @@ if [ "${CI:-false}" = "false" ]; then
       else
         echo "There was a problem acquiring the HEAD commit sha from the current directory."
         echo "Suppress this prompt in the future by ensuring the current directory is the '${RAPIDS_REPOSITORY}' git repository."
-        read -p "Enter full commit sha (e.g. f15776cc449b0c8345f044f713c9c06eb13622f3): " RAPIDS_SHA
+        read -r -p "Enter full commit sha (e.g. f15776cc449b0c8345f044f713c9c06eb13622f3): " RAPIDS_SHA
       fi
       echo ""
       export RAPIDS_SHA
