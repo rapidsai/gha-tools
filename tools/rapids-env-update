@@ -11,7 +11,7 @@ if rapids-is-release-build; then
 fi
 
 # If nightly or branch build, append current YYMMDD to version
-if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" ]] && ! rapids-is-release-build; then
+if ! rapids-is-release-build; then
   VERSION_SUFFIX=$(date +%y%m%d)
   export VERSION_SUFFIX
 fi
