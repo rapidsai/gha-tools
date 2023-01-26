@@ -1,3 +1,4 @@
 #!/bin/bash
 
 export RAPIDS_DOWNLOADS_BUCKET="rapids-downloads"
+export RAPIDS_DOWNLOADS_DOMAIN="downloads.rapids.ai"
