@@ -18,8 +18,8 @@ if [ "${CI:-false}" = "false" ]; then
   export RAPIDS_BUILD_TYPE=${RAPIDS_BUILD_TYPE:-"pull-request"}
 fi
 
-# If nightly or branch build, append current YYMMDD to version
+# TODO: Remove this conditional block after 23.02 release
 if ! rapids-is-release-build; then
   VERSION_SUFFIX=$(date +%y%m%d)
-  export VERSION_SUFFIX
+  export VERSION_SUFFIX DATE_STRING=$VERSION_SUFFIX
 fi
