@@ -54,6 +54,7 @@ for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
 
   rapids-echo-stderr "Uploading packages to Anaconda.org: ${PKGS_TO_UPLOAD}"
 
+  export RAPIDS_RETRY_SLEEP=180
   # shellcheck disable=SC2086
   rapids-retry anaconda \
     -t "${RAPIDS_CONDA_TOKEN}" \
