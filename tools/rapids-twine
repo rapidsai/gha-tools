@@ -31,4 +31,4 @@ if [ "${build_tag}" != "" ]; then
   done
 fi
 
-twine upload --disable-progress-bar --non-interactive "${wheeldir}"/*.whl
+twine upload --disable-progress-bar --non-interactive --skip-existing "${wheeldir}"/*.whl
