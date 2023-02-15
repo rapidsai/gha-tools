@@ -15,7 +15,7 @@ if [ ! -d "${RAPIDS_ARTIFACTS_DIR}" ]; then
 fi
 
 # Upload each file found in RAPIDS_ARTIFACTS_DIR
-for art_file in "${RAPIDS_ARTIFACTS_DIR}/* ; do
+for art_file in "${RAPIDS_ARTIFACTS_DIR}"/* ; do
   upload_name=$(basename ${art_file})
   pkg_name=${pkg_prefix}.${upload_name}
   rapids-upload-to-s3 "${pkg_name}" "${art_file}"
