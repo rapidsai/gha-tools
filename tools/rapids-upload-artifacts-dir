@@ -1,0 +1,22 @@
+#!/bin/bash
+# A utility that uploads individual files from $RAPIDS_ARTIFACTS_DIR to S3
+set -euo pipefail
+
+pkg_prefix="$1"
+
+if [ "${CI:-false}" = "false" ]; then
+  rapids-echo-stderr "Artifacts from local builds are not uploaded to S3."
+  exit 0
+fi
+
+if [ ! -d "${RAPIDS_ARTIFACTS_DIR}" ]; then
+  rapids-echo-stderr "Artifacts directory ${RAPIDS_ARTIFACT_DIR} not found."
+  exit 0
+fi
+
+# Upload each file found in RAPIDS_ARTIFACTS_DIR
+for art_file in "${RAPIDS_ARTIFACTS_DIR}/* ; do
+  upload_name=$(basename ${art_file})
+  pkg_name=${pkg_prefix}.${upload_name}
+  rapids-upload-to-s3 "${pkg_name}" "${art_file}"
+done
