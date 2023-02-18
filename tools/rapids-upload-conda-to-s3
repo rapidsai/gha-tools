@@ -20,7 +20,7 @@ esac
 if [ "${CI:-false}" = "false" ]; then
   rapids-echo-stderr "Packages from local builds cannot be uploaded to S3."
   rapids-echo-stderr "Open a PR to have successful builds uploaded."
-  exit 1
+  exit 0
 fi
 
 # Prepend `conda_` to PKG_TYPE
