@@ -1,6 +1,5 @@
 #!/bin/bash
-# A utility script that wraps twine to support build tags (PEP427)
-# and download all pip wheels of a RAPIDS release
+# A utility script that wraps twine to upload all pip wheels of a workflow run
 set -exou pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-twine"
