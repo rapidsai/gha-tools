@@ -1,8 +1,19 @@
 #!/bin/bash
 # A utility script that wraps twine to upload all pip wheels of a workflow run
+# 
+# Positional Arguments:
+#   1) wheel name
 set -exou pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-twine"
+
+if [ -z "$1" ]; then
+  rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
+  exit 1
+fi
+WHEEL_NAME="$1"
+
+WHEEL_SEARCH_KEY="wheel_python_${WHEEL_NAME}"
 
 WHEEL_DIR="./dist"
 mkdir -p "${WHEEL_DIR}"
@@ -19,7 +30,7 @@ WHEEL_TARBALLS=$(
     --bucket "${RAPIDS_DOWNLOADS_BUCKET}" \
     --prefix "${BUCKET_PREFIX}" \
     --page-size 100 \
-    --query 'Contents[?contains(Key, `wheel_python`)].Key' \
+    --query "Contents[?contains(Key, '${WHEEL_SEARCH_KEY}')].Key" \
     | jq -c
 )
 export WHEEL_TARBALLS
