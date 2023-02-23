@@ -28,7 +28,6 @@ export WHEEL_TARBALLS
 # first untar them all
 for OBJ in $(jq -nr 'env.WHEEL_TARBALLS | fromjson | .[]'); do
   FILENAME=$(basename "${OBJ}")
-  FILENAME_NO_EXT="${FILENAME%%.*}"
   S3_URI="${S3_PATH}${FILENAME}"
 
   rapids-echo-stderr "Untarring ${S3_URI} into ${WHEEL_DIR}"
