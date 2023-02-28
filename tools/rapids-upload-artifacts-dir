@@ -1,6 +1,7 @@
 #!/bin/bash
 # A utility that uploads individual files from $RAPIDS_ARTIFACTS_DIR to S3
 set -euo pipefail
+source rapids-constants
 
 pkg_prefix="$1"
 
@@ -14,10 +15,19 @@ if [ ! -d "${RAPIDS_ARTIFACTS_DIR}" ]; then
   exit 0
 fi
 
-# Upload each file found in RAPIDS_ARTIFACTS_DIR
-for art_file in "${RAPIDS_ARTIFACTS_DIR}"/* ; do
-  [ -e "$art_file" ] || continue
-  upload_name=$(basename "${art_file}")
-  pkg_name="${pkg_prefix}.${upload_name}"
-  rapids-upload-to-s3 "${pkg_name}" "${art_file}"
-done
+if [ "$(ls -A "$RAPIDS_ARTIFACTS_DIR")" ]; then
+  echo "Uploading additional artifacts"
+  echo ""
+  for art_file in "${RAPIDS_ARTIFACTS_DIR}"/* ; do
+    [ -e "$art_file" ] || continue
+    upload_name=$(basename "${art_file}")
+    pkg_name="${pkg_prefix}.${upload_name}"
+    rapids-upload-to-s3 "${pkg_name}" "${art_file}"
+  done
+else
+  echo "No additional artifacts found."
+fi
+
+echo ""
+ARTIFACTS_URL=$(rapids-s3-path | sed "s|s3://${RAPIDS_DOWNLOADS_BUCKET}|https://${RAPIDS_DOWNLOADS_DOMAIN}|")
+echo "Browse all uploads (NVIDIA Employee VPN Required): ${ARTIFACTS_URL}"
