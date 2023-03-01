@@ -108,6 +108,7 @@ function runConda {
         elif [[ $exitcode -eq 139 ]]; then
             retryingMsg="Retrying, command resulted in a segfault. This may be an intermittent failure..."
             needToRetry=1
+            needToClean=1
         else
             rapids-echo-stderr "Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
 'ChecksumMismatchError:', \
