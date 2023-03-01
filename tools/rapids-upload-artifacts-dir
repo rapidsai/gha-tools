@@ -11,7 +11,7 @@ if [ "${CI:-false}" = "false" ]; then
 fi
 
 if [ ! -d "${RAPIDS_ARTIFACTS_DIR}" ]; then
-  rapids-echo-stderr "Artifacts directory ${RAPIDS_ARTIFACT_DIR} not found."
+  rapids-echo-stderr "Artifacts directory ${RAPIDS_ARTIFACTS_DIR} not found."
   exit 0
 fi
 
