@@ -82,13 +82,13 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
   done
 
   # shellcheck disable=SC2086
-  docker manifest create "${key}" ${manifest_args}
+  docker manifest create --insecure "${key}" ${manifest_args}
   #docker manifest push "${key}"
 
   # if this image matches the latest, give it the additional latest tag
   if [ "${key}" == "${latest_tag}" ]; then
     # shellcheck disable=SC2086
-    docker manifest create "${latest_tag_alias}" ${manifest_args}
+    docker manifest create --insecure "${latest_tag_alias}" ${manifest_args}
     #docker manifest push "${latest_tag_alias}"
   fi
 done
