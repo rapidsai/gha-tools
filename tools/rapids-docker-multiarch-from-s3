@@ -54,16 +54,20 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
   loaded_image="${loaded_image/"Loaded image: "/}"
 
-  # strip architecture hyphen
-  loaded_image="${loaded_image/"-x86_64"/}"
-  loaded_image="${loaded_image/"-aarch64"/}"
+  # strip -$(uname -m)
+  loaded_image_no_arch="${loaded_image/"-x86_64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-aarch64"/}"
 
   # no-arch tag is the final multiarch tag
-  multiarch_tag="${loaded_image}"
+  multiarch_tag="${loaded_image_no_arch}"
 
-  MULTIARCH_IMAGES[${multiarch_tag}]+="${loaded_image}"
+  # store per-arch image in the associative array by multiarch tag
+  MULTIARCH_IMAGES["${multiarch_tag}"]+=" ${loaded_image}"
 done
 
-echo "${MULTIARCH_IMAGES}"
+for key in "${!MULTIARCH_IMAGES[@]}"; do
+  values="${MULTIARCH_IMAGES[$key]}"
+  rapids-echo-stderr "Preparing multiarch manifest for: ${key} with per-arch images: ${values}"
+done
 
 echo "Now checking ${latest_tag} ${latest_tag_alias}"
