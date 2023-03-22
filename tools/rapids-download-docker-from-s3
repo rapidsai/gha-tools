@@ -15,8 +15,8 @@ fi
 
 docker_image="$1"
 
-# replace "rapidsai/..." with "rapidsai_..." to use as file name
-docker_image_no_slash="$(echo ${docker_image} | sed 's#/#_#g')"
+# replace "/..." with "_..." to use as file name
+docker_image_no_slash="${docker_image//\//_}"
 docker_image_s3_name="docker_${docker_image_no_slash}.tar.gz"
 tmp_fname="${tmp_dir}/${docker_image_no_slash}.tar.gz"
 
