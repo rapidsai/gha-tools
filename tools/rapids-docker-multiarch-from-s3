@@ -1,0 +1,55 @@
+#!/bin/bash
+# A utility script that downloads all docker images from S3
+# and assembles them into multiarch tags
+set -eo pipefail
+source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-docker-multiarch-from-s3"
+
+DOCKER_TMP_DIR="$(mktemp -d)"
+
+DOCKER_STARTS_WITH="docker_"
+DOCKER_ENDS_WITH=".tar.gz"
+
+S3_PATH=$(rapids-s3-path)
+BUCKET_PREFIX=${S3_PATH/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//} # removes s3://rapids-downloads/ from s3://rapids-downloads/ci/rmm/...
+
+# shellcheck disable=SC2016
+DOCKER_TARBALLS=$(
+  set -eo pipefail;
+  aws \
+    --output json \
+    s3api list-objects \
+    --bucket "${RAPIDS_DOWNLOADS_BUCKET}" \
+    --prefix "${BUCKET_PREFIX}" \
+    --page-size 100 \
+    --query "Contents[?starts_with(Key, '${DOCKER_STARTS_WITH}') && ends_with(Key, '${DOCKER_ENDS_WITH}')].Key" \
+    | jq -c
+)
+export DOCKER_TARBALLS
+
+# create an associative array (i.e. dict) of multiarch image to per-arch image
+declare -A MULTIARCH_IMAGES
+
+# download and load them all
+for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
+  FILENAME=$(basename "${OBJ}")
+  S3_URI="${S3_PATH}${FILENAME}"
+
+  rapids-echo-stderr "Downloading ${S3_URI} into ${DOCKER_TMP_DIR}"
+  aws s3 cp --only-show-errors "${S3_URI}" "${DOCKER_TMP_DIR}"/
+
+  rapids-echo-stderr "Loading into docker"
+  loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
+  loaded_image="${loaded_image/"Loaded image: "/}"
+
+  # strip architecture hyphen
+  loaded_image_no_arch="${loaded_image_no_arch/"-x86_64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-aarch64"/}"
+
+  # no-arch tag is the final multiarch tag
+  multiarch_tag="${loaded_image_no_arch}"
+
+  MULTIARCH_IMAGES[${multiarch_tag}]+="${loaded_image}"
+done
+
+echo "${MULTIARCH_IMAGES}"
