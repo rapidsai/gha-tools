@@ -54,9 +54,11 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
   loaded_image="${loaded_image/"Loaded image: "/}"
 
-  # strip -$(uname -m)
+  # strip -$(uname -m) or amd64 or arm64
   loaded_image_no_arch="${loaded_image/"-x86_64"/}"
   loaded_image_no_arch="${loaded_image_no_arch/"-aarch64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-amd64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-arm64"/}"
 
   # no-arch tag is the final multiarch tag
   multiarch_tag="${loaded_image_no_arch}"
