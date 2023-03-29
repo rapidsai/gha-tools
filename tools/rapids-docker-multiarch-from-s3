@@ -43,7 +43,7 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   S3_URI="${S3_PATH}${FILENAME}"
 
   rapids-echo-stderr "Downloading ${S3_URI} into ${DOCKER_TMP_DIR}"
-  aws s3 cp --only-show-errors "${S3_URI}" "${DOCKER_TMP_DIR}"/
+  aws s3 cp --only-show-errors "${S3_URI}" "${DOCKER_TMP_DIR}"/ 1>&2
 
   rapids-echo-stderr "Loading into docker"
   loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
@@ -72,19 +72,19 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
   for value in ${values}; do
     # use the local registry set up by the `service` block in GHA
     local_name="localhost:5000/${value}"
-    docker tag "${value}" "${local_name}"
-    docker push "${local_name}"
+    docker tag "${value}" "${local_name}" 1>&2
+    docker push "${local_name}" 1>&2
     manifest_args+="--amend ${local_name} "
   done
 
   # shellcheck disable=SC2086
-  docker manifest create --insecure "${key}" ${manifest_args}
+  docker manifest create --insecure "${key}" ${manifest_args} 1>&2
   manifests_to_push+=("${key}")
 
   # if latest tags have been supplied this image matches the latest, give it the additional latest tag
   if [ -n "${latest_tag}" ] && [ -n "${latest_tag_alias}" ] && [ "${key}" == "${latest_tag}" ]; then
     # shellcheck disable=SC2086
-    docker manifest create --insecure "${latest_tag_alias}" ${manifest_args}
+    docker manifest create --insecure "${latest_tag_alias}" ${manifest_args} 1>&2
     manifests_to_push+=("${latest_tag_alias}")
   fi
 done
