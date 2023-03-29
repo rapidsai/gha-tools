@@ -1,7 +1,7 @@
 #!/bin/bash
 # A utility script that downloads all docker images from S3
 # and assembles them into multiarch tags
-# Positional Arguments:
+# Optional Positional Arguments:
 #   1) latest tag to match
 #   2) latest tag alias to apply if tag matches latest tag 
 set -eo pipefail
@@ -9,13 +9,8 @@ set -x
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-docker-multiarch-from-s3"
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-  rapids-echo-stderr "Must specify input arguments: LATEST_TAG and LATEST_TAG_ALIAS"
-  exit 1
-fi
-
-latest_tag="$1"
-latest_tag_alias="$2"
+latest_tag="$1:-"
+latest_tag_alias="$2:-"
 
 DOCKER_TMP_DIR="$(mktemp -d)"
 
@@ -67,6 +62,8 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   MULTIARCH_IMAGES["${multiarch_tag}"]+=" ${loaded_image}"
 done
 
+manifests_to_push=()
+
 for key in "${!MULTIARCH_IMAGES[@]}"; do
   values="${MULTIARCH_IMAGES[$key]}"
   rapids-echo-stderr "Preparing multiarch manifest for: ${key} with per-arch images: ${values}"
@@ -82,12 +79,14 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
 
   # shellcheck disable=SC2086
   docker manifest create --insecure "${key}" ${manifest_args}
-  #docker manifest push "${key}"
+  manifests_to_push+=("${key}")
 
-  # if this image matches the latest, give it the additional latest tag
-  if [ "${key}" == "${latest_tag}" ]; then
+  # if latest tags have been supplied this image matches the latest, give it the additional latest tag
+  if [ -n "${latest_tag}" ] && [ -n "${latest_tag_alias}" ] && [ "${key}" == "${latest_tag}" ]; then
     # shellcheck disable=SC2086
     docker manifest create --insecure "${latest_tag_alias}" ${manifest_args}
-    #docker manifest push "${latest_tag_alias}"
+    manifests_to_push+=("${latest_tag_alias}")
   fi
 done
+
+echo -n "${manifests_to_push[@]}"
