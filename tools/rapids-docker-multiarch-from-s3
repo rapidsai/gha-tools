@@ -82,7 +82,7 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
   # shellcheck disable=SC2086
   docker manifest create --insecure "${local_manifest}" ${manifest_args} 1>&2
   docker manifest push "${local_manifest}"
-  manifests_to_copy+=("${local_manifest}")
+  manifests_to_copy+=("${key}")
 
   # if latest tags have been supplied this image matches the latest, give it the additional latest tag
   if [ -n "${latest_tag}" ] && [ -n "${latest_tag_alias}" ] && [ "${key}" == "${latest_tag}" ]; then
@@ -91,7 +91,7 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
     # shellcheck disable=SC2086
     docker manifest create --insecure "${local_latest}" ${manifest_args} 1>&2
     docker manifest push "${local_latest}"
-    manifests_to_copy+=("${local_latest}")
+    manifests_to_copy+=("${latest_tag_alias}")
   fi
 done
 
