@@ -62,7 +62,7 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   MULTIARCH_IMAGES["${multiarch_tag}"]+=" ${loaded_image}"
 done
 
-manifests_to_push=()
+manifests_to_copy=()
 
 for key in "${!MULTIARCH_IMAGES[@]}"; do
   values="${MULTIARCH_IMAGES[$key]}"
@@ -77,16 +77,22 @@ for key in "${!MULTIARCH_IMAGES[@]}"; do
     manifest_args+="--amend ${local_name} "
   done
 
+  local_manifest="localhost:5000/${key}"
+
   # shellcheck disable=SC2086
-  docker manifest create --insecure "${key}" ${manifest_args} 1>&2
-  manifests_to_push+=("${key}")
+  docker manifest create --insecure "${local_manifest}" ${manifest_args} 1>&2
+  docker manifest push "${local_manifest}"
+  manifests_to_copy+=("${local_manifest}")
 
   # if latest tags have been supplied this image matches the latest, give it the additional latest tag
   if [ -n "${latest_tag}" ] && [ -n "${latest_tag_alias}" ] && [ "${key}" == "${latest_tag}" ]; then
+    local_latest="localhost:5000/${latest_tag_alias}"
+
     # shellcheck disable=SC2086
-    docker manifest create --insecure "${latest_tag_alias}" ${manifest_args} 1>&2
-    manifests_to_push+=("${latest_tag_alias}")
+    docker manifest create --insecure "${local_latest}" ${manifest_args} 1>&2
+    docker manifest push "${local_latest}"
+    manifests_to_copy+=("${local_latest}")
   fi
 done
 
-echo -n "${manifests_to_push[@]}"
+echo -n "${manifests_to_copy[@]}"
