@@ -49,6 +49,9 @@ for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
   loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
   loaded_image="${loaded_image/"Loaded image: "/}"
 
+  # delete the tarball to save space
+  rm "${DOCKER_TMP_DIR}/${FILENAME}" 1>&2
+
   # strip -$(uname -m) or amd64 or arm64
   loaded_image_no_arch="${loaded_image/"-x86_64"/}"
   loaded_image_no_arch="${loaded_image_no_arch/"-aarch64"/}"
