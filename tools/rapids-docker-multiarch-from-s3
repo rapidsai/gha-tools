@@ -1,0 +1,101 @@
+#!/bin/bash
+# A utility script that downloads all docker images from S3
+# and assembles them into multiarch tags
+# Optional Positional Arguments:
+#   1) latest tag to match
+#   2) latest tag alias to apply if tag matches latest tag 
+set -eo pipefail
+set -x
+source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-docker-multiarch-from-s3"
+
+latest_tag="$1:-"
+latest_tag_alias="$2:-"
+
+DOCKER_TMP_DIR="$(mktemp -d)"
+
+DOCKER_STARTS_WITH="docker_"
+DOCKER_ENDS_WITH=".tar.gz"
+
+S3_PATH=$(rapids-s3-path)
+BUCKET_PREFIX=${S3_PATH/s3:\/\/${RAPIDS_DOWNLOADS_BUCKET}\//} # removes s3://rapids-downloads/ from s3://rapids-downloads/ci/rmm/...
+
+# shellcheck disable=SC2016
+DOCKER_TARBALLS=$(
+  set -eo pipefail;
+  aws \
+    --output json \
+    s3api list-objects \
+    --bucket "${RAPIDS_DOWNLOADS_BUCKET}" \
+    --prefix "${BUCKET_PREFIX}" \
+    --page-size 100 \
+    --query "Contents[?contains(Key, '${DOCKER_STARTS_WITH}') && ends_with(Key, '${DOCKER_ENDS_WITH}')].Key" \
+    | jq -c
+)
+export DOCKER_TARBALLS
+
+# create an associative array (i.e. dict) of multiarch image to per-arch image
+declare -A MULTIARCH_IMAGES
+
+# download and load them all
+for OBJ in $(jq -nr 'env.DOCKER_TARBALLS | fromjson | .[]'); do
+  FILENAME=$(basename "${OBJ}")
+  S3_URI="${S3_PATH}${FILENAME}"
+
+  rapids-echo-stderr "Downloading ${S3_URI} into ${DOCKER_TMP_DIR}"
+  aws s3 cp --only-show-errors "${S3_URI}" "${DOCKER_TMP_DIR}"/ 1>&2
+
+  rapids-echo-stderr "Loading into docker"
+  loaded_image=$(docker load < "${DOCKER_TMP_DIR}/${FILENAME}")
+  loaded_image="${loaded_image/"Loaded image: "/}"
+
+  # delete the tarball to save space
+  rm "${DOCKER_TMP_DIR}/${FILENAME}" 1>&2
+
+  # strip -$(uname -m) or amd64 or arm64
+  loaded_image_no_arch="${loaded_image/"-x86_64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-aarch64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-amd64"/}"
+  loaded_image_no_arch="${loaded_image_no_arch/"-arm64"/}"
+
+  # no-arch tag is the final multiarch tag
+  multiarch_tag="${loaded_image_no_arch}"
+
+  # store per-arch image in the associative array by multiarch tag
+  MULTIARCH_IMAGES["${multiarch_tag}"]+=" ${loaded_image}"
+done
+
+manifests_to_copy=()
+
+for key in "${!MULTIARCH_IMAGES[@]}"; do
+  values="${MULTIARCH_IMAGES[$key]}"
+  rapids-echo-stderr "Preparing multiarch manifest for: ${key} with per-arch images: ${values}"
+
+  manifest_args=""
+  for value in ${values}; do
+    # use the local registry set up by the `service` block in GHA
+    local_name="localhost:5000/${value}"
+    docker tag "${value}" "${local_name}" 1>&2
+    docker push "${local_name}" 1>&2
+    manifest_args+="--amend ${local_name} "
+  done
+
+  local_manifest="localhost:5000/${key}"
+
+  # shellcheck disable=SC2086
+  docker manifest create --insecure "${local_manifest}" ${manifest_args} 1>&2
+  docker manifest push "${local_manifest}" 1>&2
+  manifests_to_copy+=("${key}")
+
+  # if latest tags have been supplied this image matches the latest, give it the additional latest tag
+  if [ -n "${latest_tag}" ] && [ -n "${latest_tag_alias}" ] && [ "${key}" == "${latest_tag}" ]; then
+    local_latest="localhost:5000/${latest_tag_alias}"
+
+    # shellcheck disable=SC2086
+    docker manifest create --insecure "${local_latest}" ${manifest_args} 1>&2
+    docker manifest push "${local_latest}" 1>&2
+    manifests_to_copy+=("${latest_tag_alias}")
+  fi
+done
+
+echo -n "${manifests_to_copy[@]}"
