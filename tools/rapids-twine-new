@@ -5,7 +5,7 @@
 #   1) wheel name
 set -exou pipefail
 source rapids-constants
-export RAPIDS_SCRIPT_NAME="rapids-twine"
+export RAPIDS_SCRIPT_NAME="rapids-twine-new"
 
 if [ -z "$1" ]; then
   rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
