@@ -1,7 +1,8 @@
 #!/bin/bash
 # A utility script that generates CUDA suffix and wheel name for wheel-related workflows
 # Positional Arguments:
-#   1) wheel path to tar up
+#   1) ctk-tag
+#   2) package name
 set -eu -o pipefail
 
 if [ -z "$1" ] || [ -z "$2" ]; then
@@ -10,7 +11,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 ctk_tag="$1"
-ctk_major=$(echo $ctk_tag | cut -d'.' -f1)
+ctk_major=$(echo "$ctk_tag" | cut -d'.' -f1)
 cuda_suffix="-cu${ctk_major}"
 wheelname="$2_cu${ctk_major}"
 
