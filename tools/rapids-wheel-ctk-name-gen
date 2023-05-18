@@ -1,0 +1,18 @@
+#!/bin/bash
+# A utility script that generates CUDA suffix and wheel name for wheel-related workflows
+# Positional Arguments:
+#   1) wheel path to tar up
+set -eu -o pipefail
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+  rapids-echo-stderr "Must specify both input arguments: CTK_TAG and PACKAGE_NAME"
+  exit 1
+fi
+
+ctk_tag="$1"
+ctk_major=$(echo $ctk_tag | cut -d'.' -f1)
+cuda_suffix="-cu${ctk_major}"
+wheelname="$2_cu${ctk_major}"
+
+echo "RAPIDS_PY_WHEEL_CUDA_SUFFIX=${cuda_suffix}" | tee --append "${GITHUB_ENV}" "${GITHUB_OUTPUT}"
+echo "RAPIDS_PY_WHEEL_NAME=${wheelname}" | tee --append "${GITHUB_ENV}" "${GITHUB_OUTPUT}"
