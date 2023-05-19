@@ -1,0 +1,69 @@
+#!/bin/bash
+set -euo pipefail
+
+checks() {
+  if [[ ! -d "${RAPIDS_DOCS_DIR}" ]]; then
+    echo "ERROR: RAPIDS_DOCS_DIR must be a directory."
+    exit 1
+  fi
+
+  if [[ "${GITHUB_ACTIONS:-false}" != "true" ]]; then
+    echo "Uploading docs from local builds is not supported."
+    exit 0
+  fi
+
+  # TODO: remove this block once pull-request previews are supported
+  if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
+    echo "Uploading docs for pull-requests is not yet supported."
+    exit 0
+  fi
+}
+
+
+get_s3_dest() {
+  local PROJECT=$1
+  local FORMAT=$2
+
+  case "${RAPIDS_BUILD_TYPE}" in
+    # TODO: double check this path once pull-request previews are supported
+    pull-request)
+      echo -n "$(rapids-s3-path)docs/${PROJECT}/${FORMAT}"
+      return
+      ;;
+    branch|nightly)
+      echo -n "s3://rapidsai-docs/${PROJECT}/${RAPIDS_VERSION_NUMBER}/${FORMAT}"
+      return
+      ;;
+    *)
+      rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
+      exit 1
+      ;;
+  esac
+}
+
+copy_docs_to_s3() {
+  local PROJECT_DIR PROJECT PROJECT_FORMAT_DIR FORMAT
+  for PROJECT_DIR in "${RAPIDS_DOCS_DIR}"/*; do
+    PROJECT=$(basename "${PROJECT_DIR}")
+    for PROJECT_FORMAT_DIR in "${PROJECT_DIR}"/*; do
+      FORMAT=$(basename "${PROJECT_FORMAT_DIR}")
+
+      if [[ ! "${FORMAT}" =~ ^(html|txt)$ ]]; then
+        echo "ERROR: FORMAT must be either 'html' or 'txt'."
+        exit 1
+      fi
+
+      rapids-logger "Uploading ${RAPIDS_VERSION_NUMBER} ${PROJECT} ${FORMAT} docs to S3."
+
+      aws s3 sync \
+        --no-progress \
+        --delete \
+        "${PROJECT_FORMAT_DIR}" \
+        "$(get_s3_dest "${PROJECT}" "${FORMAT}")"
+      echo ""
+    done
+  done
+}
+
+checks
+copy_docs_to_s3
