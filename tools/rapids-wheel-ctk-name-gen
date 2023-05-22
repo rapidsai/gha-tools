@@ -1,5 +1,6 @@
 #!/bin/bash
-# A utility script that generates CUDA suffix
+# A utility script that generates CUDA suffix in the format "cu${VER}" where `$VER`
+# is the CUDA version major. (For example, "cu11")
 # Positional Arguments:
 #   1) ctk-tag
 set -eu -o pipefail
