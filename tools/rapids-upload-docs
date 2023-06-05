@@ -1,4 +1,20 @@
 #!/bin/bash
+# This script uploads RAPIDS docs to S3.
+# The docs are expected to be in the following directory structure:
+# $RAPIDS_DOCS_DIR
+# ├── cudf
+# │   ├── html
+# │   │   └── <html files>
+# │   └── txt
+# │       └── <txt files>
+# └── dask-cudf
+#     ├── html
+#     │   └── <html files>
+#     └── txt
+#         └── <txt files>
+# Required Environment Variables:
+#  - RAPIDS_DOCS_DIR - a path to a directory containing the docs to upload
+#  - RAPIDS_VERSION_NUMBER - the version number of the docs being uploaded
 set -euo pipefail
 
 checks() {
