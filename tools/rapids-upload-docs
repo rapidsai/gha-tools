@@ -9,6 +9,9 @@ checks() {
 
   if [[ "${GITHUB_ACTIONS:-false}" != "true" ]]; then
     echo "Uploading docs from local builds is not supported."
+    echo "The docs are in ${RAPIDS_DOCS_DIR}."
+    echo "They can be viewed in a web browser by running:"
+    echo "python -m http.server --directory ${RAPIDS_DOCS_DIR}"
     exit 0
   fi
 
