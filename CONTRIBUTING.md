@@ -4,24 +4,24 @@
 
 Before opening a pull-request, it is recommended to test all changes locally.
 
-The command below is a quick way to set up a test environment for the `gha-tools` repository:
+The command below is a quick way to set up a disposable test environment for the `gha-tools` repository:
 
 ```sh
 docker run \
   --pull=always \
   --rm -it \
   --gpus all \
-  -v /home/user/.aws:/root/.aws:ro \
+  -v $HOME/.aws:/root/.aws:ro \
   -v /home/user/gha-tools/tools:/root/.local/bin:ro \
-  -v $PWD:/cugraph \
-  -w /cugraph \
+  -v $PWD:/work \
+  -w /work \
   rapidsai/ci:latest
 ```
 
 This command makes the following assumptions:
 
 - The `gha-tools` repository is checked out to `/home/user/gha-tools`
-- The current working directory is a RAPIDS repository that has artifacts on [downloads.rapids.ai](https://downloads.rapids.ai) (NVIDIA VPN connectivity is required to access this site). `cugraph` is used in this example
+- The current working directory is a RAPIDS repository that has artifacts on [downloads.rapids.ai](https://downloads.rapids.ai) (NVIDIA VPN connectivity is required to access this site), like `cugraph`.
   - This is important for testing how changes to artifact download scripts will affect local invocations (see note below)
 - The AWS credentials in `/home/user/.aws` have access to the `rapids-downloads` bucket
   - This is important for testing how changes to artifact download scripts will affect CI (see note below)
@@ -59,7 +59,7 @@ rapids-download-conda-from-s3 python
 rapids-get-artifact ci/cugraph/branch/branch-23.08/3f66966/cugraph_conda_python_cuda11_310_aarch64.tar.gz
 ```
 
-Since the current working directory is `cugraph`, the `cugraph` CI scripts can also be run directly to test the changes:
+Since the current working directory is a standard RAPIDS repository, the CI scripts can also be run directly to test the changes:
 
 ```sh
 ./ci/test_python.sh
