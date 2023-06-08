@@ -10,9 +10,10 @@ The command below is a quick way to set up a disposable test environment for the
 docker run \
   --pull=always \
   --rm -it \
+  --network=host \
   --gpus all \
   -v $HOME/.aws:/root/.aws:ro \
-  -v /home/user/gha-tools/tools:/root/.local/bin:ro \
+  -v $HOME/gha-tools/tools:/root/.local/bin:ro \
   -v $PWD:/work \
   -w /work \
   rapidsai/ci:latest
@@ -20,10 +21,10 @@ docker run \
 
 This command makes the following assumptions:
 
-- The `gha-tools` repository is checked out to `/home/user/gha-tools`
+- The `gha-tools` repository is checked out to `$HOME/gha-tools`
 - The current working directory is a RAPIDS repository that has artifacts on [downloads.rapids.ai](https://downloads.rapids.ai) (NVIDIA VPN connectivity is required to access this site), like `cugraph`.
   - This is important for testing how changes to artifact download scripts will affect local invocations (see note below)
-- The AWS credentials in `/home/user/.aws` have access to the `rapids-downloads` bucket
+- The AWS credentials in `$HOME/.aws` have access to the `rapids-downloads` bucket
   - This is important for testing how changes to artifact download scripts will affect CI (see note below)
 
 > **Note:** CI interacts with S3 directly, whereas local `gha-tools` script invocations get artifacts through [downloads.rapids.ai](https://downloads.rapids.ai).
