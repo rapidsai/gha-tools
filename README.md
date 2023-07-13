@@ -51,3 +51,7 @@ Some enhancements have been made to the S3 tools for interacting with [downloads
 * Added support for misc one-off file or directory uploads by calling `rapids-upload-to-s3` directly
 * Print the human-browsable `https://downloads.rapids.ai/...` URL in the logs for convenience
 * `rapids-package-name` takes a package type and generates the name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
+
+### Testing Scripts Locally
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to test these scripts locally.
