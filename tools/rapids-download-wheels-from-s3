@@ -35,8 +35,12 @@ if [ "${CI:-false}" = "false" ]; then
   if [ -z "${RAPIDS_REF_NAME:-}" ]; then
     {
       echo ""
-      read -r -p "Enter pull-request number (e.g. 1546): " PR_NUMBER
-      RAPIDS_REF_NAME=pull-request/${PR_NUMBER}
+      if [ "${RAPIDS_BUILD_TYPE}" = "pull-request" ]; then
+        read -r -p "Enter pull-request number (e.g. 1546): " PR_NUMBER
+        RAPIDS_REF_NAME=pull-request/${PR_NUMBER}
+      else
+        read -r -p "Enter branch name (e.g. branch-23.08): " RAPIDS_REF_NAME
+      fi
       export RAPIDS_REF_NAME
       echo ""
       echo "Suppress this prompt in the future by setting the 'RAPIDS_REF_NAME' environment variable:"
@@ -58,6 +62,18 @@ if [ "${CI:-false}" = "false" ]; then
       fi
       echo ""
       export RAPIDS_SHA
+    } >&2
+  fi
+
+  if [ "${RAPIDS_BUILD_TYPE}" = "nightly" ] && [ -z "${RAPIDS_NIGHTLY_DATE:-}" ]; then
+    {
+      echo ""
+      read -r -p "Enter nightly date (e.g. 2023-06-20): " RAPIDS_NIGHTLY_DATE
+      export RAPIDS_NIGHTLY_DATE
+      echo ""
+      echo "Suppress this prompt in the future by setting the 'RAPIDS_NIGHTLY_DATE' environment variable:"
+      echo "export RAPIDS_NIGHTLY_DATE=${RAPIDS_NIGHTLY_DATE}"
+      echo ""
     } >&2
   fi
 fi
