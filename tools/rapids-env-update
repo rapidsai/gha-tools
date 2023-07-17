@@ -10,7 +10,7 @@ if rapids-is-release-build; then
   conda config --system --remove channels dask/label/dev
 fi
 
-rapids-configure-sccache
+source rapids-configure-sccache
 
 RAPIDS_DATE_STRING="$(date +%y%m%d)"
 if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then

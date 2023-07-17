@@ -19,7 +19,7 @@ case "${pkg_type}" in
     ;;
 esac
 
-rapids-prompt-local-repo-config
+source rapids-prompt-local-repo-config
 
 # Prepare empty dir to extract tarball to
 channel="/tmp/${pkg_type}_channel"

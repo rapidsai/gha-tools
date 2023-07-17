@@ -4,7 +4,7 @@
 #   1) dest dir to download and extract wheels to
 set -eo pipefail
 
-rapids-prompt-local-repo-config
+source rapids-prompt-local-repo-config
 
 pkg_name="$(rapids-package-name wheel_python)"
 
