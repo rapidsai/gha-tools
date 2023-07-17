@@ -7,9 +7,8 @@ set -e
 if [ "${CI:-false}" = "false" ]; then
   rapids-echo-stderr "Packages from local builds cannot be uploaded to S3."
   rapids-echo-stderr "Open a PR to have successful builds uploaded."
-  exit 0
+else
+  pkg_name="$(rapids-package-name wheel_python)"
+
+  rapids-upload-to-s3 "${pkg_name}" "$@"
 fi
-
-pkg_name="$(rapids-package-name wheel_python)"
-
-rapids-upload-to-s3 "${pkg_name}" "$@"
