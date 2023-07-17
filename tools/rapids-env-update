@@ -10,13 +10,7 @@ if rapids-is-release-build; then
   conda config --system --remove channels dask/label/dev
 fi
 
-if [ "${CI:-false}" = "false" ]; then
-  # Configure sccache for read-only mode since no credentials
-  # are available in local builds.
-  export SCCACHE_S3_NO_CREDENTIALS=true
-  export PARALLEL_LEVEL=${PARALLEL_LEVEL:-$(nproc)}
-  export RAPIDS_BUILD_TYPE=${RAPIDS_BUILD_TYPE:-"pull-request"}
-fi
+rapids-configure-sccache
 
 RAPIDS_DATE_STRING="$(date +%y%m%d)"
 if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
