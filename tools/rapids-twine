@@ -47,7 +47,7 @@ done
 # then run twine on all wheels
 export RAPIDS_RETRY_SLEEP=180
 # shellcheck disable=SC2086
-rapids-retry twine \
+rapids-retry python -m twine \
   upload \
   --disable-progress-bar \
   --non-interactive \
