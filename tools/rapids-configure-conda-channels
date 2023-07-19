@@ -1,0 +1,8 @@
+#!/bin/bash
+# A utility script that configures conda channels
+
+# Remove nightly channels if build is a release build
+if rapids-is-release-build; then
+  conda config --system --remove channels rapidsai-nightly
+  conda config --system --remove channels dask/label/dev
+fi

@@ -1,0 +1,17 @@
+#!/bin/bash
+# A utility script that configures sccache environment variables
+
+  export CMAKE_CUDA_COMPILER_LAUNCHER=sccache
+  export CMAKE_CXX_COMPILER_LAUNCHER=sccache
+  export CMAKE_C_COMPILER_LAUNCHER=sccache
+  export SCCACHE_BUCKET=rapids-sccache-east
+  export SCCACHE_REGION=us-east-2
+  export SCCACHE_IDLE_TIMEOUT=32768
+  export SCCACHE_S3_USE_SSL=true
+  export SCCACHE_S3_NO_CREDENTIALS=false
+if [ "${CI:-false}" = "false" ]; then
+  # Configure sccache for read-only mode since no credentials
+  # are available in local builds.
+  export SCCACHE_S3_NO_CREDENTIALS=true
+  export PARALLEL_LEVEL=${PARALLEL_LEVEL:-$(nproc)}
+fi

@@ -4,6 +4,8 @@
 #   1) dest dir to download and extract wheels to
 set -eo pipefail
 
+source rapids-prompt-local-repo-config
+
 pkg_name="$(rapids-package-name wheel_python)"
 
 rapids-download-from-s3 "${pkg_name}" "$@"
