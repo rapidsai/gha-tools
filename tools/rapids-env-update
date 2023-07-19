@@ -4,17 +4,8 @@
 # a nightly or stable build is occurring.
 set -euo pipefail
 
-# Remove nightly channels if build is a release build
-if rapids-is-release-build; then
-  conda config --system --remove channels rapidsai-nightly
-  conda config --system --remove channels dask/label/dev
-fi
+rapids-configure-conda-channels
 
 source rapids-configure-sccache
 
-RAPIDS_DATE_STRING="$(date +%y%m%d)"
-if [ "${GITHUB_ACTIONS:-false}" = "true" ]; then
-  WORKFLOW_DATE=$(rapids-retry gh run view "${GITHUB_RUN_ID}" --json createdAt | jq -r '.createdAt')
-  RAPIDS_DATE_STRING=$(date -d "${WORKFLOW_DATE}" +%y%m%d)
-fi
-export RAPIDS_DATE_STRING
+source rapids-date-string
