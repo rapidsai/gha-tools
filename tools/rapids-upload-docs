@@ -94,6 +94,7 @@ copy_docs_to_s3() {
         get_s3_dest "${PROJECT}" "${FORMAT}" |
         sed "s|s3://${RAPIDS_DOWNLOADS_BUCKET}|https://${RAPIDS_DOWNLOADS_DOMAIN}|"
       )"
+      echo "Note: NVIDIA VPN access is required to view this URL."
       echo "- ${HTTP_URL}/" | tee --append "${GITHUB_STEP_SUMMARY}"
       echo ""
     done
