@@ -16,6 +16,7 @@
 #  - RAPIDS_DOCS_DIR - a path to a directory containing the docs to upload
 #  - RAPIDS_VERSION_NUMBER - the version number of the docs being uploaded
 set -euo pipefail
+source rapids-constants
 
 checks() {
   if [[ ! -d "${RAPIDS_DOCS_DIR}" ]]; then
@@ -30,12 +31,6 @@ checks() {
     echo "python -m http.server --directory ${RAPIDS_DOCS_DIR}"
     exit 0
   fi
-
-  # TODO: remove this block once pull-request previews are supported
-  if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
-    echo "Uploading docs for pull-requests is not yet supported."
-    exit 0
-  fi
 }
 
 
@@ -44,7 +39,6 @@ get_s3_dest() {
   local FORMAT=$2
 
   case "${RAPIDS_BUILD_TYPE}" in
-    # TODO: double check this path once pull-request previews are supported
     pull-request)
       echo -n "$(rapids-s3-path)docs/${PROJECT}/${FORMAT}"
       return
@@ -79,6 +73,18 @@ copy_docs_to_s3() {
         --delete \
         "${PROJECT_FORMAT_DIR}" \
         "$(get_s3_dest "${PROJECT}" "${FORMAT}")"
+      echo ""
+
+      if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" ]]; then
+        continue
+      fi
+
+      rapids-logger "${PROJECT} ${FORMAT} preview URL:"
+      HTTP_URL="$(
+        get_s3_dest "${PROJECT}" "${FORMAT}" |
+        sed "s|s3://${RAPIDS_DOWNLOADS_BUCKET}|https://${RAPIDS_DOWNLOADS_DOMAIN}|"
+      )"
+      echo "- ${HTTP_URL}/" | tee --append "${GITHUB_STEP_SUMMARY}"
       echo ""
     done
   done
