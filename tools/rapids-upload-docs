@@ -59,7 +59,7 @@ copy_docs_to_s3() {
 
   if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
     {
-      echo '# Documentation Preview URLs:'
+      echo '# Documentation Preview:'
       echo ''
       echo '**Note:** NVIDIA VPN access is required to view these URLs.'
       echo ''
