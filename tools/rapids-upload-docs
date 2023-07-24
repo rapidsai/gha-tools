@@ -56,6 +56,16 @@ get_s3_dest() {
 
 copy_docs_to_s3() {
   local PROJECT_DIR PROJECT PROJECT_FORMAT_DIR FORMAT
+
+  if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
+    {
+      echo '# Documentation Preview:'
+      echo ''
+      echo '**Note:** NVIDIA VPN access is required to view these URLs.'
+      echo ''
+    } > "${GITHUB_STEP_SUMMARY}"
+  fi
+
   for PROJECT_DIR in "${RAPIDS_DOCS_DIR}"/*; do
     PROJECT=$(basename "${PROJECT_DIR}")
     for PROJECT_FORMAT_DIR in "${PROJECT_DIR}"/*; do
@@ -84,6 +94,7 @@ copy_docs_to_s3() {
         get_s3_dest "${PROJECT}" "${FORMAT}" |
         sed "s|s3://${RAPIDS_DOWNLOADS_BUCKET}|https://${RAPIDS_DOWNLOADS_DOMAIN}|"
       )"
+      echo "Note: NVIDIA VPN access is required to view this URL."
       echo "- ${HTTP_URL}/" | tee --append "${GITHUB_STEP_SUMMARY}"
       echo ""
     done
