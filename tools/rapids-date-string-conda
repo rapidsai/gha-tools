@@ -1,0 +1,5 @@
+#!/bin/bash
+# A utility script produces a date string
+set -euo pipefail
+
+source _rapids-date-string day
