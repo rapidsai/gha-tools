@@ -8,4 +8,4 @@ rapids-configure-conda-channels
 
 source rapids-configure-sccache
 
-source rapids-date-string
+source rapids-date-string day
