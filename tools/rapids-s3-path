@@ -1,4 +1,8 @@
 #!/bin/bash
+# rapids-s3-path
+#
+# Calls _rapids-path and prepends the s3://rapids-downloads/ string
+#
 # A utility script that examines environment variables provided
 # by GitHub Actions to print out an S3 path where the expected artifact
 # should be.
@@ -13,45 +17,11 @@
 
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
-set -euo pipefail
-source rapids-constants
+source _rapids-path
 export RAPIDS_SCRIPT_NAME="rapids-s3-path"
 
-repo_name="${RAPIDS_REPOSITORY##*/}"
+RAPIDS_DOWNLOADS_BUCKET="${RAPIDS_DOWNLOADS_BUCKET:-rapids-downloads}"
 
-s3_directory_id=""
-s3_prefix=""
-
-case "${RAPIDS_BUILD_TYPE}" in
-  pull-request)
-    # For PRs, we are using the 'trusted jobs on untrusted forks' paradigm
-    # by copying PRs to branches named pull-request/$prnum
-    # more info:
-    #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
-    #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/
-    s3_directory_id="${RAPIDS_REF_NAME##*/}"
-    s3_prefix="ci"
-    ;;
-  branch)
-    s3_directory_id="${RAPIDS_REF_NAME}"
-    s3_prefix="ci"
-    ;;
-  nightly)
-    s3_directory_id="${RAPIDS_NIGHTLY_DATE}"
-    s3_prefix="nightly"
-    ;;
-  *)
-    rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
-    exit 1
-    ;;
-esac
-
-short_hash=${RAPIDS_SHA:0:7}
-
-s3_path="s3://${RAPIDS_DOWNLOADS_BUCKET}/${s3_prefix}/${repo_name}/"
-if [[ "${RAPIDS_BUILD_TYPE}" != "nightly" ]]; then
-  s3_path+="${RAPIDS_BUILD_TYPE}/"
-fi
-s3_path+="${s3_directory_id}/${short_hash}/"
+s3_path="s3://${RAPIDS_DOWNLOADS_BUCKET}/${uri_path}"
 
 echo -n "${s3_path}"

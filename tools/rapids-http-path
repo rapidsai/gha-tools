@@ -1,0 +1,28 @@
+#!/bin/bash
+# rapids-http-path
+#
+# Calls _rapids-path and prepends the https://downloads.rapids.ai/ string
+#
+# A utility script that examines environment variables provided
+# by GitHub Actions to print out a HTTP path where the expected artifact
+# should be.
+#
+# The output format should be one of the following:
+#
+## For PR builds:
+## https://downloads.rapids.ai/ci/<REPO_NAME>/pull-request/<PR_NUMBER>/<SHORT_HASH>/
+
+## For branch builds:
+## https://downloads.rapids.ai/ci/<REPO_NAME>/branch/<BRANCH_NAME>/<SHORT_HASH>/
+
+## For nightly builds:
+## https://downloads.rapids.ai/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
+
+source _rapids-path
+export RAPIDS_SCRIPT_NAME="rapids-http-path"
+
+RAPIDS_DOWNLOADS_DOMAIN="${RAPIDS_DOWNLOADS_DOMAIN:-downloads.rapids.ai}"
+
+http_path="https://${RAPIDS_DOWNLOADS_DOMAIN}/${uri_path}"
+
+echo -n "${http_path}"
