@@ -2,8 +2,6 @@ name: prs
 
 on:
   pull_request:
-    paths:
-      - "tools/*"
 
 defaults:
   run:
