@@ -9,6 +9,7 @@ set -euo pipefail
 source rapids-constants
 
 s3_dl_path="s3://${RAPIDS_DOWNLOADS_BUCKET}/${1}"
+http_dl_path="https://${RAPIDS_DOWNLOADS_DOMAIN}/${1}"
 untar_dest=$(mktemp -d)
 
-_rapids-download-from-s3 "$s3_dl_path" "$untar_dest"
+_rapids-download-from-s3 "$s3_dl_path" "$http_dl_path" "$untar_dest"

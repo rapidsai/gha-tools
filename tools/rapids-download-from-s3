@@ -13,6 +13,7 @@ if [ -z "$1" ] || [ -z "$2" ]; then
 fi
 
 s3_dl_path="$(rapids-s3-path)$1"
+http_dl_path="$(rapids-http-path)$1"
 untar_dest="$2"
 
-_rapids-download-from-s3 "$s3_dl_path" "$untar_dest"
+_rapids-download-from-s3 "$s3_dl_path" "$http_dl_path" "$untar_dest"
