@@ -16,7 +16,7 @@ docker run \
   -v $HOME/gha-tools/tools:/root/.local/bin:ro \
   -v $PWD:/work \
   -w /work \
-  rapidsai/ci:latest
+  rapidsai/ci-conda:latest
 ```
 
 This command makes the following assumptions:
