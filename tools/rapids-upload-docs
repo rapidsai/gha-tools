@@ -44,7 +44,7 @@ get_s3_dest() {
       return
       ;;
     branch|nightly)
-      echo -n "s3://rapidsai-docs/${PROJECT}/${RAPIDS_VERSION_NUMBER}/${FORMAT}"
+      echo -n "s3://rapidsai-docs/${PROJECT}/${FORMAT}/${RAPIDS_VERSION_NUMBER}"
       return
       ;;
     *)
