@@ -24,11 +24,6 @@ checks() {
     exit 1
   fi
 
-  if [[ "${RAPIDS_BUILD_TYPE}" != "pull-request" ]]; then
-    echo "DOCS UPLOADS FOR BRANCH/NIGHTLIES HAVE BEEN TEMPORARILY HALTED"
-    exit 0
-  fi
-
   if [[ "${GITHUB_ACTIONS:-false}" != "true" ]]; then
     echo "Uploading docs from local builds is not supported."
     echo "The docs are in ${RAPIDS_DOCS_DIR}."
