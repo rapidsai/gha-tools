@@ -71,16 +71,29 @@ copy_docs_to_s3() {
     for PROJECT_FORMAT_DIR in "${PROJECT_DIR}"/*; do
       FORMAT=$(basename "${PROJECT_FORMAT_DIR}")
 
-      if [[ ! "${FORMAT}" =~ ^(html|txt)$ ]]; then
-        echo "ERROR: FORMAT must be either 'html' or 'txt'."
+      if [[ ! "${FORMAT}" =~ ^(html|txt|xml_tar)$ ]]; then
+        echo "ERROR: FORMAT must be either 'html' or 'txt' or 'xml_tar'."
         exit 1
+      fi
+
+      if [[ "${FORMAT}" == "xml_tar" ]]; then
+        NUM_FILES=$(find "$PROJECT_FORMAT_DIR" -type f | wc -l)
+        if [[ ! -f "${PROJECT_FORMAT_DIR}/xml.tar.gz" || $NUM_FILES -ne 1 ]]; then
+            echo "Error: The xml_tar directory should contain a single file named xml.tar.gz."
+            exit 1
+        fi
       fi
 
       rapids-logger "Uploading ${RAPIDS_VERSION_NUMBER} ${PROJECT} ${FORMAT} docs to S3."
 
+      ACL_OPTION="private"
+      if [[ "$FORMAT" == "xml_tar" ]]; then
+          ACL_OPTION="public-read"
+      fi
       aws s3 sync \
         --no-progress \
         --delete \
+        --acl "${ACL_OPTION}" \
         "${PROJECT_FORMAT_DIR}" \
         "$(get_s3_dest "${PROJECT}" "${FORMAT}")"
       echo ""
