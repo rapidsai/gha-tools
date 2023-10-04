@@ -6,7 +6,7 @@
 set -exo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
-if [ -z "$1" | -z "$2" ]; then
+if [ -z "$1" ] | [ -z "$2" ]; then
   rapids-echo-stderr "Must specify input arguments package name and directory"
   exit 1
 fi
