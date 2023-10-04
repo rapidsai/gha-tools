@@ -1,6 +1,6 @@
 #!/bin/bash
 # A utility script that generates a package version
-set -exo pipefail
+set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
 dunamai_format="{base}"
