@@ -1,0 +1,15 @@
+#!/bin/bash
+# A utility script that generates a package version
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-generate-version"
+
+dunamai_format="{base}"
+if ! rapids-is-release-build; then
+    # Nightlies include the distance from the last tag as the alpha version.
+    dunamai_format="{base}{stage}{distance}"
+fi
+
+# Now change the version.
+dunamai_version=$(python -m dunamai from git --format \"${dunamai_format}\")
+
+echo -n "${dunamai_version}"
