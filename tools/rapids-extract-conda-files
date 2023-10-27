@@ -1,0 +1,27 @@
+#!/bin/bash
+# A utility script that extracts all conda packages
+# after being downloaded by rapids-download-conda-from-s3
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-extract-conda-files"
+
+pkg_type="$1"
+case "${pkg_type}" in
+  cpp)
+    ;&
+  python)
+    ;;
+  *)
+    rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
+    exit 1
+    ;;
+esac
+
+# dir that the extracted tarball are in
+channel="/tmp/${pkg_type}_channel"
+
+# empty dir to extract files to
+extract="/tmp/${pkg_type}_binaries"
+
+mkdir -p "${extract}"
+cd "${extract}"
+find "${channel}" -name "*tar.bz2" -type f -print0 | xargs -0 -n 1 tar -v -xf
