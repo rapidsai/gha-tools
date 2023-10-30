@@ -10,6 +10,6 @@ if ! rapids-is-release-build; then
 fi
 
 # Now change the version.
-dunamai_version=$(python -m dunamai from git --format \"${dunamai_format}\")
+dunamai_version=$(python -m dunamai from git --format ${dunamai_format})
 
 echo -n "${dunamai_version}"
