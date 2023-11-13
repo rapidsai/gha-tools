@@ -16,6 +16,7 @@ repo="$1"
 pr="$2"
 
 if [[ $# -eq 4 ]]
+then
     commit="$4"
 else
     commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
