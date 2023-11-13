@@ -9,28 +9,28 @@
 #
 # Example Usage:
 #   rapids-get-pr-conda-artifact rmm 1095 cpp
-
 set -euo pipefail
 
 repo="$1"
 pr="$2"
 
-if [[ $# -eq 4 ]]
-then
-    commit="$4"
-else
-    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
-fi
-
-rapids_cuda_major="${RAPIDS_CUDA_VERSION%%.*}"
-python_majorminor=$(python --version | sed -E 's/Python ([0-9]+)\.([0-9]+)\.[0-9]+/\1\2/g')
-
-if [[ $3 == "cpp" ]]
-then
-    rapids-get-artifact ci/"${repo}"/pull-request/"${pr}"/"${commit}"/"${repo}"_conda_cpp_cuda"${rapids_cuda_major}"_"$(arch)".tar.gz
-elif [[ $3 == "python" ]]
-    rapids-get-artifact ci/"${repo}"/pull-request/"${pr}"/"${commit}"/"${repo}"_conda_python_cuda"${rapids_cuda_major}"_"${python_majorminor}"_"$(arch)".tar.gz
-else
+pkg_type="$3"
+case "${pkg_type}" in
+  cpp)
+    artifact_name=$(RAPIDS_REPOSITORY=$repo rapids-package-name conda_cpp)
+    ;;
+  python)
+    artifact_name=$(RAPIDS_REPOSITORY=$repo rapids-package-name conda_python)
+    ;;
+  *)
     echo "Error: 3rd argument must be 'cpp' or 'python'"
     exit 1
+    ;;
+esac
+
+commit="${4:-}"
+if [[ -z "${commit}" ]]; then
+    commit=$(gh api "/repos/rapidsai/${repo}/pulls/${pr}" -q '.head.sha[:7]')
 fi
+
+rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
