@@ -30,7 +30,7 @@ esac
 
 commit="${4:-}"
 if [[ -z "${commit}" ]]; then
-    commit=$(gh api "/repos/rapidsai/${repo}/pulls/${pr}" -q '.head.sha[:7]')
+    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
 fi
 
 rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
