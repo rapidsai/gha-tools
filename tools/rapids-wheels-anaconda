@@ -50,7 +50,6 @@ export RAPIDS_RETRY_SLEEP=180
 rapids-retry anaconda \
     -t "${RAPIDS_CONDA_TOKEN}" \
     upload \
-    --skip-existing \
     --no-progress \
     "${WHEEL_DIR}"/*.whl
 echo ""
