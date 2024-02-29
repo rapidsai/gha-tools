@@ -20,4 +20,4 @@ function rapids-logger {
   echo -e "\033[32m└${bar}┘\033[0m\n"
 }
 
-rapids-logger "$@" >&2
+rapids-logger "$@"
