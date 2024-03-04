@@ -57,7 +57,7 @@ fi
 
 # for python package types (except pure wheels), add pyver
 if (( append_pyver == 1 )); then
-  pkg_name+="_${RAPIDS_PY_VERSION//./}"
+  pkg_name+="_py${RAPIDS_PY_VERSION//./}"
 fi
 
 # for cpp and python package types (except pure wheels), append the arch
