@@ -31,11 +31,11 @@ case "${pkg_type}" in
     ;;
   wheel_python)
     append_wheelname=1
-    append_pyver=1
-    append_arch=1
-    ;;
-  wheel_python_pure)
-    append_wheelname=1
+    # Pure wheels do not need a pyver or arch
+    if [[ ! -v RAPIDS_PY_WHEEL_PURE ]] || [[ "${RAPIDS_PY_WHEEL_PURE}" != "1" ]]; then
+      append_pyver=1
+      append_arch=1
+    fi
     ;;
   *)
     rapids-echo-stderr "Nonstandard package type '${pkg_type}'"
