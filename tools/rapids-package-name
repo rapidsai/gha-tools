@@ -15,20 +15,27 @@ fi
 pkg_type="$1"
 
 append_cuda=0
-append_pyver=0
 append_wheelname=0
+append_pyver=0
+append_arch=0
 
 case "${pkg_type}" in
   conda_cpp)
     append_cuda=1
+    append_arch=1
     ;;
   conda_python)
     append_cuda=1
     append_pyver=1
+    append_arch=1
     ;;
   wheel_python)
-    append_pyver=1
     append_wheelname=1
+    # Pure wheels do not need a pyver or arch
+    if [[ ! -v RAPIDS_PY_WHEEL_PURE ]] || [[ "${RAPIDS_PY_WHEEL_PURE}" != "1" ]]; then
+      append_pyver=1
+      append_arch=1
+    fi
     ;;
   *)
     rapids-echo-stderr "Nonstandard package type '${pkg_type}'"
@@ -48,21 +55,23 @@ if (( append_wheelname )) && [[ -v RAPIDS_PY_WHEEL_NAME ]] && [[ "${RAPIDS_PY_WH
   pkg_name+="_${RAPIDS_PY_WHEEL_NAME}"
 fi
 
-# for python package types, add pyver
+# for python package types (except pure wheels), add pyver
 if (( append_pyver == 1 )); then
-  pkg_name+="_${RAPIDS_PY_VERSION//./}"
+  pkg_name+="_py${RAPIDS_PY_VERSION//./}"
 fi
 
-# for cpp and python package types, always append arch
-if [[ -v RAPIDS_ARCH ]] && [[ "${RAPIDS_ARCH}" != "" ]]; then
-  # use arch override if specified
-  pkg_name+="_${RAPIDS_ARCH}"
-else
-  # otherwise use architecture of the host that's running the upload command
-  pkg_name+="_$(arch)"
+# for cpp and python package types (except pure wheels), append the arch
+if (( append_arch == 1)); then
+  if [[ -v RAPIDS_ARCH ]] && [[ "${RAPIDS_ARCH}" != "" ]]; then
+    # use arch override if specified
+    pkg_name+="_${RAPIDS_ARCH}"
+  else
+    # otherwise use architecture of the host that's running the upload command
+    pkg_name+="_$(arch)"
+  fi
 fi
 
-# for cpp and python package types, its a tarball, append .tar.gz and prepend project name
+# for cpp and python package types, it's a tarball, append .tar.gz and prepend project name
 pkg_name="${repo_name}_${pkg_name}.tar.gz"
 
 echo -n "${pkg_name}"
