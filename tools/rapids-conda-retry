@@ -77,27 +77,30 @@ function runConda {
         # Show exit code
         rapids-echo-stderr "conda returned exit code: ${exitcode}"
 
-        if grep -q CondaHTTPError: "${outfile}"; then
-            retryingMsg="Retrying, found 'CondaHTTPError:' in output..."
-            needToRetry=1
-        elif grep -q ChecksumMismatchError: "${outfile}"; then
+        if grep -q ChecksumMismatchError: "${outfile}"; then
             retryingMsg="Retrying, found 'ChecksumMismatchError:' in output..."
-            needToRetry=1
-        elif grep -q JSONDecodeError: "${outfile}"; then
-            retryingMsg="Retrying, found 'JSONDecodeError:' in output..."
             needToRetry=1
         elif grep -q ChunkedEncodingError: "${outfile}"; then
             retryingMsg="Retrying, found 'ChunkedEncodingError:' in output..."
+            needToRetry=1
+        elif grep -q CondaHTTPError: "${outfile}"; then
+            retryingMsg="Retrying, found 'CondaHTTPError:' in output..."
             needToRetry=1
         elif grep -q CondaMultiError: "${outfile}"; then
             retryingMsg="Retrying after cleaning tarball cache, found 'CondaMultiError:' in output..."
             needToRetry=1
             needToClean=1
-        elif grep -q EOFError: "${outfile}"; then
-            retryingMsg="Retrying, found 'EOFError:' in output..."
+        elif grep -q "Connection broken:" "${outfile}"; then
+            retryingMsg="Retrying, found 'Connection broken:' in output..."
             needToRetry=1
         elif grep -q ConnectionError: "${outfile}"; then
             retryingMsg="Retrying, found 'ConnectionError:' in output..."
+            needToRetry=1
+        elif grep -q EOFError: "${outfile}"; then
+            retryingMsg="Retrying, found 'EOFError:' in output..."
+            needToRetry=1
+        elif grep -q JSONDecodeError: "${outfile}"; then
+            retryingMsg="Retrying, found 'JSONDecodeError:' in output..."
             needToRetry=1
         elif grep -q "Multi-download failed" "${outfile}"; then
             retryingMsg="Retrying, found 'Multi-download failed' in output..."
@@ -115,6 +118,7 @@ function runConda {
 'ChunkedEncodingError:', \
 'CondaHTTPError:', \
 'CondaMultiError:', \
+'Connection broken:', \
 'ConnectionError:', \
 'EOFError:', \
 'JSONDecodeError:', \
