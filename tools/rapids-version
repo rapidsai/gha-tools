@@ -1,0 +1,15 @@
+#!/bin/bash
+# Prints the full RAPIDS version based on the VERSION file. Its output is meant to be stored in a variable.
+# Assumed to be run from the repository root.
+# Note that this strips off anything after the patch version (Python dev suffixes, etc.)
+# See also: rapids-version-major-minor
+#
+# $ rapids-version
+# 24.00.00
+set -euo pipefail
+
+readonly regex="^([0-9]{2})\.([0-9]{2})\.([0-9]{2}).*$"
+
+[[ -f VERSION ]]
+grep -E -q "$regex" VERSION
+sed -E -e "s/$regex/\1.\2.\3/" VERSION
