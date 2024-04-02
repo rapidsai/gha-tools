@@ -29,6 +29,11 @@ case "${pkg_type}" in
     append_pyver=1
     append_arch=1
     ;;
+  wheel_cpp)
+    append_wheelname=1
+    append_cuda=1
+    append_arch=1
+    ;;
   wheel_python)
     append_wheelname=1
     # Pure wheels do not need a pyver or arch
