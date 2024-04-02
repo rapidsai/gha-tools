@@ -17,6 +17,7 @@ pkg_type="$1"
 append_cuda=0
 append_wheelname=0
 append_pyver=0
+append_generic_pyver=0
 append_arch=0
 
 case "${pkg_type}" in
@@ -33,6 +34,7 @@ case "${pkg_type}" in
     append_wheelname=1
     append_cuda=1
     append_arch=1
+    append_generic_pyver=1
     ;;
   wheel_python)
     append_wheelname=1
@@ -63,6 +65,11 @@ fi
 # for python package types (except pure wheels), add pyver
 if (( append_pyver == 1 )); then
   pkg_name+="_py${RAPIDS_PY_VERSION//./}"
+fi
+
+# for wheels that bundle shared libraries, add generic pyver
+if (( append_generic_pyver == 1 )); then
+  pkg_name+="_py3"
 fi
 
 # for cpp and python package types (except pure wheels), append the arch
