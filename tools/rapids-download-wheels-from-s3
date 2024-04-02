@@ -15,6 +15,6 @@ fi
 # remove pkg_type from args because we handle it in this script
 shift;
 
-pkg_name="$(rapids-package-name wheel_${pkg_type})"
+pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
 
 rapids-download-from-s3 "${pkg_name}" "$@"

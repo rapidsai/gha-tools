@@ -19,6 +19,6 @@ if [ "${CI:-false}" = "false" ]; then
   exit 0
 fi
 
-pkg_name="$(rapids-package-name wheel_${pkg_type})"
+pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
 
 rapids-upload-to-s3 "${pkg_name}" "$@"
