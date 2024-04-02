@@ -6,6 +6,15 @@ set -eo pipefail
 
 source rapids-prompt-local-repo-config
 
-pkg_name="$(rapids-package-name wheel_python)"
+pkg_type="$1"
+if [ "${pkg_type}" != "cpp" ] && [ "${pkg_type}" != "python" ]; then
+    rapids-echo-error "Wheel cpp packages are now supported."
+    rapids-echo-error "You must specify package type as the first argument to rapids-upload-wheels-to-s3"
+fi
+
+# remove pkg_type from args because we handle it in this script
+shift;
+
+pkg_name="$(rapids-package-name wheel_${pkg_type})"
 
 rapids-download-from-s3 "${pkg_name}" "$@"
