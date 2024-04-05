@@ -5,4 +5,7 @@
 if rapids-is-release-build; then
   conda config --system --remove channels rapidsai-nightly
   conda config --system --remove channels dask/label/dev
+else
+  # exclude stable channel from all non-release builds.
+  conda config --system --remove channels rapidsai
 fi
