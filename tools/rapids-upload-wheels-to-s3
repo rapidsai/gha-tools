@@ -4,12 +4,20 @@
 #   1) wheel path to tar up
 set -e
 
+# For legacy reasons, allow this script to be run without the pkg_type being the first arg
+pkg_name="$(rapids-package-name "wheel_python")"
+
+pkg_type="$1"
+if [ "${pkg_type}" = "cpp" ] || [ "${pkg_type}" = "python" ]; then
+    # remove pkg_type from args because we handle it in this script
+    shift;
+    pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
+fi
+
 if [ "${CI:-false}" = "false" ]; then
   rapids-echo-stderr "Packages from local builds cannot be uploaded to S3."
   rapids-echo-stderr "Open a PR to have successful builds uploaded."
   exit 0
 fi
-
-pkg_name="$(rapids-package-name wheel_python)"
 
 rapids-upload-to-s3 "${pkg_name}" "$@"
