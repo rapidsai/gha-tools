@@ -31,7 +31,6 @@ case "${pkg_type}" in
     ;;
   wheel_cpp)
     append_wheelname=1
-    append_cuda=1
     append_arch=1
     ;;
   wheel_python)
