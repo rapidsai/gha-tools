@@ -8,7 +8,7 @@ conda_channel_in_config() {
 }
 
 # Only try to run 'conda config --remove' if the channel exists in the config.
-# This is here to avoid errors if this script is invoked multiple times in the same
+# This is here to avoid errors if this script is invoked multiple times in the same environment.
 remove_conda_channel() {
   channel_id=${1:?err}
   in_config=$(conda_channel_in_config "${channel_id}")
