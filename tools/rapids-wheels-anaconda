@@ -3,7 +3,7 @@
 
 # Positional Arguments:
 #   1) wheel name
-#   2) package type (one of: 'cpp', 'python')
+#   2) package type (one of: 'cpp', 'python'). If not provided, defaults to 'python' for compatibility with older code where python was the only behavior.
 #
 # [usage]
 #
