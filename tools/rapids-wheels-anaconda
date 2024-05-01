@@ -3,8 +3,15 @@
 
 # Positional Arguments:
 #   1) wheel name
+#   2) package type (one of: 'cpp', 'python'). If not provided, defaults to 'python' for compatibility with older code where python was the only behavior.
+#
+# [usage]
+#
+#   # upload any wheels found in CI artifacts with names like '*wheel_python_sparkly-unicorn*.tar.gz'
+#   rapids-wheels-anaconda 'sparkly-unicorn' 'python'
+#
 
-set -exou pipefail
+set -eou pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-wheels-anaconda"
 
@@ -13,8 +20,20 @@ if [ -z "$1" ]; then
   exit 1
 fi
 WHEEL_NAME="$1"
+PKG_TYPE="${2:-python}"
 
-WHEEL_SEARCH_KEY="wheel_python_${WHEEL_NAME}"
+case "${PKG_TYPE}" in
+  cpp)
+    ;;
+  python)
+    ;;
+  *)
+    rapids-echo-stderr 'Pass one of the following package types: "cpp", "python"'
+    exit 1
+    ;;
+esac
+
+WHEEL_SEARCH_KEY="wheel_${PKG_TYPE}_${WHEEL_NAME}"
 
 WHEEL_DIR="./dist"
 mkdir -p "${WHEEL_DIR}"
