@@ -22,6 +22,17 @@ fi
 WHEEL_NAME="$1"
 PKG_TYPE="${2:-python}"
 
+case "${PKG_TYPE}" in
+  cpp)
+    ;;
+  python)
+    ;;
+  *)
+    rapids-echo-stderr 'Pass one of the following package types: "cpp", "python"'
+    exit 1
+    ;;
+esac
+
 WHEEL_SEARCH_KEY="wheel_${PKG_TYPE}_${WHEEL_NAME}"
 
 WHEEL_DIR="./dist"
