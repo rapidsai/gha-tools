@@ -11,7 +11,7 @@
 #   rapids-wheels-anaconda 'sparkly-unicorn' 'python'
 #
 
-set -exou pipefail
+set -eou pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-wheels-anaconda"
 
