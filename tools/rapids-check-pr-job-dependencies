@@ -32,8 +32,8 @@ if yq -en 'env(MISSING_JOBS) | length != 0' >/dev/null 2>&1; then
   yq -n 'env(MISSING_JOBS) | map("  - " + .) | join("\n")'
 
   echo ""
-  echo "Update '${WORKFLOW_FILE}' to include all other jobs for '${PR_BUILDER_JOB_NAME}'".
-  echo "Alternatively, you may ignore certain jobs by passing them as an argument to this script."
+  echo "Update '${WORKFLOW_FILE}' to include these missing jobs for '${PR_BUILDER_JOB_NAME}'".
+  echo "Alternatively, you may ignore these jobs by passing them as an argument to this script."
   exit 1
 fi
 
