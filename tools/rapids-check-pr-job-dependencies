@@ -8,7 +8,7 @@
 #
 # An optional argument can be passed to ignore certain jobs from the check.
 # The argument should be a space-separated list of job names, e.g.:
-#  check-pr-builder-depends.sh "job1 job2 job3"
+#  rapids-check-pr-job-dependencies "job1 job2 job3"
 set -euo pipefail
 
 export WORKFLOW_FILE=${WORKFLOW_FILE:-".github/workflows/pr.yaml"}
@@ -21,7 +21,7 @@ export WORKFLOW_JOBS
 PR_BUILDER_JOB_NEEDS=$(yq '(.jobs.[env(PR_BUILDER_JOB_NAME)].needs)' "${WORKFLOW_FILE}")
 export PR_BUILDER_JOB_NEEDS
 
-IGNORED_JOBS=$(yq -n 'strenv(IGNORED_JOBS) | split(" ")')
+IGNORED_JOBS=$(yq -n 'strenv(IGNORED_JOBS) | trim | split(" ")')
 export IGNORED_JOBS
 
 MISSING_JOBS=$(yq -n '((env(WORKFLOW_JOBS) - env(PR_BUILDER_JOB_NEEDS)) - env(IGNORED_JOBS))')
