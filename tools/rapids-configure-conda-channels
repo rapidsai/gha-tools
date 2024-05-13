@@ -13,7 +13,6 @@ conda_channel_in_config() {
 # This is here to avoid errors if this script is invoked multiple times in the same environment.
 remove_conda_channel() {
   channel_id=${1:?err}
-  in_config=$(conda_channel_in_config "${channel_id}")
   if conda_channel_in_config "${channel_id}" > /dev/null; then
     conda config --system --remove channels "${channel_id}"
   else
