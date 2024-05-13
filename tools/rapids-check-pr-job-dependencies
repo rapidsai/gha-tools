@@ -5,21 +5,35 @@
 # This is necessary since the RAPIDS branch protections are configured to require
 # the "pr-builder" job to pass for all PRs. It's implied that that job depends
 # on all other jobs in the workflow.
+#
+# An optional argument can be passed to ignore certain jobs from the check.
+# The argument should be a space-separated list of job names, e.g.:
+#  rapids-check-pr-job-dependencies "job1 job2 job3"
 set -euo pipefail
 
 export WORKFLOW_FILE=${WORKFLOW_FILE:-".github/workflows/pr.yaml"}
 export PR_BUILDER_JOB_NAME=${PR_BUILDER_JOB_NAME:-"pr-builder"}
+export IGNORED_JOBS=${1:-""}
 
-WORKFLOW_JOBS=$(yq '((.jobs | keys | sort) - [env(PR_BUILDER_JOB_NAME)]) | join(" ")' "${WORKFLOW_FILE}")
+WORKFLOW_JOBS=$(yq '((.jobs | keys) - [strenv(PR_BUILDER_JOB_NAME)])' "${WORKFLOW_FILE}")
+export WORKFLOW_JOBS
 
-PR_BUILDER_JOB_NEEDS=$(yq '(.jobs.[env(PR_BUILDER_JOB_NAME)].needs | sort) | join(" ")' "${WORKFLOW_FILE}")
+PR_BUILDER_JOB_NEEDS=$(yq '(.jobs.[env(PR_BUILDER_JOB_NAME)].needs)' "${WORKFLOW_FILE}")
+export PR_BUILDER_JOB_NEEDS
 
-if [ "${WORKFLOW_JOBS}" != "${PR_BUILDER_JOB_NEEDS}" ]; then
-  echo "'${PR_BUILDER_JOB_NAME}' is missing a dependency."
-  echo "Update '${WORKFLOW_FILE}' to include all other jobs for '${PR_BUILDER_JOB_NAME}'"
+IGNORED_JOBS=$(yq -n 'strenv(IGNORED_JOBS) | trim | split(" ")')
+export IGNORED_JOBS
+
+MISSING_JOBS=$(yq -n '((env(WORKFLOW_JOBS) - env(PR_BUILDER_JOB_NEEDS)) - env(IGNORED_JOBS))')
+export MISSING_JOBS
+
+if yq -en 'env(MISSING_JOBS) | length != 0' >/dev/null 2>&1; then
+  echo "'${PR_BUILDER_JOB_NAME}' job is missing the following dependent jobs:"
+  yq -n 'env(MISSING_JOBS) | map("  - " + .) | join("\n")'
+
   echo ""
-  echo "Workflow jobs: ${WORKFLOW_JOBS}"
-  echo "'${PR_BUILDER_JOB_NAME}' job dependencies: ${PR_BUILDER_JOB_NEEDS}"
+  echo "Update '${WORKFLOW_FILE}' to include these missing jobs for '${PR_BUILDER_JOB_NAME}'".
+  echo "Alternatively, you may ignore these jobs by passing them as an argument to this script."
   exit 1
 fi
 
