@@ -24,7 +24,4 @@ remove_conda_channel() {
 if rapids-is-release-build; then
   remove_conda_channel 'rapidsai-nightly'
   remove_conda_channel 'dask/label/dev'
-else
-  # exclude stable channel from all non-release builds.
-  remove_conda_channel 'rapidsai'
 fi
