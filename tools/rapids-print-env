@@ -13,7 +13,7 @@ arch
 rapids-logger "Check python version"
 python --version
 
-if conda &> /dev/null; then
+if command -v conda > /dev/null; then
   rapids-logger "Check conda environment"
   conda info
   conda config --show-sources
