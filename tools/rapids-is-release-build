@@ -8,7 +8,7 @@
 set -e
 export RAPIDS_SCRIPT_NAME="rapids-is-release-build"
 
-if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   rapids-echo-stderr "is release build"
   exit 0
 fi
