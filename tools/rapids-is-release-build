@@ -8,9 +8,28 @@
 set -e
 export RAPIDS_SCRIPT_NAME="rapids-is-release-build"
 
-if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]{1,2}.[0-9]{2}.[0-9]{2}$ ]]; then
+if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]{1,2}\.[0-9]{2}\.[0-9]{2}$ ]]; then
   rapids-echo-stderr "is release build"
   exit 0
 fi
+
+if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]\.[0-9]{1,2}\.[0-9]{1,2}$ ]]; then
+  repos=(
+    "pynvjitlink"
+    "rapids-build-backend"
+    "rapids-metadata"
+    "ucxx"
+    "ucx-py"
+    "jupyterlab-nvdashboard"
+  )
+  for i in "${repos[@]}"
+  do
+    if [[ "${GITHUB_REPOSITORY}" == *"${i}"* ]]; then
+      rapids-echo-stderr "is release build"
+      exit 0
+    fi
+  done
+fi
+
 rapids-echo-stderr "is not release build"
 exit 1
