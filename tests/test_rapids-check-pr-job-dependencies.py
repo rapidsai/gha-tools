@@ -142,6 +142,33 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
                             - job2
                         if: always()
                         with:
+                    job1:
+                    job2:
+                """
+            ),
+            None,
+            dedent(
+                """\
+                If 'pr-builder' job has an 'if' condition, it must also set the 'needs' input to '${{{{ toJSON(needs) }}}}'.
+                
+                Update '{filename}' to add the following:
+
+                with:
+                  needs: ${{{{ toJSON(needs) }}}}
+                """
+            ),
+            1,
+        ),
+        (
+            dedent(
+                """\
+                jobs:
+                    pr-builder:
+                        needs:
+                            - job1
+                            - job2
+                        if: always()
+                        with:
                             needs: invalid
                     job1:
                     job2:
