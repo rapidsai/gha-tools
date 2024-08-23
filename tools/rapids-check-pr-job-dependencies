@@ -37,4 +37,24 @@ if yq -en 'env(MISSING_JOBS) | length != 0' >/dev/null 2>&1; then
   exit 1
 fi
 
+if if_condition="$(yq -e '.jobs.[env(PR_BUILDER_JOB_NAME)].if' "${WORKFLOW_FILE}" 2>/dev/null)"; then
+  if [[ "${if_condition}" != "always()" ]]; then
+    echo "If '${PR_BUILDER_JOB_NAME}' job has an 'if' condition, it must be set to 'always()'."
+    echo ""
+    echo "Update '${WORKFLOW_FILE}' to set the correct 'if' condition."
+    exit 1
+  fi
+
+  # shellcheck disable=SC2016
+  if yq -e '.jobs.[env(PR_BUILDER_JOB_NAME)].with.needs != "${{ toJSON(needs) }}"' "${WORKFLOW_FILE}" >/dev/null 2>&1; then
+    echo "If '${PR_BUILDER_JOB_NAME}' job has an 'if' condition, it must also set the 'needs' input to '\${{ toJSON(needs) }}'."
+    echo ""
+    echo "Update '${WORKFLOW_FILE}' to add the following:"
+    echo ""
+    echo "with:"
+    echo "  needs: \${{ toJSON(needs) }}"
+    exit 1
+  fi
+fi
+
 echo "${PR_BUILDER_JOB_NAME} depends on all other jobs."
