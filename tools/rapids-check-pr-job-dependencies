@@ -45,6 +45,7 @@ if if_condition="$(yq -e '.jobs.[env(PR_BUILDER_JOB_NAME)].if' "${WORKFLOW_FILE}
     exit 1
   fi
 
+  # shellcheck disable=SC2016
   if yq -e '.jobs.[env(PR_BUILDER_JOB_NAME)].with.needs != "${{ toJSON(needs) }}"' "${WORKFLOW_FILE}" >/dev/null 2>&1; then
     echo "If '${PR_BUILDER_JOB_NAME}' job has an 'if' condition, it must also set the 'needs' input to '\${{ toJSON(needs) }}'."
     echo ""
