@@ -181,7 +181,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
         ),
     ],
 )
-def test_rapids_check_pr_job_dependency(
+def test_rapids_check_pr_job_dependencies(
     tmp_path: os.PathLike,
     contents: str,
     ignored_jobs: list[str],
