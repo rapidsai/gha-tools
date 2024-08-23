@@ -195,7 +195,6 @@ def test_rapids_check_pr_job_dependencies(
         [
             os.path.join(TOOLS_DIR, "rapids-check-pr-job-dependencies"),
             *([] if ignored_jobs is None else [" ".join(ignored_jobs)]),
-
         ],
         env={
             **os.environ,
