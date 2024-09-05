@@ -18,14 +18,20 @@
 
 set -euo pipefail
 
+export RAPIDS_SCRIPT_NAME="rapids-generate-pip-constraints"
+
 file_key="${1}"
 out_file="${2}"
 
-echo "" > "${out_file}"
 if [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]]; then
     rapids-dependency-file-generator \
         --output requirements \
         --file-key "${file_key}" \
         --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
     | tee "${out_file}"
+elif [[ "${RAPIDS_DEPENDENCIES}" == "latest" ]]; then
+    echo "" > "${out_file}"
+else
+    rapids-echo-stderr "Got unrecognized value for RAPIDS_DEPENDENCIES: '${RAPIDS_DEPENDENCIES}'. Expected one of ('latest', 'oldest')."
+    exit 1
 fi
