@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Write out a constraints.txt file for use with 'pip'.
+#
+# For more context:
+#  * https://github.com/rapidsai/shared-workflows/pull/228
+#  * https://github.com/rapidsai/cudf/pull/16570#discussion_r1735300231
+#
+# Positional arguments:
+#
+#    1) file key to be passed to `rapids-dependency-file-generator --file-key`
+#    2) filepath to write the constraint data to
+#
+# [usage]
+#
+#   rapids-generate-pip-constraints test_python ./constraints.txt
+#
+
+set -euo pipefail
+
+file_key="${1}"
+out_file="${2}"
+
+echo "" > "${out_file}"
+if [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]]; then
+    rapids-dependency-file-generator \
+        --output requirements \
+        --file-key "${file_key}" \
+        --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
+    | tee "${out_file}"
+fi
