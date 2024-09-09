@@ -96,6 +96,9 @@ function runConda {
         elif grep -q ConnectionError: "${outfile}"; then
             retryingMsg="Retrying, found 'ConnectionError:' in output..."
             needToRetry=1
+        elif grep -q DependencyNeedsBuildingError: "${outfile}"; then
+            retryingMsg="Retrying, found 'DependencyNeedsBuildingError:' in output..."
+            needToRetry=1
         elif grep -q EOFError: "${outfile}"; then
             retryingMsg="Retrying, found 'EOFError:' in output..."
             needToRetry=1
@@ -120,6 +123,7 @@ function runConda {
 'CondaMultiError:', \
 'Connection broken:', \
 'ConnectionError:', \
+'DependencyNeedsBuildingError:', \
 'EOFError:', \
 'JSONDecodeError:', \
 'Multi-download failed', \
