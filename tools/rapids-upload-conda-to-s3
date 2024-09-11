@@ -30,4 +30,4 @@ pkg_name="$(rapids-package-name "$pkg_type")"
 # Where conda build artifacts are output
 path_to_tar_up="${RAPIDS_CONDA_BLD_OUTPUT_DIR}"
 
-rapids-upload-to-s3 "${pkg_name}" "${path_to_tar_up}"
+rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "${path_to_tar_up}"

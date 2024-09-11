@@ -1,0 +1,53 @@
+#!/bin/bash
+# Wraps arbitrary commands with arbitrary args. Emits an OpenTelemetry span for tracing the command
+
+SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+RAPIDS_OTEL_TRACES_EXPORTER="${RAPIDS_OTEL_TRACES_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+RAPIDS_OTEL_METRICS_EXPORTER="${RAPIDS_OTEL_METRICS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+RAPIDS_OTEL_LOGS_EXPORTER="${RAPIDS_OTEL_LOGS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces}"
+OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}"
+OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}"
+export TRACEPARENT="${TRACEPARENT}"
+
+if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
+    echo "Running command with OpenTelemetry instrumentation";
+
+    set -x
+    if [ "$OTEL_SERVICE_NAME" = "" ]; then
+        echo "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly."
+    fi
+
+    # Some commands have instrumentation. For example, conda-build has monkey-patched instrumentation
+    # that can be activated with the opentelemetry-instrument command. For these commands,
+    # we replace the command with the wrapped command, quoted as a whole for the purposes
+    # of otel-cli exec, so that flags don't get confused.
+    case "$1" in
+        conda* )
+        echo "using opentelemetry-instrument for command";
+        command="opentelemetry-instrument $*"
+        ;;
+        * )
+        command="$*"
+        ;;
+    esac
+
+    echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
+    STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${JOB_NAME}" "${OTEL_SERVICE_NAME}")
+
+    # otel-cli creates a span for us that bridges the traceparent from the parent process
+    # into the command we're wrapping
+    otel-cli exec \
+        --name "Run instrumented $*" \
+        --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
+        --verbose \
+        -- "${command}"
+        RETURN_STATUS=$?
+else
+    echo "Skipping instrumentation, running \"${*}\"";
+    eval "$*"
+    RETURN_STATUS=$?
+fi
+
+exit "${RETURN_STATUS}"
