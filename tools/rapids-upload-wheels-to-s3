@@ -20,4 +20,5 @@ if [ "${CI:-false}" = "false" ]; then
   exit 0
 fi
 
-rapids-upload-to-s3 "${pkg_name}" "$@"
+RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS},rapids_task=upload,rapids_package_name=${pkg_name}" \
+    rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "$@"

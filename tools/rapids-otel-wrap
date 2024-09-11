@@ -1,0 +1,20 @@
+#!/bin/bash
+# Wraps arbitrary commands with arbitrary args. Emits an OpenTelemetry span for tracing the command
+#
+# To add metadata tags (attrs), set (or append to) the RAPIDS_OTEL_ATTRS str.
+# See https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#header-and-attribute-formatting for details
+#
+#
+type otel-cli >/dev/null 2>&1 && [ -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" ] && [ -n "${TRACEPARENT}" ] {
+    start=$(date --rfc-3339=ns)
+}
+# Run the script
+RETURN_STATUS=$("${@:2}")
+
+# Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
+RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')
+
+type otel-cli >/dev/null 2>&1 && {
+    otel-cli span -n "$1" -s some-interesting-program --start $start --end $(date --rfc-3339=ns) --attr "${RAPIDS_OTEL_ATTRS}" --status-code ${RETURN_STATUS}
+}
+exit ${RETURN_STATUS}
