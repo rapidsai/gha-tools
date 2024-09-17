@@ -5,11 +5,21 @@
 # See https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#header-and-attribute-formatting for details
 #
 #
-type otel-cli >/dev/null 2>&1 && [ -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" ] && [ -n "${TRACEPARENT}" ] {
+type otel-cli >/dev/null 2>&1 && ([ -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" ] && [ -n "${TRACEPARENT}" ] {
     start=$(date --rfc-3339=ns)
+    echo "Running command with OpenTelemetry instrumentation"
+    # Run the script
+    RETURN_STATUS=$(opentelemetry-instrument \
+        --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
+        --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
+        --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
+        "${@:2}")
+}) || {
+    # Run the script (no telemetry auto-instrumentation)
+    echo "Skipping instrumentation"
+    RETURN_STATUS=$("${@:2}")
 }
-# Run the script
-RETURN_STATUS=$("${@:2}")
+
 
 # Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
 RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')

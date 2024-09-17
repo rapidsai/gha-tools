@@ -33,11 +33,4 @@ if [[ -z "${commit}" ]]; then
     commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
 fi
 
-if rapids-check-otel-cli; then
-
-fi
-rapids-otel-start-span "$(basename "$0")"
-
-rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
-
-rapids-otel-end-span "$(basename "$0")"
+rapids-otel-wrap rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
