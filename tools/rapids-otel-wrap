@@ -64,7 +64,7 @@ type otel-cli >/dev/null 2>&1 && {
         attrs="--attrs ${RAPIDS_OTEL_ATTRS}"; \
     fi
     otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" \
-        --start $start --end $(date ${TIME_FORMAT}) \
+        --start "$start" --end "$(date ${TIME_FORMAT})" \
         "${attrs}" \
         --status-code ${RETURN_STATUS}
 }
