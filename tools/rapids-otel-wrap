@@ -26,7 +26,7 @@ mkfifo "$tmpdir/status_pipe"
 
 start=$(date ${TIME_FORMAT});
 
-if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" && -n "${TRACEPARENT}" ]]; then
+if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]]; then
     echo "Running command with OpenTelemetry instrumentation";
     (
         set -x
@@ -35,6 +35,9 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOIN
             --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
             --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
             --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
+            --exporter_otlp_traces_endpoint ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT} \
+            --exporter_otlp_metrics_endpoint ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT} \
+            --exporter_otlp_logs_endpoint ${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT} \
             --exporter_otlp_protocol http/protobuf \
             "$@" 2>&1 > $tmpdir/pipe;
         echo $? > $tmpdir/status_pipe;
