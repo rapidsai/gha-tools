@@ -5,6 +5,7 @@
 # See https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#header-and-attribute-formatting for details
 #
 #
+
 TIME_FORMAT="--rfc-3339=ns"
 
 # this cleanly sets up a tempdir for the fifo that we use to pass data out from subshell into our currrent one
@@ -32,25 +33,32 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOIN
             --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
             --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
             --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
-            bash -c "$@" 2>&1 > $tmpdir/pipe;
+            "$@" 2>&1 > $tmpdir/pipe;
         echo $? > $tmpdir/status_pipe;
     ) &
 else
     echo "Skipping instrumentation, running \"${@}\"";
     (
-        eval "$@" 2>&1 > $tmpdir/pipe;
+        "$@" 2>&1 > $tmpdir/pipe;
         echo $? > $tmpdir/status_pipe;
     ) &
 fi
 
+set +x
 echo "stdout/stderr from command:"
-echo $(<$tmpdir/pipe)
+while IFS= read -r line; do
+    echo "$line"
+done < $tmpdir/pipe
 RETURN_STATUS=$(<$tmpdir/status_pipe)
+set -x
 
 # Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
 RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')
 
 type otel-cli >/dev/null 2>&1 && {
-    otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" --start $start --end $(date ${TIME_FORMAT}) --attr "${RAPIDS_OTEL_ATTRS}" --status-code ${RETURN_STATUS}
+    otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" \
+        --start $start --end $(date ${TIME_FORMAT}) \
+        --attrs "${RAPIDS_OTEL_ATTRS}" \
+        --status-code ${RETURN_STATUS}
 }
 exit ${RETURN_STATUS}
