@@ -5,26 +5,52 @@
 # See https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#header-and-attribute-formatting for details
 #
 #
-type otel-cli >/dev/null 2>&1 && ([ -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" ] && [ -n "${TRACEPARENT}" ] {
-    start=$(date --rfc-3339=ns)
-    echo "Running command with OpenTelemetry instrumentation"
-    # Run the script
-    RETURN_STATUS=$(opentelemetry-instrument \
-        --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
-        --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
-        --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
-        "${@:2}")
-}) || {
-    # Run the script (no telemetry auto-instrumentation)
-    echo "Skipping instrumentation"
-    RETURN_STATUS=$("${@:2}")
-}
+TIME_FORMAT="--rfc-3339=ns"
 
+# this cleanly sets up a tempdir for the fifo that we use to pass data out from subshell into our currrent one
+# https://unix.stackexchange.com/a/29918/34459
+tmpdir=
+cleanup () {
+  trap - EXIT
+  if [ -n "$tmpdir" ] ; then rm -rf "$tmpdir"; fi
+  if [ -n "$1" ]; then trap - $1; kill -$1 $$; fi
+}
+tmpdir=$(mktemp -d)
+trap 'cleanup' EXIT
+trap 'cleanup HUP' HUP
+trap 'cleanup TERM' TERM
+trap 'cleanup INT' INT
+mkfifo "$tmpdir/pipe"
+mkfifo "$tmpdir/status_pipe"
+
+
+if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" && -n "${TRACEPARENT}" ]]; then
+    echo "Running command with OpenTelemetry instrumentation";
+    (
+        start=$(date ${TIME_FORMAT});
+        opentelemetry-instrument \
+            --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
+            --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
+            --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
+            bash -c "$@" 2>&1 > $tmpdir/pipe;
+        echo $? > $tmpdir/status_pipe;
+    ) &
+else
+    echo "Skipping instrumentation, running \"${@}\"";
+    (
+        eval "$@" 2>&1 > $tmpdir/pipe;
+        echo $? > $tmpdir/status_pipe;
+    ) &
+fi
+
+echo "stdout/stderr from command:"
+echo $(<$tmpdir/pipe)
+RETURN_STATUS=$(<$tmpdir/status_pipe)
 
 # Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
 RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')
 
 type otel-cli >/dev/null 2>&1 && {
-    otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" --start $start --end $(date --rfc-3339=ns) --attr "${RAPIDS_OTEL_ATTRS}" --status-code ${RETURN_STATUS}
+    otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" --start $start --end $(date ${TIME_FORMAT}) --attr "${RAPIDS_OTEL_ATTRS}" --status-code ${RETURN_STATUS}
 }
 exit ${RETURN_STATUS}
