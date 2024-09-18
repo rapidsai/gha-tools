@@ -24,12 +24,12 @@ trap 'cleanup INT' INT
 mkfifo "$tmpdir/pipe"
 mkfifo "$tmpdir/status_pipe"
 
+start=$(date ${TIME_FORMAT});
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOINT}" && -n "${TRACEPARENT}" ]]; then
     echo "Running command with OpenTelemetry instrumentation";
     (
         set -x
-        start=$(date ${TIME_FORMAT});
         opentelemetry-instrument \
             --service_name ${RAPIDS_OTEL_SERVICE_NAME:-"rapids-build-test"} \
             --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
