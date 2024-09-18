@@ -31,7 +31,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 && -n "${OTEL_EXPORTER_OTLP_ENDPOIN
         set -x
         start=$(date ${TIME_FORMAT});
         opentelemetry-instrument \
-            --service-name ${RAPIDS_OTEL_SERVICE_NAME:-"rapids-build-test"} \
+            --service_name ${RAPIDS_OTEL_SERVICE_NAME:-"rapids-build-test"} \
             --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER:-"console"} \
             --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER:-"console"} \
             --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER:-"console"} \
