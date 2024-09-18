@@ -56,9 +56,12 @@ set -x
 RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')
 
 type otel-cli >/dev/null 2>&1 && {
+    if [ -n "${RAPIDS_OTEL_ATTRS}" ]; then  \
+        attrs="--attrs ${RAPIDS_OTEL_ATTRS}"; \
+    fi
     otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" \
         --start $start --end $(date ${TIME_FORMAT}) \
-        --attrs "${RAPIDS_OTEL_ATTRS}" \
+        "${attrs}" \
         --status-code ${RETURN_STATUS}
 }
 exit ${RETURN_STATUS}
