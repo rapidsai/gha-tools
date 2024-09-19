@@ -69,6 +69,7 @@ type otel-cli >/dev/null 2>&1 && {
     otel-cli span -n "$1" -s "${RAPIDS_JOB_ID}" --endpoint ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT} \
         --otlp-headers "${OTEL_EXPORTER_OTLP_HEADERS}" \
         --start "$start" --end "$(date ${TIME_FORMAT})" \
+        --protocol http/protobuf \
         --status-code ${RETURN_STATUS} \
         ${attrs}
 }
