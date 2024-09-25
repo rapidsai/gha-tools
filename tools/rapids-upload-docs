@@ -31,6 +31,18 @@ checks() {
     echo "python -m http.server --directory ${RAPIDS_DOCS_DIR}"
     exit 0
   fi
+
+  if [[ ! "${RAPIDS_VERSION_NUMBER}" =~ ^[0-9]{1,2}\.[0-9]{2}$ ]]; then
+    echo "ERROR: RAPIDS_VERSION_NUMBER must be a version number in the format X.YY or XX.YY."
+    exit 1
+  fi
+
+  for PROJECT_DIR in "${RAPIDS_DOCS_DIR}"/*; do
+    if [[ -d "${PROJECT_DIR}/html" && ! -f "${PROJECT_DIR}/html/index.html" ]]; then
+      echo "ERROR: ${PROJECT_DIR}/html/index.html does not exist."
+      exit 1
+    fi
+  done
 }
 
 
