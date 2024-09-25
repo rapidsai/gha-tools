@@ -14,7 +14,6 @@ tmpdir=
 cleanup () {
   trap - EXIT
   if [ -n "$tmpdir" ] ; then rm -rf "$tmpdir"; fi
-  if [ -n "$1" ]; then trap - $1; kill -$1 $$; fi
 }
 tmpdir=$(mktemp -d)
 trap 'cleanup' EXIT
@@ -26,49 +25,51 @@ mkfifo "$tmpdir/status_pipe"
 
 start=$(date ${TIME_FORMAT});
 
-RAPIDS_SERVICE_NAME=${RAPIDS_SERVICE_NAME:-${GITHUB_JOB:-"default-telemetry-service-name"}}
-RAPIDS_OTEL_TRACES_EXPORTER=${RAPIDS_OTEL_TRACES_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}
-RAPIDS_OTEL_METRICS_EXPORTER=${RAPIDS_OTEL_METRICS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}
-RAPIDS_OTEL_LOGS_EXPORTER=${RAPIDS_OTEL_LOGS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}
-OTEL_EXPORTER_OTLP_TRACES_ENDPOINT=${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces}
-OTEL_EXPORTER_OTLP_METRICS_ENDPOINT=${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}
-OTEL_EXPORTER_OTLP_LOGS_ENDPOINT=${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}
+RAPIDS_SERVICE_NAME="${RAPIDS_SERVICE_NAME:-${GITHUB_JOB:-"default-telemetry-service-name"}}"
+RAPIDS_OTEL_TRACES_EXPORTER="${RAPIDS_OTEL_TRACES_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+RAPIDS_OTEL_METRICS_EXPORTER="${RAPIDS_OTEL_METRICS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+RAPIDS_OTEL_LOGS_EXPORTER="${RAPIDS_OTEL_LOGS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
+OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces}"
+OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}"
+OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}"
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]]; then
     echo "Running command with OpenTelemetry instrumentation";
     (
-        set -x
-        opentelemetry-instrument \
-            --service_name ${RAPIDS_SERVICE_NAME} \
-            --traces_exporter ${RAPIDS_OTEL_TRACES_EXPORTER} \
-            --metrics_exporter ${RAPIDS_OTEL_METRICS_EXPORTER} \
-            --logs_exporter ${RAPIDS_OTEL_LOGS_EXPORTER} \
-            --exporter_otlp_traces_endpoint ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT} \
-            --exporter_otlp_metrics_endpoint ${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT} \
-            --exporter_otlp_logs_endpoint ${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT} \
-            --exporter_otlp_protocol http/protobuf \
-            "$@" 2>&1 > $tmpdir/pipe;
-        echo $? > $tmpdir/status_pipe;
-        set +x
+        (
+            set -x
+            opentelemetry-instrument \
+                --service_name "${RAPIDS_SERVICE_NAME}" \
+                --traces_exporter "${RAPIDS_OTEL_TRACES_EXPORTER}" \
+                --metrics_exporter "${RAPIDS_OTEL_METRICS_EXPORTER}" \
+                --logs_exporter "${RAPIDS_OTEL_LOGS_EXPORTER}" \
+                --exporter_otlp_traces_endpoint "${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}" \
+                --exporter_otlp_metrics_endpoint "${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT}" \
+                --exporter_otlp_logs_endpoint "${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT}" \
+                --exporter_otlp_protocol http/protobuf \
+                "$@" > "$tmpdir/pipe" 2>&1;
+        )
+        echo $? > "$tmpdir/status_pipe";
     ) &
 else
-    echo "Skipping instrumentation, running \"${@}\"";
+    echo "Skipping instrumentation, running \"${*}\"";
     (
-        "$@" 2>&1 > $tmpdir/pipe;
-        echo $? > $tmpdir/status_pipe;
+        (
+            set -x
+            "$*" > "$tmpdir/pipe" 2>&1 ;
+        )
+        echo $? > "$tmpdir/status_pipe";
     ) &
 fi
 
-set +x
 echo "stdout/stderr from command:"
 while IFS= read -r line; do
     echo "$line"
-done < $tmpdir/pipe
-RETURN_STATUS=$(<$tmpdir/status_pipe)
-set -x
+done < "$tmpdir/pipe"
+RETURN_STATUS=$(<"$tmpdir/status_pipe")
 
 # Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
-RAPIDS_OTEL_ATTRS=$(echo "${RAPIDS_OTEL_ATTRS}" | sed 's/,$//')
+RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS//^,/}"
 
 type otel-cli >/dev/null 2>&1 && {
     if [ -n "${RAPIDS_OTEL_ATTRS}" ]; then  \
@@ -77,11 +78,12 @@ type otel-cli >/dev/null 2>&1 && {
     # TRACEPARENT gets picked up as an env var automatically
     # https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#examples
     otel-cli span -n "$1" -s "${RAPIDS_SERVICE_NAME}" \
-        --endpoint ${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT} \
+        --endpoint "${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}" \
         --start "$start" --end "$(date ${TIME_FORMAT})" \
         --otlp-headers "${OTEL_EXPORTER_OTLP_HEADERS}" \
         --protocol http/protobuf \
-        --status-code ${RETURN_STATUS} \
-        ${attrs}
+        --status-code "${RETURN_STATUS}" \
+        "${attrs}"
 }
-exit ${RETURN_STATUS}
+cleanup "$@"
+exit "${RETURN_STATUS}"
