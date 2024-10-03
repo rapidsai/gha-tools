@@ -25,7 +25,7 @@ mkfifo "$tmpdir/status_pipe"
 
 start=$(date ${TIME_FORMAT});
 
-RAPIDS_SERVICE_NAME="${RAPIDS_SERVICE_NAME:-${GITHUB_JOB:-"default-telemetry-service-name"}}"
+RAPIDS_OTEL_SERVICE_NAME="${RAPIDS_OTEL_SERVICE_NAME:-${GITHUB_JOB:-"default-telemetry-service-name"}}"
 RAPIDS_OTEL_TRACES_EXPORTER="${RAPIDS_OTEL_TRACES_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
 RAPIDS_OTEL_METRICS_EXPORTER="${RAPIDS_OTEL_METRICS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
 RAPIDS_OTEL_LOGS_EXPORTER="${RAPIDS_OTEL_LOGS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-"console"}}"
@@ -39,7 +39,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]]; then
         (
             set -x
             opentelemetry-instrument \
-                --service_name "${RAPIDS_SERVICE_NAME}" \
+                --service_name "${RAPIDS_OTEL_SERVICE_NAME}" \
                 --traces_exporter "${RAPIDS_OTEL_TRACES_EXPORTER}" \
                 --metrics_exporter "${RAPIDS_OTEL_METRICS_EXPORTER}" \
                 --logs_exporter "${RAPIDS_OTEL_LOGS_EXPORTER}" \
