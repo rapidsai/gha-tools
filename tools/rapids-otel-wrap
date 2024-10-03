@@ -75,15 +75,17 @@ type otel-cli >/dev/null 2>&1 && {
     if [ -n "${RAPIDS_OTEL_ATTRS}" ]; then  \
         attrs="--attrs ${RAPIDS_OTEL_ATTRS}"; \
     fi
+    if [ -n "OTEL_EXPORTER_OTLP_HEADERS" ]; then \
+        headers="--otlp-headers ${OTEL_EXPORTER_OTLP_HEADERS}"; \
+    fi
     # TRACEPARENT gets picked up as an env var automatically
     # https://github.com/equinix-labs/otel-cli?tab=readme-ov-file#examples
     otel-cli span -n "$1" -s "${RAPIDS_SERVICE_NAME}" \
         --endpoint "${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT}" \
         --start "$start" --end "$(date ${TIME_FORMAT})" \
-        --otlp-headers "${OTEL_EXPORTER_OTLP_HEADERS}" \
         --protocol http/protobuf \
         --status-code "${RETURN_STATUS}" \
-        "${attrs}"
+        ${attrs} ${headers}
 }
 cleanup "$@"
 exit "${RETURN_STATUS}"
