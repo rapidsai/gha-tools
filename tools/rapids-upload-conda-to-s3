@@ -30,5 +30,5 @@ pkg_name="$(rapids-package-name "$pkg_type")"
 # Where conda build artifacts are output
 path_to_tar_up="${RAPIDS_CONDA_BLD_OUTPUT_DIR}"
 
-RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS},rapids_task=upload,rapids_package_name=${pkg_name}" \
-    rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "${path_to_tar_up}"
+export RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS:-},rapids_task=upload,rapids_package_name=${pkg_name}"
+rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "${path_to_tar_up}"
