@@ -88,6 +88,7 @@ type otel-cli >/dev/null 2>&1 && {
         --tls-ca-cert ${OTEL_EXPORTER_OTLP_CERTIFICATE} \
         --tls-client-cert ${OTEL_EXPORTER_OTLP_CLIENT_CERTIFICATE} \
         --tls-client-key ${OTEL_EXPORTER_OTLP_CLIENT_KEY} \
+        --tp-print \
         ${attrs} ${headers}
 }
 cleanup "$@"
