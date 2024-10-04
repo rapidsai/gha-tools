@@ -69,7 +69,7 @@ done < "$tmpdir/pipe"
 RETURN_STATUS=$(<"$tmpdir/status_pipe")
 
 # Trim leading commas from RAPIDS_OTEL_ATTRS from clumsy concatentation
-RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS//^,/}"
+RAPIDS_OTEL_ATTRS="${RAPIDS_OTEL_ATTRS/^,//}"
 
 type otel-cli >/dev/null 2>&1 && {
     if [ -n "${RAPIDS_OTEL_ATTRS}" ]; then  \
