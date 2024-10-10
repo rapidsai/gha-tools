@@ -10,6 +10,7 @@ OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL
 OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}"
 OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}"
 export TRACEPARENT="${TRACEPARENT}"
+export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME}"
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
     echo "Running command with OpenTelemetry instrumentation";
@@ -26,23 +27,33 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     case "$1" in
         conda* )
         echo "using opentelemetry-instrument for command";
-        command="opentelemetry-instrument $*"
+        echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
+        STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${STEP_NAME}")
+
+        # otel-cli creates a span for us that bridges the traceparent from the parent process
+        # into the command we're wrapping
+        # shellcheck disable=SC2086
+        otel-cli exec \
+            --service "${OTEL_SERVICE_NAME}" \
+            --name "Run instrumented \"$*\"" \
+            --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
+            --verbose \
+            -- \
+                opentelemetry-instrument \
+                --service_name "${OTEL_SERVICE_NAME}" \
+                $*
         ;;
         * )
-        command="$*"
+        otel-cli exec \
+            --service "${OTEL_SERVICE_NAME}" \
+            --name "Run instrumented \"$*\"" \
+            --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
+            --verbose \
+            -- $*
         ;;
     esac
 
-    echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
-    STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${JOB_NAME}" "${OTEL_SERVICE_NAME}")
 
-    # otel-cli creates a span for us that bridges the traceparent from the parent process
-    # into the command we're wrapping
-    otel-cli exec \
-        --name "Run instrumented $*" \
-        --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
-        --verbose \
-        -- "${command}"
         RETURN_STATUS=$?
 else
     echo "Skipping instrumentation, running \"${*}\"";

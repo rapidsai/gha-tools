@@ -11,14 +11,21 @@
 # A step name MAY be provided as the second argument. If it is specified, the output corresponds to
 #     the step within the context of its job.
 
-JOB_NAME=$1
 STEP_NAME=${2:-}
+
+if [ "$OTEL_SERVICE_NAME" = "" ]; then
+    echo "ERROR: OTEL_SERVICE_NAME env var is empty. This means your trace doesn't identify anything."
+    exit 1
+fi
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 TRACE_ID="$("${SCRIPT_DIR}"/rapids-get-telemetry-trace-id)"
-JOB_SPAN_ID="${TRACE_ID}-${JOB_NAME}"
+JOB_SPAN_ID="${TRACE_ID}-${OTEL_SERVICE_NAME}"
 STEP_SPAN_ID="${JOB_SPAN_ID}-${STEP_NAME}"
+
+# echo "JOB_SPAN_ID pre-hash: "$JOB_SPAN_ID"" 1>&2
+# echo "STEP_SPAN_ID pre-hash: "$STEP_SPAN_ID"" 1>&2
 
 JOB_TRACEPARENT=$(echo -n "${JOB_SPAN_ID}" | sha256sum | cut -f1 -d' ')
 STEP_TRACEPARENT=$(echo -n "${STEP_SPAN_ID}" | sha256sum | cut -f1 -d' ')
