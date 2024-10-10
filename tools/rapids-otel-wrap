@@ -10,6 +10,7 @@ OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL
 OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}"
 OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}"
 export TRACEPARENT="${TRACEPARENT}"
+export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME}"
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
     echo "Running command with OpenTelemetry instrumentation";
@@ -26,7 +27,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     case "$1" in
         conda* )
         echo "using opentelemetry-instrument for command";
-        command="opentelemetry-instrument --service_name ${OTEL_SERVICE_NAME} $*"
+        command="opentelemetry-instrument --service_name "${OTEL_SERVICE_NAME}" $*"
         ;;
         * )
         command="$*"
