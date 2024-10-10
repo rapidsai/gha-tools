@@ -38,11 +38,12 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
 
     # otel-cli creates a span for us that bridges the traceparent from the parent process
     # into the command we're wrapping
+    # shellcheck disable=SC2086
     otel-cli exec \
         --name "Run instrumented $*" \
         --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
         --verbose \
-        -- "${command}"
+        -- ${command}
         RETURN_STATUS=$?
 else
     echo "Skipping instrumentation, running \"${*}\"";
