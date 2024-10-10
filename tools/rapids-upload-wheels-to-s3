@@ -20,4 +20,4 @@ if [ "${CI:-false}" = "false" ]; then
   exit 0
 fi
 
-rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "$*"
+rapids-otel-wrap rapids-upload-to-s3 "${pkg_name}" "$@"
