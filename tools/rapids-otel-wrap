@@ -26,7 +26,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     case "$1" in
         conda* )
         echo "using opentelemetry-instrument for command";
-        command="opentelemetry-instrument $*"
+        command="opentelemetry-instrument --service-name ${OTEL_SERVICE_NAME} $*"
         ;;
         * )
         command="$*"
@@ -40,6 +40,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     # into the command we're wrapping
     # shellcheck disable=SC2086
     otel-cli exec \
+        --service "${OTEL_SERVICE_NAME}" \
         --name "Run instrumented $*" \
         --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
         --verbose \
