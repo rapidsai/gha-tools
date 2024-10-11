@@ -45,7 +45,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
         --name "Run instrumented $*" \
         --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
         --verbose \
-        -- ${command}
+        -- ${command[*]}
         RETURN_STATUS=$?
 else
     echo "Skipping instrumentation, running \"${*}\"";
