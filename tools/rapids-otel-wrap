@@ -27,25 +27,33 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     case "$1" in
         conda* )
         echo "using opentelemetry-instrument for command";
-        command="opentelemetry-instrument --service_name "${OTEL_SERVICE_NAME}" $*"
+        echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
+        STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${OTEL_SERVICE_NAME}" "${STEP_NAME}")
+
+        # otel-cli creates a span for us that bridges the traceparent from the parent process
+        # into the command we're wrapping
+        # shellcheck disable=SC2086
+        otel-cli exec \
+            --service "${OTEL_SERVICE_NAME}" \
+            --name "Run instrumented \"$*\"" \
+            --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
+            --verbose \
+            -- \
+                opentelemetry-instrument \
+                --service_name "${OTEL_SERVICE_NAME}" \
+                $*
         ;;
         * )
-        command="$*"
+        otel-cli exec \
+            --service "${OTEL_SERVICE_NAME}" \
+            --name "Run instrumented \"$*\"" \
+            --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
+            --verbose \
+            -- $*
         ;;
     esac
 
-    echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
-    STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${OTEL_SERVICE_NAME}" "${STEP_NAME}")
 
-    # otel-cli creates a span for us that bridges the traceparent from the parent process
-    # into the command we're wrapping
-    # shellcheck disable=SC2086
-    otel-cli exec \
-        --service "${OTEL_SERVICE_NAME}" \
-        --name "Run instrumented $*" \
-        --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
-        --verbose \
-        -- ${command[*]}
         RETURN_STATUS=$?
 else
     echo "Skipping instrumentation, running \"${*}\"";
