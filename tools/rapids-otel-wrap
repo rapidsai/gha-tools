@@ -27,7 +27,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     case "$1" in
         conda* )
         echo "using opentelemetry-instrument for command";
-        command="opentelemetry-instrument --service_name \"${OTEL_SERVICE_NAME}\" $*"
+        command="opentelemetry-instrument --service_name "${OTEL_SERVICE_NAME}" $*"
         ;;
         * )
         command="$*"
