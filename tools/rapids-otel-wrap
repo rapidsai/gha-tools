@@ -13,11 +13,11 @@ export TRACEPARENT="${TRACEPARENT}"
 export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME}"
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
-    echo "Running command with OpenTelemetry instrumentation";
+    echo "Running command with OpenTelemetry instrumentation" >&2;
 
     set -x
     if [ "$OTEL_SERVICE_NAME" = "" ]; then
-        echo "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly."
+        echo "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly. >&2"
     fi
 
     # Some commands have instrumentation. For example, conda-build has monkey-patched instrumentation
@@ -26,13 +26,13 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     # of otel-cli exec, so that flags don't get confused.
     case "$1" in
         conda* )
-        echo "using opentelemetry-instrument for command";
-        echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\""
+        echo "using opentelemetry-instrument for command" >&2;
+        echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\"" >&2;
         STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${STEP_NAME}")
 
         # otel-cli creates a span for us that bridges the traceparent from the parent process
         # into the command we're wrapping
-        # shellcheck disable=SC2086
+        # shellcheck disable=SC2086,SC2048
         otel-cli exec \
             --service "${OTEL_SERVICE_NAME}" \
             --name "Run instrumented \"$*\"" \
@@ -44,6 +44,7 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
                 $*
         ;;
         * )
+        # shellcheck disable=SC2086,SC2048
         otel-cli exec \
             --service "${OTEL_SERVICE_NAME}" \
             --name "Run instrumented \"$*\"" \
@@ -56,8 +57,8 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
 
         RETURN_STATUS=$?
 else
-    echo "Skipping instrumentation, running \"${*}\"";
-    eval "$*"
+    echo "Skipping instrumentation, running \"$*\"" >&2;
+    "$@"
     RETURN_STATUS=$?
 fi
 

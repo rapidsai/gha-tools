@@ -1,3 +1,4 @@
+import sys
 import os.path
 import subprocess
 
@@ -62,4 +63,37 @@ def test_rapids_get_traceparent_with_step():
     )
     assert result.stdout.strip() == "00-22ab4ec60f37f446b4a95917e86660df-5f57388b5b07a3e8-01"
     assert result.stderr == ""
+    assert result.returncode == 0
+
+
+def test_wrap_otel():
+    result = subprocess.run(
+        [os.path.join(TOOLS_DIR, "rapids-otel-wrap"), "echo", "bob"],
+        text=True,
+        capture_output=True,
+    )
+    assert result.stdout == "bob\n"
+    assert result.stderr == "Skipping instrumentation, running \"echo bob\"\n"
+    assert result.returncode == 0
+
+def test_wrap_otel_with_spaces():
+    result = subprocess.run(
+        [os.path.join(TOOLS_DIR, "rapids-otel-wrap"), "echo", "-n", "bob is here"],
+        text=True,
+        capture_output=True,
+    )
+    # Note: no newline here, because echo -n shouldn't end with a newline
+    assert result.stdout == "bob is here"
+    assert result.stderr == "Skipping instrumentation, running \"echo -n bob is here\"\n"
+    assert result.returncode == 0
+
+def test_wrap_otel_with_spaces_and_parens():
+    result = subprocess.run(
+        [os.path.join(TOOLS_DIR, "rapids-otel-wrap"), "python", "-c", "import sys; print(sys.version)"],
+        text=True,
+        capture_output=True,
+    )
+    # Note: no newline here, because echo -n shouldn't end with a newline
+    assert result.stderr == "Skipping instrumentation, running \"python -c import sys; print(sys.version)\"\n"
+    assert result.stdout == "{}\n".format(sys.version)
     assert result.returncode == 0
