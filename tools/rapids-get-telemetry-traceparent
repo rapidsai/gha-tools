@@ -25,8 +25,8 @@ TRACE_ID="$("${SCRIPT_DIR}"/rapids-get-telemetry-trace-id)"
 JOB_SPAN_ID="${TRACE_ID}-${JOB_NAME}"
 STEP_SPAN_ID="${JOB_SPAN_ID}-${STEP_NAME}"
 
-echo "JOB_SPAN_ID pre-hash: "$JOB_SPAN_ID"" 1>&2
-echo "STEP_SPAN_ID pre-hash: "$STEP_SPAN_ID"" 1>&2
+echo "JOB_SPAN_ID pre-hash: \"$JOB_SPAN_ID\"" 1>&2
+echo "STEP_SPAN_ID pre-hash: \"$STEP_SPAN_ID\"" 1>&2
 
 JOB_TRACEPARENT=$(echo -n "${JOB_SPAN_ID}" | sha256sum | cut -f1 -d' ')
 STEP_TRACEPARENT=$(echo -n "${STEP_SPAN_ID}" | sha256sum | cut -f1 -d' ')

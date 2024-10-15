@@ -15,7 +15,6 @@ export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME}"
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
     echo "Running command with OpenTelemetry instrumentation" >&2;
 
-    set -x
     if [ "$OTEL_SERVICE_NAME" = "" ]; then
         echo "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly. >&2"
     fi
