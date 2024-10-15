@@ -67,7 +67,7 @@ condaCmd=${RAPIDS_CONDA_EXE:=conda}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runConda {
     # shellcheck disable=SC2086
-    rapids-otel-wrap ${condaCmd} ${args} 2>&1| tee "${outfile}"
+    ${condaCmd} ${args} 2>&1| tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0

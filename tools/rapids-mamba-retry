@@ -46,4 +46,4 @@ for arg in "$@"; do
    fi
 done
 
-rapids-otel-wrap rapids-conda-retry "${args[@]}"
+rapids-conda-retry "$@"
