@@ -9,7 +9,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-# dir that the extracted tarball are in
+# dir that the extracted conda packages are in
 conda_pkg_dir="$1"
 {
   conda_pkg_dest=$(mktemp -d)
