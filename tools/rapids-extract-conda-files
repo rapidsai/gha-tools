@@ -15,6 +15,6 @@ tarball_dir="$1"
   untar_dest=$(mktemp -d)
   mkdir -p "${untar_dest}"
   cd "${untar_dest}"
-  find "${tarball_dir}" -name "*tar.bz2" -type f -print0 | xargs -0 -n 1 tar -v -xf
+  find "${tarball_dir}" \( -name "*.tar.bz2" -o -name "*.conda" \) -type f -print0 | xargs -0 -n 1 cph extract --dest .
 } >&2
 echo -n "${untar_dest}"
