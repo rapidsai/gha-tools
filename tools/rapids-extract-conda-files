@@ -5,16 +5,16 @@ set -eo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-extract-conda-files"
 
 if [ -z "$1" ]; then
-  rapids-echo-stderr "Must specify input argument: TARBALL_DIR"
+  rapids-echo-stderr "Must specify input argument: CONDA_PKG_DIR"
   exit 1
 fi
 
-# dir that the extracted tarball are in
-tarball_dir="$1"
+# dir that the extracted conda packages are in
+conda_pkg_dir="$1"
 {
-  untar_dest=$(mktemp -d)
-  mkdir -p "${untar_dest}"
-  cd "${untar_dest}"
-  find "${tarball_dir}" \( -name "*.tar.bz2" -o -name "*.conda" \) -type f -print0 | xargs -0 -n 1 cph extract --dest .
+  conda_pkg_dest=$(mktemp -d)
+  mkdir -p "${conda_pkg_dest}"
+  cd "${conda_pkg_dest}"
+  find "${conda_pkg_dir}" \( -name "*.tar.bz2" -o -name "*.conda" \) -type f -print0 | xargs -0 -n 1 cph extract --dest .
 } >&2
-echo -n "${untar_dest}"
+echo -n "${conda_pkg_dest}"
