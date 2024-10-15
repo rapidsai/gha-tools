@@ -1,6 +1,0 @@
-#!/bin/bash
-# This is a global, per-run identifier. It is the same across all jobs and all steps within all jobs.
-# It is constant from the source repo, to shared-workflows, to shared-actions.
-
-sha="$(echo "${GITHUB_REPOSITORY}+${GITHUB_RUN_ID}+${RUN_ATTEMPT}" | sha256sum | cut -f1 -d' ')"
-echo "${sha:0:32}"
