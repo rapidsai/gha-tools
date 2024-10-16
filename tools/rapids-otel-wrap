@@ -1,5 +1,7 @@
 #!/bin/bash
 # Wraps arbitrary commands with arbitrary args. Emits an OpenTelemetry span for tracing the command
+#
+set -x
 
 SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
@@ -9,8 +11,8 @@ RAPIDS_OTEL_LOGS_EXPORTER="${RAPIDS_OTEL_LOGS_EXPORTER:-${RAPIDS_OTEL_EXPORTER:-
 OTEL_EXPORTER_OTLP_TRACES_ENDPOINT="${OTEL_EXPORTER_OTLP_TRACES_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/traces}"
 OTEL_EXPORTER_OTLP_METRICS_ENDPOINT="${OTEL_EXPORTER_OTLP_METRICS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/metrics}"
 OTEL_EXPORTER_OTLP_LOGS_ENDPOINT="${OTEL_EXPORTER_OTLP_LOGS_ENDPOINT:-${OTEL_EXPORTER_OTLP_ENDPOINT}/v1/logs}"
-export TRACEPARENT="${TRACEPARENT}"
-export OTEL_SERVICE_NAME="${OTEL_SERVICE_NAME}"
+export TRACEPARENT
+export OTEL_SERVICE_NAME
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
     echo "Running command with OpenTelemetry instrumentation" >&2;
@@ -39,22 +41,19 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
             --verbose \
             -- \
                 opentelemetry-instrument \
-                $*
+                "$@"
         ;;
-                # --service_name "${OTEL_SERVICE_NAME}" \
         * )
         # shellcheck disable=SC2086,SC2048
         otel-cli exec \
-            --service "${OTEL_SERVICE_NAME}" \
             --name "Run instrumented \"$*\"" \
             --force-parent-span-id "$(cut -d'-' -f3 <<<"$STEP_TRACEPARENT")" \
             --verbose \
-            -- $*
+            -- "$@"
         ;;
     esac
         RETURN_STATUS=$?
 else
-    echo "Skipping instrumentation, running \"$*\"" >&2;
     "$@"
     RETURN_STATUS=$?
 fi
