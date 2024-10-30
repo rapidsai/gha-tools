@@ -57,8 +57,8 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     esac
         RETURN_STATUS=$?
 else
-    echo "Telemetry disabled from lack of otel-cli on PATH or no TRACEPARENT set" >&2;
-    echo "Running command unmodified" >&2;
+    # echo "Telemetry disabled from lack of otel-cli on PATH or no TRACEPARENT set" >&2;
+    # echo "Running command unmodified" >&2;
     "$@"
     RETURN_STATUS=$?
 fi

@@ -30,7 +30,6 @@ def test_wrap_otel_with_spaces_and_parens():
         text=True,
         capture_output=True,
     )
-    # Note: no newline here, because echo -n shouldn't end with a newline
     assert result.stdout == "{}\n".format(sys.version)
     assert result.returncode == 0
 
@@ -40,7 +39,6 @@ def test_wrap_otel_with_evil_comparison_operators():
         text=True,
         capture_output=True,
     )
-    # Note: no newline here, because echo -n shouldn't end with a newline
     assert result.stdout == "True\n"
     assert result.returncode == 0
 
@@ -52,6 +50,5 @@ def test_wrap_otel_with_evil_comparison_operators_with_shell():
         capture_output=True,
         shell=True
     )
-    # Note: no newline here, because echo -n shouldn't end with a newline
     assert result.stdout == "True\n"
     assert result.returncode == 0
