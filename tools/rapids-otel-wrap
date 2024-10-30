@@ -17,10 +17,12 @@ export OTEL_SERVICE_NAME
 set -x
 
 if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; then
-    echo "Running command with OpenTelemetry instrumentation" >&2;
+    if [ -n "${RAPIDS_TRACE_DEBUG}" ]; then
+        rapids-echo-stderr "Running command with OpenTelemetry instrumentation";
+    fi;
 
     if [ "$OTEL_SERVICE_NAME" = "" ]; then
-        echo "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly. >&2"
+        rapids-echo-stderr "WARNING: OTEL_SERVICE_NAME variable not provided. Traces from different steps may not be associated correctly."
     fi
 
     # Some commands have instrumentation. For example, conda-build has monkey-patched instrumentation
@@ -29,13 +31,13 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     # of otel-cli exec, so that flags don't get confused.
     case "$1" in
         conda* )
-        echo "using opentelemetry-instrument for command" >&2;
-        echo "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\"" >&2;
+        if [ -n "${RAPIDS_TRACE_DEBUG}" ]; then
+            rapids-echo-stderr "using opentelemetry-instrument for command";
+            rapids-echo-stderr "TRACEPARENT prior to otel-cli exec is: \"${TRACEPARENT}\"";
+        fi;
         STEP_TRACEPARENT=$("${SCRIPT_DIR}/rapids-get-telemetry-traceparent" "${OTEL_SERVICE_NAME}" "${STEP_NAME}")
 
         # otel-cli creates a span for us that bridges the traceparent from the parent process
-        # into the command we're wrapping
-        #     --service "${OTEL_SERVICE_NAME}" \
         # shellcheck disable=SC2086,SC2048
         otel-cli exec \
             --name "Run instrumented \"$*\"" \
@@ -46,7 +48,9 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
                 "$@"
         ;;
         * )
-        echo "No opentelemetry instrumentation known for command $*" >&2;
+        if [ -n "${RAPIDS_TRACE_DEBUG}" ]; then
+            rapids-echo-stderr "No opentelemetry instrumentation known for command $*";
+        fi;
         # shellcheck disable=SC2086,SC2048
         otel-cli exec \
             --name "Run instrumented \"$*\"" \
@@ -57,8 +61,10 @@ if [[ $(type otel-cli >/dev/null 2>&1) -eq 0 ]] && [ "$TRACEPARENT" != "" ]; the
     esac
         RETURN_STATUS=$?
 else
-    # echo "Telemetry disabled from lack of otel-cli on PATH or no TRACEPARENT set" >&2;
-    # echo "Running command unmodified" >&2;
+    if [ -n "${RAPIDS_TRACE_DEBUG}" ]; then
+        rapids-echo-stderr "Telemetry disabled from lack of otel-cli on PATH or no TRACEPARENT set";
+        rapids-echo-stderr "Running command unmodified";
+    fi;
     "$@"
     RETURN_STATUS=$?
 fi
