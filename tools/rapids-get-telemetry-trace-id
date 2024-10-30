@@ -1,0 +1,11 @@
+#!/bin/bash
+# This is a global, per-run identifier. It is the same across all jobs and all steps within all jobs.
+# It is constant from the source repo, to shared-workflows, to shared-actions.
+
+if [ "$GITHUB_REPOSITORY" = "" ] || [ "${GITHUB_RUN_ID}" = "" ] || [ "${GITHUB_RUN_ATTEMPT}" = "" ]; then
+    echo "Error: one or more inputs to trace id is empty. The variables that must be set are:"
+    echo "    GITHUB_REPOSITORY, GITHUB_RUN_ID, and GITHUB_RUN_ATTEMPT"
+    exit 1
+fi
+sha="$(echo "${GITHUB_REPOSITORY}+${GITHUB_RUN_ID}+${GITHUB_RUN_ATTEMPT}" | sha256sum | cut -f1 -d' ')"
+echo "${sha:0:32}"
