@@ -67,7 +67,9 @@ condaCmd=${RAPIDS_CONDA_EXE:=conda}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runConda {
     # shellcheck disable=SC2086
-    rapids-otel-wrap ${condaCmd} ${args} 2>&1| tee "${outfile}"
+    # RAPIDS_OTEL_WRAPPER is optionally passed in as an env var. It is
+    # used to instrument conda-build or mambabuild for finer-grained spans.
+    ${RAPIDS_OTEL_WRAPPER:-} ${condaCmd} ${args} 2>&1| tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0
