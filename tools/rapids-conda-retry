@@ -92,6 +92,9 @@ function runConda {
             retryingMsg="Retrying after cleaning tarball cache, found 'CondaMultiError:' in output..."
             needToRetry=1
             needToClean=1
+        elif grep -q CondaSSLError: "${outfile}"; then
+            retryingMsg="Retrying, found 'CondaSSLError:' in output..."
+            needToRetry=1
         elif grep -q "Connection broken:" "${outfile}"; then
             retryingMsg="Retrying, found 'Connection broken:' in output..."
             needToRetry=1
@@ -123,6 +126,7 @@ function runConda {
 'ChunkedEncodingError:', \
 'CondaHTTPError:', \
 'CondaMultiError:', \
+'CondaSSLError:', \
 'Connection broken:', \
 'ConnectionError:', \
 'DependencyNeedsBuildingError:', \
