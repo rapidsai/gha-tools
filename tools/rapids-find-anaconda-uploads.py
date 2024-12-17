@@ -54,8 +54,6 @@ def file_filter_fn(file_path):
     filename = path.basename(file_path)
     pkg_name = get_pkg_name_from_filename(filename)
 
-    if is_test_pkg(pkg_name):
-        return False
     if is_skip_pkg(pkg_name):
         return False
 
