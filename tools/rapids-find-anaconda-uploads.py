@@ -29,14 +29,6 @@ def get_pkg_name_from_filename(filename):
     return "-".join(filename.split("-")[:-2])
 
 
-def is_test_pkg(pkg_name):
-    """
-    Returns true if the package name matches the pattern we use for
-    gtest packages.
-    """
-    return pkg_name.endswith("-tests")
-
-
 def is_skip_pkg(pkg_name):
     """
     Returns true if the package name is in the "SKIP_UPLOAD_PKGS"
@@ -54,8 +46,6 @@ def file_filter_fn(file_path):
     filename = path.basename(file_path)
     pkg_name = get_pkg_name_from_filename(filename)
 
-    if is_test_pkg(pkg_name):
-        return False
     if is_skip_pkg(pkg_name):
         return False
 
