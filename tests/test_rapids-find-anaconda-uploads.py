@@ -99,10 +99,10 @@ def test_file_filter_fn():
             "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
             "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
             "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
             "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
             "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
         ]
 
     # w/ no env var
@@ -116,8 +116,8 @@ def test_file_filter_fn():
         "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
         "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
         "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
         "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
         "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
     ]
