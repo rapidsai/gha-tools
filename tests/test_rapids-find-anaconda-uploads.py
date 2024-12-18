@@ -37,20 +37,6 @@ def test_get_pkg_name_from_filename(filename, pkg_name):
 
 
 @pytest.mark.parametrize(
-    "pkg_name, result",
-    [
-        ("custreamz", False),
-        ("strings_udf", False),
-        ("dask-cudf", False),
-        ("", False),
-        ("libcudf-tests", True),
-    ],
-)
-def test_is_test_pkg(pkg_name, result):
-    assert mod.is_test_pkg(pkg_name) == result
-
-
-@pytest.mark.parametrize(
     "env_var, pkg_name, result",
     [
         ("", "custreamz", False),
@@ -114,7 +100,9 @@ def test_file_filter_fn():
             "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
             "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
             "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
             "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
         ]
 
     # w/ no env var
@@ -129,5 +117,7 @@ def test_file_filter_fn():
         "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
         "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
         "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
         "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
     ]
