@@ -8,10 +8,10 @@
 #   4) "wheel" or "conda", to get the wheel or conda package artifact, respectively
 #   5) [optional] commit hash, to get the artifact for a specific commit
 #
-# If fetching a wheel, RAPIDS_PY_WHEEL_NAME must also be set to indicate the
-# package name being fetched.
+# If fetching a wheel, RAPIDS_PY_WHEEL_NAME must be set to indicate the package
+# name to fetch.
 # Example Usage:
-#   rapids-get-pr-conda-artifact rmm 1095 cpp
+#   _rapids-get-pr-artifact rmm 1095 cpp
 set -euo pipefail
 
 repo="$1"

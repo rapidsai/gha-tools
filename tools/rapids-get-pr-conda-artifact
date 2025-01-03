@@ -11,4 +11,4 @@
 #   rapids-get-pr-conda-artifact rmm 1095 cpp
 set -euo pipefail
 
-rapids-get-pr-artifact "${1}" "${2}" "${3}" conda "${4:-}"
+_rapids-get-pr-artifact "${1}" "${2}" "${3}" conda "${4:-}"
