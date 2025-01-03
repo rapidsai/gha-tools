@@ -22,7 +22,7 @@ if [[ "${4}" = "wheel" && -z "${RAPIDS_PY_WHEEL_NAME:+placeholder}" ]]; then
     exit 1
 fi
 package_type="${4}_${3}"
-artifact_name=$(RAPIDS_REPOSITORY="${repo}" rapids-package-name ${package_type})
+artifact_name=$(RAPIDS_REPOSITORY="${repo}" rapids-package-name "${package_type}")
 
 commit="${5:-}"
 if [[ -z "${commit}" ]]; then
