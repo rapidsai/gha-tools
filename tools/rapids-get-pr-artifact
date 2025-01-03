@@ -1,0 +1,26 @@
+#!/bin/bash
+# Echo path to an artifact for a specific PR. Finds and uses the latest commit on the PR.
+#
+# Positional Arguments:
+#   1) repo name
+#   2) PR number
+#   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
+#   4) "wheel" or "conda", to get the wheel or conda package artifact, respectively
+#   5) [optional] commit hash, to get the artifact for a specific commit
+#
+# Example Usage:
+#   rapids-get-pr-conda-artifact rmm 1095 cpp
+set -euo pipefail
+
+repo="$1"
+pr="$2"
+
+package_type="${4}_${3}"
+artifact_name=$(RAPIDS_REPOSITORY=$repo rapids-package-name ${package_type})
+
+commit="${5:-}"
+if [[ -z "${commit}" ]]; then
+    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
+fi
+
+rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
