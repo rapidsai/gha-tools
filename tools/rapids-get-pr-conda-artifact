@@ -11,26 +11,4 @@
 #   rapids-get-pr-conda-artifact rmm 1095 cpp
 set -euo pipefail
 
-repo="$1"
-pr="$2"
-
-pkg_type="$3"
-case "${pkg_type}" in
-  cpp)
-    artifact_name=$(RAPIDS_REPOSITORY=$repo rapids-package-name conda_cpp)
-    ;;
-  python)
-    artifact_name=$(RAPIDS_REPOSITORY=$repo rapids-package-name conda_python)
-    ;;
-  *)
-    echo "Error: 3rd argument must be 'cpp' or 'python'"
-    exit 1
-    ;;
-esac
-
-commit="${4:-}"
-if [[ -z "${commit}" ]]; then
-    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
-fi
-
-rapids-get-artifact "ci/${repo}/pull-request/${pr}/${commit}/${artifact_name}"
+_rapids-get-pr-artifact "${1}" "${2}" "${3}" conda "${4:-}"
