@@ -27,7 +27,7 @@ pipretry_help="
 rapids-pip-retry options:
 
    --pipretry_max_retries=n        Retry the pip command at most n times (default is 3)
-   --pipretry_sleep_interval=n     Sleep n seconds between retries (default is 5)
+   --pipretry_sleep_interval=n     Sleep n seconds between retries (default is 10)
 
 ALSO rapids-pip-retry options can be set using the following env vars:
 
