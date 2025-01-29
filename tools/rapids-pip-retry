@@ -11,7 +11,7 @@
 # Configurable options are set using the following env vars:
 #
 # RAPIDS_PIP_EXE             - override the pip executable
-#                              Default is "pip"
+#                              Default is "python -m pip"
 #
 # RAPIDS_PIP_RETRY_MAX       - set to a positive integer to set the max number of retry
 #                              attempts (attempts after the initial try).
@@ -51,7 +51,7 @@ args=""
 # prints "ERROR: THESE PACKAGES DO NOT MATCH THE HASHES" and exits with 1) for
 # testing this script.
 # pipCmd=./testPip
-pipCmd=${RAPIDS_PIP_EXE:=pip}
+pipCmd=${RAPIDS_PIP_EXE:=python -m pip}
 
 # Function to run pip and check output for specific retryable errors
 # input variables:
