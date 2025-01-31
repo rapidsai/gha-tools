@@ -119,7 +119,7 @@ function runConda {
         elif grep -q "Timeout was reached" "${outfile}"; then
             retryingMsg="Retrying, found 'Timeout was reached' in output..."
             needToRetry=1
-        elif grep -q "Unexpected error [0-9]* on netlink descriptor [0-9]*" "${outfile}"; then
+        elif grep -q "Unexpected error [0-9]+ on netlink descriptor [0-9]+" "${outfile}"; then
             retryingMsg="Retrying, found 'Unexpected error [0-9]* on netlink descriptor [0-9]*' in output..."
             needToRetry=1
         elif [[ $exitcode -eq 139 ]]; then
