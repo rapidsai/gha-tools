@@ -125,8 +125,8 @@ function runConda {
         elif grep -q "Timeout was reached" "${outfile}"; then
             retryingMsg="Retrying, found 'Timeout was reached' in output..."
             needToRetry=1
-        elif grep -q "Unexpected error [0-9]+ on netlink descriptor [0-9]+" "${outfile}"; then
-            retryingMsg="Retrying, found 'Unexpected error [0-9]* on netlink descriptor [0-9]*' in output..."
+        elif grep -qE "Unexpected error [0-9]+ on netlink descriptor [0-9]+" "${outfile}"; then
+            retryingMsg="Retrying, found 'Unexpected error [0-9]+ on netlink descriptor [0-9]+' in output..."
             needToRetry=1
         elif [[ $exitcode -eq 139 ]]; then
             retryingMsg="Retrying, command resulted in a segfault. This may be an intermittent failure..."
@@ -149,7 +149,7 @@ function runConda {
 'Multi-download failed', \
 'Response ended prematurely', \
 'Timeout was reached', \
-'Unexpected error [0-9]* on netlink descriptor [0-9]*', \
+'Unexpected error [0-9]+ on netlink descriptor [0-9]+', \
 segfault exit code 139"
         fi
 
