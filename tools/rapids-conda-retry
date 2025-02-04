@@ -2,12 +2,8 @@
 #
 # rapids-conda-retry
 #
-# wrapper for conda that retries the command after a CondaHTTPError,
-# ChecksumMismatchError, or JSONDecodeError (ideally, any conda error that
-# is normally resolved by retrying)
-#
-# This must be set in order for the script to recognize failing exit codes when
-# output is piped to tee
+# wrapper for conda that retries the command after retryable errors like
+# CondaHTTPError, ChecksumMismatchError, and JSONDecodeError
 #
 # Example usage:
 # $ rapids-conda-retry install cudatoolkit=11.0 rapids=0.16
@@ -23,9 +19,18 @@
 #
 # RAPIDS_CONDA_RETRY_SLEEP     - set to a positive integer to set the duration, in
 #                                seconds, to wait between retries.
-#                                Default is a 10 second sleep
+#                                Default is a 10 second sleep.
 #
+# RAPIDS_CONDA_RETRY_TIMEOUT   - Timeout for each individual retry.
+#                                Positive integers are interpreted as seconds,
+#                                but unit strings like '2h' for "two hours" will also work.
+#                                Default varies based on the command being run.
+#
+
+# This must be set in order for the script to recognize failing exit codes when
+# output is piped to tee
 set -o pipefail
+
 export RAPIDS_SCRIPT_NAME="rapids-conda-retry"
 
 condaretry_help="
@@ -43,6 +48,11 @@ ALSO rapids-conda-retry options can be set using the following env vars:
     RAPIDS_CONDA_RETRY_SLEEP     - set to a positive integer to set the duration, in
                                    seconds, to wait between retries.
                                    Default is a 10 second sleep
+
+    RAPIDS_CONDA_RETRY_TIMEOUT   - Timeout for each individual retry.
+                                   Positive integers are interpreted as seconds,
+                                   but unit strings like '2h' for 'two hours' will also work.
+                                   Default varies based on the command being run.
 ==========
 "
 max_retries=${RAPIDS_CONDA_RETRY_MAX:=3}
@@ -67,7 +77,7 @@ condaCmd=${RAPIDS_CONDA_EXE:=conda}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runConda {
     # shellcheck disable=SC2086
-    ${condaCmd} ${args} 2>&1| tee "${outfile}"
+    timeout --verbose "${timeout_duration}" ${condaCmd} ${args} 2>&1| tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0
@@ -130,6 +140,13 @@ function runConda {
             retryingMsg="Retrying, command resulted in a segfault. This may be an intermittent failure..."
             needToRetry=1
             needToClean=1
+        elif [[ $exitcode -eq 124 ]]; then
+            # 'timeout' returns exit code 124 when the timeout is exceeded.
+            # ref: https://man7.org/linux/man-pages/man1/timeout.1.html
+            exitMsg="Exiting, command exited with status 124 which often indicates a timeout (configured timeout='${timeout_duration}')."
+            exitMsg+=" To increase this timeout, set env variable RAPIDS_CONDA_RETRY_TIMEOUT."
+            rapids-echo-stderr "${exitMsg}"
+            needToRetry=0
         else
             rapids-echo-stderr "Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
 'ChecksumMismatchError:', \
@@ -151,16 +168,17 @@ function runConda {
 segfault exit code 139"
         fi
 
-        if (( needToRetry == 1 )) && \
-           (( retries >= max_retries )); then
-            # Catch instance where we run out of retries
-            rapids-echo-stderr "Exiting, reached max retries..."
-        else
-            # Give reason for retry
-            rapids-echo-stderr "${retryingMsg}"
-            if (( needToClean == 1 )); then
-                rapids-echo-stderr "Cleaning tarball cache before retrying..."
-                ${condaCmd} clean --tarballs -y
+        if (( needToRetry == 1 )); then
+            if (( retries >= max_retries )); then
+                # Catch instance where we run out of retries
+                rapids-echo-stderr "Exiting, reached max retries..."
+            else
+                # Give reason for retry
+                rapids-echo-stderr "${retryingMsg}"
+                if (( needToClean == 1 )); then
+                    rapids-echo-stderr "Cleaning tarball cache before retrying..."
+                    ${condaCmd} clean --tarballs -y
+                fi
             fi
         fi
 fi
@@ -183,6 +201,27 @@ for arg in "$@"; do
       args="${args} ${arg}"
    fi
 done
+
+# Set a default timeout based on command being run.
+#
+# Originally added to prevent 'conda install' hangs from occupying
+# a CI runner indefinitely.
+if [ -n "${RAPIDS_CONDA_RETRY_TIMEOUT:-}" ]; then
+    # allow timeout to be set by an environment variable
+    timeout_duration=${RAPIDS_CONDA_RETRY_TIMEOUT}
+elif grep -q -E 'install|env.*create|env.*update' <<< "${args}"; then
+    # 'conda install', 'conda env create', 'conda env update' should never run for more than 45 minutes
+    # TODO(jameslamb): revert this back to '45m' before merge
+    # timeout_duration='45m'
+    timeout_duration='1s'
+else
+    # other commands falling here might include 'conda mambabuild' or similar,
+    # which could take several hours for expensive-to-build projects
+    # TODO(jameslamb): revert this back to '6h' before merge
+    # timeout_duration='6h'
+    timeout_duration='2s'
+fi
+rapids-echo-stderr "timeout for conda operations: '${timeout_duration}'"
 
 # Run command
 outfile=$(mktemp)
