@@ -212,15 +212,11 @@ if [ -n "${RAPIDS_CONDA_RETRY_TIMEOUT:-}" ]; then
     timeout_duration=${RAPIDS_CONDA_RETRY_TIMEOUT}
 elif grep -q -E 'install|env.*create|env.*update' <<< "${args}"; then
     # 'conda install', 'conda env create', 'conda env update' should never run for more than 45 minutes
-    # TODO(jameslamb): revert this back to '45m' before merge
-    # timeout_duration='45m'
-    timeout_duration='1s'
+    timeout_duration='45m'
 else
     # other commands falling here might include 'conda mambabuild' or similar,
     # which could take several hours for expensive-to-build projects
-    # TODO(jameslamb): revert this back to '6h' before merge
-    # timeout_duration='6h'
-    timeout_duration='2s'
+    timeout_duration='6h'
 fi
 rapids-echo-stderr "timeout for conda operations: '${timeout_duration}'"
 
