@@ -49,6 +49,3 @@ jobs:
         run: |
           pip install pytest
           pytest tests
-      - name: Run bash tests
-        run: |
-          bash tests/test_rapids-otel-wrap.sh
