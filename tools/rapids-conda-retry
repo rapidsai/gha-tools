@@ -206,7 +206,7 @@ done
 #
 # This prevents occupying a CI runner for too long in cases where
 # other timeout mechanisms in 'conda' / 'mamba' are not sufficient to
-# interrupt to a long-running operation.
+# interrupt a long-running operation.
 if [ -n "${RAPIDS_CONDA_RETRY_TIMEOUT:-}" ]; then
     # allow timeout to be set by an environment variable
     timeout_duration=${RAPIDS_CONDA_RETRY_TIMEOUT}
