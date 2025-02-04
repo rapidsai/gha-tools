@@ -22,7 +22,7 @@
 #                                but unit strings like '2h' for "two hours" will also work.
 #                                Default varies based on the command being run.
 #
-# These are copied to RAPIDS_CONDA_RETRY_MAX, RAPIDS_CONDA_RETRY_SLEEP, and RAPIDS_MAMBA_RETRY_TIMEOUT.
+# These are copied to RAPIDS_CONDA_RETRY_MAX, RAPIDS_CONDA_RETRY_SLEEP, and RAPIDS_CONDA_RETRY_TIMEOUT.
 #
 # Similarly, the options `--mambaretry_...` are copied to their `--condaretry_...` equivalents
 
