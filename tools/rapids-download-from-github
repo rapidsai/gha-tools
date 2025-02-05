@@ -1,19 +1,21 @@
 #!/bin/bash
-# A utility script that downloads an artifact from Github Artifacts, unzips it,
+# A utility script that downloads an artifact from Github Artifacts, unzips it to a temporary directory,
 # and prints the location where it was unzipped.
 # Positional Arguments:
 #   1) package name to generate s3 path for
-#   2) location to unzip it to
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-download-from-github"
 
-if [ -z "$1" ] || [ -z "$2" ]; then
-  rapids-echo-stderr "Must specify input arguments: PKG_NAME and UNZIP_DEST"
+if [ -z "$1" ] then
+  rapids-echo-stderr "Must specify input arguments: PKG_NAME"
   exit 1
 fi
 
 github_run_id="$(rapids-github-run-id)"
 pkg_name=$(basename "$1" .tar.gz)
-unzip_dest="$2"
+unzip_dest="$(mktemp -d)"
 
-_rapids-download-from-github "$github_run_id" "$pkg_name" "$unzip_dest"
+rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
+gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --name "${pkg_name}" --dir "${unzip_dest}" 
+
+echo -n "${unzip_dest}"
