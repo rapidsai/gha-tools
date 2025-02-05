@@ -1,0 +1,39 @@
+#!/bin/bash
+# A utility script that examines environment variables provided
+# by GitHub Actions to print out a Github Workflow Run ID where the expected artifact
+# should be.
+#
+# The output format should be one of the following:
+#
+## For PR builds:
+## s3://rapids-downloads/ci/<REPO_NAME>/pull-request/<PR_NUMBER>/<SHORT_HASH>/
+
+## For branch builds:
+## s3://rapids-downloads/ci/<REPO_NAME>/branch/<BRANCH_NAME>/<SHORT_HASH>/
+
+## For nightly builds:
+## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
+set -euo pipefail
+source rapids-constants
+export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
+
+pkg_name=$(basename "$1" .tar.gz)
+
+case "${RAPIDS_BUILD_TYPE}" in
+  pull-request)
+    run_id=$(gh run list --repo ${RAPIDS_REPOSITORY} --branch ${RAPIDS_REF_NAME} --commit ${RAPIDS_SHA} --json databaseId --jq '.[0] | .databaseId')
+    ;;
+  branch)
+    run_id=$(gh run list --repo ${RAPIDS_REPOSITORY} --branch ${RAPIDS_REF_NAME} --commit ${RAPIDS_SHA} --json databaseId --jq '.[0] | .databaseId')
+    ;;
+  nightly)
+    # Need to implement this
+    run_id=$(gh run list --repo ${RAPIDS_REPOSITORY} --branch ${RAPIDS_REF_NAME} --commit ${RAPIDS_SHA} --json databaseId --jq '.[0] | .databaseId')
+    ;;
+  *)
+    rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
+    exit 1
+    ;;
+esac
+
+echo -n "${run_id}"
