@@ -68,7 +68,7 @@ Since the current working directory is a standard RAPIDS repository, the CI scri
 
 ## Testing in CI
 
-The tools here are all executable, so testing an alternative branch just requirements downloading
+The tools here are all executable, so testing an alternative branch just requires downloading
 the files and putting the `tools/` directory on `PATH`.
 
 For example, create a script called `use_gha_tools_from_branch.sh` in the following in the project's `ci/` directory.
