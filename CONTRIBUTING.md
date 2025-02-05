@@ -1,6 +1,6 @@
 # Contributing
 
-## Testing Scripts Locally
+## Testing Locally
 
 Before opening a pull-request, it is recommended to test all changes locally.
 
@@ -64,4 +64,34 @@ Since the current working directory is a standard RAPIDS repository, the CI scri
 
 ```sh
 ./ci/test_python.sh
+```
+
+## Testing in CI
+
+The tools here are all executable, so testing an alternative branch just requires downloading
+the files and putting the `tools/` directory on `PATH`.
+
+For example, create a script called `use_gha_tools_from_branch.sh` in the following in the project's `ci/` directory.
+
+```shell
+#!/bin/bash
+
+# fill these in
+GHA_TOOLS_BRANCH=
+GHA_TOOLS_REPO_ORG=
+
+git clone \
+  --branch ${GHA_TOOLS_BRANCH} \
+  https://github.com/${GHA_TOOLS_REPO_ORG}/gha-tools.git \
+  /tmp/gha-tools
+
+unset GHA_TOOLS_BRANCH GHA_TOOLS_REPO_ORG
+
+export PATH="/tmp/gha-tools/tools":$PATH
+```
+
+Source that script in all the `ci/` scripts.
+
+```shell
+source ./ci/use_gha_tools_from_branch.sh
 ```
