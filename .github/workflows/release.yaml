@@ -3,7 +3,7 @@ name: release main
 on:
   push:
     branches:
-      - main
+      - test-github-artifacts
     paths:
       - "tools/*"
       - ".github/workflows/release.yaml"
@@ -35,16 +35,3 @@ jobs:
         with:
           files: ${{ env.RELEASE_FILE_NAME }}
           tag_name: ${{ env.NEXT_PATCH_VERSION }}
-  trigger-pipeline:
-    runs-on: ubuntu-latest
-    needs: release
-    steps:
-      - name: Trigger CI Images
-        env:
-          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN }}
-        run: |
-          gh workflow run push.yaml \
-          --field upstream_job="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-          --field upstream_repository=gha-tools \
-          --repo rapidsai/ci-imgs \
-          --ref main
