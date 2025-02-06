@@ -35,3 +35,4 @@ jobs:
         with:
           files: ${{ env.RELEASE_FILE_NAME }}
           tag_name: ${{ env.NEXT_PATCH_VERSION }}
+
