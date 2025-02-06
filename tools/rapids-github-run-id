@@ -17,8 +17,6 @@ set -euo pipefail
 source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
-pkg_name=$(basename "$1" .tar.gz)
-
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request)
     run_id=$(gh run list --repo ${RAPIDS_REPOSITORY} --branch ${RAPIDS_REF_NAME} --commit ${RAPIDS_SHA} --json databaseId --jq '.[0] | .databaseId')
