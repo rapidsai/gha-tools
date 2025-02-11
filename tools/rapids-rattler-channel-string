@@ -20,7 +20,7 @@ _add_c_prefix() {
   done
 }
 
-echo "Using channels: ${channels[*]}"
+rapids-logger "Using channels: ${channels[*]}"
 
 CHANNELS=$(_add_c_prefix)
 export CHANNELS
