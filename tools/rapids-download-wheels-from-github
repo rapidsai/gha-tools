@@ -1,0 +1,19 @@
+#!/bin/bash
+# A utility script that downloads wheel artifacts from Github Artifacts to /wheelhouse
+# Positional Arguments:
+#   1) dest dir to download and extract wheels to
+set -eo pipefail
+
+source rapids-prompt-local-repo-config
+
+# For legacy reasons, allow this script to be run without the pkg_type being the first arg
+pkg_name="$(rapids-package-name "wheel_python")"
+
+pkg_type="$1"
+if [ "${pkg_type}" = "cpp" ] || [ "${pkg_type}" = "python" ]; then
+    # remove pkg_type from args because we handle it in this script
+    shift;
+    pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
+fi
+
+rapids-download-from-github "${pkg_name}"

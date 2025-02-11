@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
 fi
 
 github_run_id="$(rapids-github-run-id)"
-pkg_name=$(basename "$1" .tar.gz)
+pkg_name="$1"
 unzip_dest="$(mktemp -d)"
 
 rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"

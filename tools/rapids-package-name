@@ -76,6 +76,6 @@ if (( append_arch == 1)); then
 fi
 
 # for cpp and python package types, it's a tarball, append .tar.gz and prepend project name
-pkg_name="${repo_name}_${pkg_name}.tar.gz"
+pkg_name="${repo_name}_${pkg_name}"
 
 echo -n "${pkg_name}"
