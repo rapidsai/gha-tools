@@ -1,0 +1,26 @@
+#!/bin/bash
+
+RAPIDS_CHANNEL="rapidsai-nightly"
+DASK_CHANNEL="dask/label/dev"
+
+# Replace dev/nightly channels if build is a release build
+if rapids-is-release-build; then
+  RAPIDS_CHANNEL="rapidsai"
+  DASK_CHANNEL=""
+fi
+
+channels=("$RAPIDS_CHANNEL" "$DASK_CHANNEL" "conda-forge" "nvidia")
+
+_add_c_prefix() {
+  for channel in "${channels[@]}"; do
+    # Only echo out a channel if it is non-empty
+    if [[ $channel ]]; then
+      echo -n "-c $channel "
+    fi
+  done
+}
+
+echo "Using channels: ${channels[*]}"
+
+CHANNELS=$(_add_c_prefix)
+export CHANNELS
