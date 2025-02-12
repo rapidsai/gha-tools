@@ -22,5 +22,5 @@ _add_c_prefix() {
 
 rapids-logger "Using channels: ${channels[*]}"
 
-RATTLER_CHANNELS=$(_add_c_prefix)
+IFS=" " read -r -a RATTLER_CHANNELS <<< "$(_add_c_prefix)"
 export RATTLER_CHANNELS
