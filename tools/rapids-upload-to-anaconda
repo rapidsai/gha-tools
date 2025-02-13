@@ -64,5 +64,10 @@ for OBJ in $(jq -nr 'env.CONDA_ARTIFACTS | fromjson | .[]'); do
     --no-progress \
     ${PKGS_TO_UPLOAD}
 
+  if [ -d telemetry-artifacts ]; then
+    ls -l "${UNTAR_DEST}"/*.tar.bz2 >> telemetry-artifacts/artifact-list.txt
+    ls -l "${UNTAR_DEST}"/*.conda >> telemetry-artifacts/artifact-list.txt
+  fi
+
   echo ""
 done
