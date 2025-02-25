@@ -118,6 +118,9 @@ function runConda {
         elif grep -q "Error when extracting package:" "${outfile}"; then
             retryingMsg="Retrying, found 'Error when extracting package:' in output..."
             needToRetry=1
+        elif grep -q -i "Failed writing received data to disk" "${outfile}"; then
+            retryingMsg="Retrying, found 'Failed writing received data to disk' in output..."
+            needToRetry=1
         elif grep -q "File not valid: SHA256 sum doesn't match expectation" "${outfile}"; then
             retryingMsg="Retrying, found 'File not valid: SHA256 sum doesn't match expectation' in output..."
             needToRetry=1
@@ -159,6 +162,7 @@ function runConda {
 'DependencyNeedsBuildingError:', \
 'EOFError:', \
 'Error when extracting package:', \
+'Failed writing received data to disk', \
 'File not valid: SHA256 sum doesn't match expectation', \
 'JSONDecodeError:', \
 'Multi-download failed', \
