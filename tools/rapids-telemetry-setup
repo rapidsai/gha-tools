@@ -1,0 +1,5 @@
+#!/bin/bash
+# Set up the environment for telemetry. This is mostly done in CI scripts,
+# but some stuff is done here to allow the data capture to work (and not raise errors) locally.
+
+mkdir -p telemetry-artifacts
