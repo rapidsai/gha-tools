@@ -33,7 +33,7 @@ IFS=" " read -r -a RATTLER_CHANNELS <<< "$(_add_c_prefix)"
 export RATTLER_CHANNELS
 
 # Set default CLI args passed to `rattler-build`
-RATTLER_ARGS=("--experimental" "--no-build-id" "--output-dir" "$RAPIDS_CONDA_BLD_OUTPUT_DIR")
+RATTLER_ARGS=("--experimental" "--no-build-id" "--channel-priority" "disable" "--output-dir" "$RAPIDS_CONDA_BLD_OUTPUT_DIR")
 
 rapids-logger "Using rattler-build args: ${RATTLER_ARGS[*]}"
 
