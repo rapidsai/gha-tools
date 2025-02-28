@@ -73,3 +73,7 @@ rapids-retry anaconda \
     --no-progress \
     "${WHEEL_DIR}"/*.whl
 echo ""
+
+if [ -d telemetry-artifacts ]; then
+  ls -l "${WHEEL_DIR}"/*.whl >> telemetry-artifacts/artifact-list.txt
+fi
