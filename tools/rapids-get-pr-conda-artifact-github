@@ -1,0 +1,46 @@
+#!/bin/bash
+# Echo path to an artifact for a specific PR from GitHub Artifacts.
+# Finds and uses the latest commit on the PR.
+#
+# Positional Arguments:
+#   1) repo name
+#   2) PR number
+#   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
+#   4) [optional] commit hash, to get the artifact for a specific commit
+#
+# Example Usage:
+#   rapids-get-pr-conda-artifact-github rmm 1095 cpp
+set -euo pipefail
+
+repo="${1}"
+pr="${2}"
+package_type="${3}"
+commit="${4:-}"
+
+# Create a temporary directory for the artifact
+unzip_dest=$(mktemp -d)
+
+# If commit is not provided, get the latest commit on the PR
+if [[ -z "${commit}" ]]; then
+    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
+fi
+
+# Use a subshell to isolate environment variable changes
+(
+    # Set up environment variables needed for GitHub artifact download
+    export RAPIDS_REPOSITORY="rapidsai/${repo}"
+    export RAPIDS_BUILD_TYPE="pull-request"
+    export RAPIDS_SHA="${commit}"
+    export RAPIDS_REF_NAME="pull-request/${pr}"
+
+    # Generate the artifact name
+    artifact_name=$(rapids-package-name "conda_${package_type}")
+
+    # Get the GitHub run ID for the PR
+    github_run_id=$(rapids-github-run-id)
+
+    rapids-echo-stderr "Downloading and decompressing ${artifact_name} from GitHub Run ID ${github_run_id} into ${unzip_dest}"
+    gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --name "${artifact_name}" --dir "${unzip_dest}"
+)
+
+echo -n "${unzip_dest}"
