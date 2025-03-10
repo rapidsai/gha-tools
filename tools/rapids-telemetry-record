@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Check for at least 2 arguments: filename and command
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 filename command [arguments...]"
+    exit 1
+fi
+
+output_file="$1"
+shift
+
+# TODO: Make this a temporary path rather than writing in the GITHUB_WORKSPACE.
+output_path="${GITHUB_WORKSPACE:-"."}/telemetry-artifacts/${output_file}"
+
+# Run the command, redirecting both stdout and stderr to tee.
+# This writes the combined output to the specified file while also printing it.
+"$@" 2>&1 | tee "${output_path}"
+
+# Exit with the same status as the command that was run.
+exit "${PIPESTATUS[0]}"
