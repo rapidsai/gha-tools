@@ -1,5 +1,5 @@
 #!/bin/bash
-# Echo path to an artifact for a specific PR from GitHub Artifacts.
+# Downloads and decompresses an artifact for a specific PR from GitHub Artifacts.
 # Finds and uses the latest commit on the PR.
 #
 # Positional Arguments:
@@ -8,7 +8,9 @@
 #   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
 #   4) [optional] commit hash, to get the artifact for a specific commit
 #
-# RAPIDS_PY_WHEEL_NAME must be set to indicate the package name to fetch.
+# Optional Environment Variables:
+#   RAPIDS_UNZIP_DIR: directory to unzip the artifact into
+#
 # Example Usage:
 #   rapids-get-pr-wheel-artifact-github rmm 1095 cpp
 set -euo pipefail
@@ -19,17 +21,17 @@ package_type="${3}"
 commit="${4:-}"
 
 # Check if RAPIDS_PY_WHEEL_NAME is set when fetching a wheel
-if [[ -z "${RAPIDS_PY_WHEEL_NAME:+placeholder}" ]]; then
+if [[ -z "${RAPIDS_PY_WHEEL_NAME}" ]]; then
     echo "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
     exit 1
 fi
 
 # Create a temporary directory for the artifact
-unzip_dest=$(mktemp -d)
+unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
+    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid[0:7]')
 fi
 
 # Use a subshell to isolate environment variable changes

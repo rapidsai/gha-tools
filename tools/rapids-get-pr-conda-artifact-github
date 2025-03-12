@@ -1,5 +1,5 @@
 #!/bin/bash
-# Echo path to an artifact for a specific PR from GitHub Artifacts.
+# Downloads and decompresses an artifact for a specific PR from GitHub Artifacts.
 # Finds and uses the latest commit on the PR.
 #
 # Positional Arguments:
@@ -7,6 +7,9 @@
 #   2) PR number
 #   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
 #   4) [optional] commit hash, to get the artifact for a specific commit
+#
+# Optional Environment Variables:
+#   RAPIDS_UNZIP_DIR: directory to unzip the artifact into
 #
 # Example Usage:
 #   rapids-get-pr-conda-artifact-github rmm 1095 cpp
@@ -18,7 +21,7 @@ package_type="${3}"
 commit="${4:-}"
 
 # Create a temporary directory for the artifact
-unzip_dest=$(mktemp -d)
+unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then

@@ -4,9 +4,6 @@ set -eo pipefail
 
 source rapids-prompt-local-repo-config
 
-# For legacy reasons, allow this script to be run without the pkg_type being the first arg
-pkg_name="$(rapids-package-name "wheel_python")"
-
 pkg_type="$1"
 if [ "${pkg_type}" = "cpp" ] || [ "${pkg_type}" = "python" ]; then
     # remove pkg_type from args because we handle it in this script

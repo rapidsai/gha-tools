@@ -2,7 +2,7 @@
 # A utility script that downloads an artifact from Github Artifacts, unzips it to a temporary directory,
 # and prints the location where it was unzipped.
 # Positional Arguments:
-#   1) package name to generate s3 path for
+#   1) package name to download from Github Artifacts
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-download-from-github"
 
