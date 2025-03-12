@@ -25,7 +25,7 @@ unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | cut -c1-7)
+    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid[0:7]')
 fi
 
 # Use a subshell to isolate environment variable changes
