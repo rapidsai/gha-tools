@@ -7,17 +7,18 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-download-conda-from-github"
 
-pkg_type="$1"
-# Validate package type argument
-if [[ "${pkg_type}" != "cpp" && "${pkg_type}" != "python" ]]; then
-  rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
-  exit 1
-fi
-
 source rapids-prompt-local-repo-config
 
-# Prepend `conda_` to PKG_TYPE for rapids-package-name function
-pkg_type="conda_${pkg_type}"
-pkg_name="$(rapids-package-name "$pkg_type")"
+# Validate package type argument
+pkg_type="$1"
+case "${pkg_type}" in
+  cpp|python)
+    pkg_name="$(rapids-package-name "conda_${pkg_type}")"
+    ;;
+  *)
+    rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
+    exit 1
+    ;;
+esac
 
 rapids-download-from-github "${pkg_name}"

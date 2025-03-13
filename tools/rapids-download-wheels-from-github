@@ -1,14 +1,24 @@
 #!/bin/bash
-# A utility script that downloads wheel artifacts from Github Artifacts to a temporary directory and returns the path to the directory
+# A utility script that downloads a wheel artifact archive from Github Artifacts, unzips it,
+# and returns the path to the directory where it was unzipped.
+# Positional Arguments:
+#   1) a string of "cpp" or "python" which determines which wheel artifact
+#      should be downloaded
 set -eo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-download-wheels-from-github"
 
 source rapids-prompt-local-repo-config
 
+# Validate package type argument
 pkg_type="$1"
-if [ "${pkg_type}" = "cpp" ] || [ "${pkg_type}" = "python" ]; then
-    # remove pkg_type from args because we handle it in this script
-    shift;
+case "${pkg_type}" in
+  cpp|python)
     pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
-fi
+    ;;
+  *)
+    rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
+    exit 1
+    ;;
+esac
 
 rapids-download-from-github "${pkg_name}"

@@ -1,19 +1,20 @@
 #!/bin/bash
-# Downloads and decompresses an artifact for a specific PR from GitHub Artifacts.
+# Downloads and decompresses a wheel artifact for a specific PR from GitHub Artifacts.
 # Finds and uses the latest commit on the PR.
 #
 # Positional Arguments:
 #   1) repo name
 #   2) PR number
-#   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
-#   4) [optional] commit hash, to get the artifact for a specific commit
+#   3) "cpp" or "python", to get the wheel artifact for the C++ or Python build, respectively
+#   4) [optional] commit hash, to get the wheel artifact for a specific commit
 #
 # Optional Environment Variables:
-#   RAPIDS_UNZIP_DIR: directory to unzip the artifact into
+#   RAPIDS_UNZIP_DIR: directory to unzip the wheel artifact into
 #
 # Example Usage:
 #   rapids-get-pr-wheel-artifact-github rmm 1095 cpp
 set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-get-pr-wheel-artifact-github"
 
 repo="${1}"
 pr="${2}"
@@ -25,9 +26,6 @@ if [[ -z "${RAPIDS_PY_WHEEL_NAME}" ]]; then
     echo "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
     exit 1
 fi
-
-# Create a temporary directory for the artifact
-unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
@@ -45,11 +43,6 @@ fi
     # Generate the artifact name
     artifact_name=$(rapids-package-name "wheel_${package_type}")
 
-    # Get the GitHub run ID for the PR
-    github_run_id=$(rapids-github-run-id)
-
-    rapids-echo-stderr "Downloading and decompressing ${artifact_name} from GitHub Run ID ${github_run_id} into ${unzip_dest}"
-    gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --name "${artifact_name}" --dir "${unzip_dest}"
+    unzip_dir=$(rapids-download-from-github "${artifact_name}")
+    echo -n "${unzip_dir}"
 )
-
-echo -n "${unzip_dest}"
