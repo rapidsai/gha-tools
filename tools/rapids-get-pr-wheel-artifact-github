@@ -41,7 +41,7 @@ fi
     export RAPIDS_REF_NAME="pull-request/${pr}"
 
     # Generate the artifact name
-    artifact_name=$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "wheel_${package_type}")
+    artifact_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "wheel_${package_type}")"
 
     unzip_dir=$(rapids-download-from-github "${artifact_name}")
     echo -n "${unzip_dir}"
