@@ -23,7 +23,7 @@ commit="${4:-}"
 
 # Check if RAPIDS_PY_WHEEL_NAME is set when fetching a wheel
 if [[ -z "${RAPIDS_PY_WHEEL_NAME}" ]]; then
-    echo "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
+    rapids-echo-stderr "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
     exit 1
 fi
 
