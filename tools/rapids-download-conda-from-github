@@ -13,7 +13,7 @@ source rapids-prompt-local-repo-config
 pkg_type="$1"
 case "${pkg_type}" in
   cpp|python)
-    pkg_name="$(rapids-package-name "conda_${pkg_type}")"
+    pkg_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "conda_${pkg_type}")"
     ;;
   *)
     rapids-echo-stderr 'Pass "cpp" or "python" as an argument.'
