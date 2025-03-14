@@ -1,0 +1,19 @@
+#!/bin/bash
+# A utility script that examines environment variables provided
+# by GitHub Actions to print out a Github Workflow Run ID where the expected artifact
+# should be.
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
+
+# While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
+case "${RAPIDS_BUILD_TYPE}" in
+  pull-request|branch|nightly)
+    run_id=$(gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')
+    ;;
+  *)
+    rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
+    exit 1
+    ;;
+esac
+
+echo -n "${run_id}"
