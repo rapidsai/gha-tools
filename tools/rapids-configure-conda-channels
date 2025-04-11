@@ -20,6 +20,11 @@ remove_conda_channel() {
   fi
 }
 
+# Remove release channel if build is not a release build
+if ! rapids-is-release-build; then
+  remove_conda_channel 'rapidsai'
+fi
+
 # Remove nightly channels if build is a release build
 if rapids-is-release-build; then
   remove_conda_channel 'rapidsai-nightly'
