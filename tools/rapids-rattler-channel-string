@@ -18,7 +18,7 @@ CHANNEL_PRIORITY="strict"
 IFS='.' read -ra CUDA_VERSION_ARRAY <<< "$RAPIDS_CUDA_VERSION"
 if [ "${CUDA_VERSION_ARRAY[0]}" -eq "11" ]; then
   NVIDIA_CHANNEL="nvidia"
-  CHANNEL_PRIORITY="disable"
+  CHANNEL_PRIORITY="disabled"
 fi
 
 channels=("$RAPIDS_CHANNEL" "$DASK_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
