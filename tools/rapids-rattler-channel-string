@@ -1,13 +1,11 @@
 #!/bin/bash
 
 RAPIDS_CHANNEL="rapidsai-nightly"
-DASK_CHANNEL="dask/label/dev"
 NVIDIA_CHANNEL=""
 
 # Replace dev/nightly channels if build is a release build
 if rapids-is-release-build; then
   RAPIDS_CHANNEL="rapidsai"
-  DASK_CHANNEL=""
 fi
 
 CHANNEL_PRIORITY="strict"
@@ -21,7 +19,7 @@ if [ "${CUDA_VERSION_ARRAY[0]}" -eq "11" ]; then
   CHANNEL_PRIORITY="disabled"
 fi
 
-channels=("$RAPIDS_CHANNEL" "$DASK_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
+channels=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
 
 _add_c_prefix() {
   for channel in "${channels[@]}"; do
