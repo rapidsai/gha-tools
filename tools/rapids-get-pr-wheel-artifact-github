@@ -1,0 +1,48 @@
+#!/bin/bash
+# Downloads and decompresses a wheel artifact for a specific PR from GitHub Artifacts.
+# Finds and uses the latest commit on the PR.
+#
+# Positional Arguments:
+#   1) repo name
+#   2) PR number
+#   3) "cpp" or "python", to get the wheel artifact for the C++ or Python build, respectively
+#   4) [optional] commit hash, to get the wheel artifact for a specific commit
+#
+# Optional Environment Variables:
+#   RAPIDS_UNZIP_DIR: directory to unzip the wheel artifact into
+#
+# Example Usage:
+#   rapids-get-pr-wheel-artifact-github rmm 1095 cpp
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-get-pr-wheel-artifact-github"
+
+repo="${1}"
+pr="${2}"
+package_type="${3}"
+commit="${4:-}"
+
+# Check if RAPIDS_PY_WHEEL_NAME is set when fetching a wheel
+if [[ -z "${RAPIDS_PY_WHEEL_NAME}" ]]; then
+    rapids-echo-stderr "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
+    exit 1
+fi
+
+# If commit is not provided, get the latest commit on the PR
+if [[ -z "${commit}" ]]; then
+    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid[0:7]')
+fi
+
+# Use a subshell to isolate environment variable changes
+(
+    # Set up environment variables needed for GitHub artifact download
+    export RAPIDS_REPOSITORY="rapidsai/${repo}"
+    export RAPIDS_BUILD_TYPE="pull-request"
+    export RAPIDS_SHA="${commit}"
+    export RAPIDS_REF_NAME="pull-request/${pr}"
+
+    # Generate the artifact name
+    artifact_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "wheel_${package_type}")"
+
+    unzip_dir=$(rapids-download-from-github "${artifact_name}")
+    echo -n "${unzip_dir}"
+)
