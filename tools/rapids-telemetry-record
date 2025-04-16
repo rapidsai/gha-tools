@@ -1,4 +1,5 @@
 #!/bin/bash
+set -exo pipefail
 
 # Check for at least 2 arguments: filename and command
 if [ "$#" -lt 2 ]; then
