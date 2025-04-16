@@ -10,12 +10,18 @@ fi
 output_file="$1"
 shift
 
-# TODO: Make this a temporary path rather than writing in the GITHUB_WORKSPACE.
-output_path="${GITHUB_WORKSPACE:-"."}/telemetry-artifacts/${output_file}"
+if [ ! -d "${GITHUB_WORKSPACE:-"."}/telemetry-artifacts" ]; then
+    echo "Telemetry artifacts directory does not exist. Please run rapids-telemetry-setup first."
+    echo "Skipping telemetry recording."
+    # TODO: Make this a temporary path rather than writing in the GITHUB_WORKSPACE.
+    output_path="${GITHUB_WORKSPACE:-"."}/telemetry-artifacts/${output_file}"
 
-# Run the command, redirecting both stdout and stderr to tee.
-# This writes the combined output to the specified file while also printing it.
-"$@" 2>&1 | tee "${output_path}"
+    # Run the command, redirecting both stdout and stderr to tee.
+    # This writes the combined output to the specified file while also printing it.
+    "$@" 2>&1 | tee "${output_path}"
+else
+    "$@" 2>&1
+fi
 
 # Exit with the same status as the command that was run.
 exit "${PIPESTATUS[0]}"
