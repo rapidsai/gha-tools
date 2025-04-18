@@ -1,0 +1,67 @@
+#!/bin/bash
+# A utility script to upload Python wheel packages to Anaconda repository using anaconda-client.
+
+# Positional Arguments:
+#   1) wheel name
+#   2) package type (one of: 'cpp', 'python'). If not provided, defaults to 'python' for compatibility with older code where python was the only behavior.
+#
+# [usage]
+#
+#   # upload any wheels found in Github artifacts with names like '*wheel_python_sparkly-unicorn*'
+#   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python'
+#
+
+set -eou pipefail
+export RAPIDS_SCRIPT_NAME="rapids-wheels-anaconda-github"
+
+if [ -z "$1" ]; then
+  rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
+  exit 1
+fi
+WHEEL_NAME="$1"
+PKG_TYPE="${2:-python}"
+
+case "${PKG_TYPE}" in
+  cpp)
+    ;;
+  python)
+    ;;
+  *)
+    rapids-echo-stderr 'Pass one of the following package types: "cpp", "python"'
+    exit 1
+    ;;
+esac
+
+WHEEL_SEARCH_KEY="wheel_${PKG_TYPE}_${WHEEL_NAME}"
+
+WHEEL_DIR="./dist"
+mkdir -p "${WHEEL_DIR}"
+
+github_run_id="$(rapids-github-run-id)"
+unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
+
+rapids-echo-stderr "Downloading ${PKG_TYPE}_${WHEEL_NAME} wheels to ${unzip_dest}"
+
+#Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
+gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --dir "${unzip_dest}" --pattern "*${WHEEL_SEARCH_KEY}*"
+
+find "${unzip_dest}" -name "*.whl" -exec cp {} "${WHEEL_DIR}/" \;
+
+# Check if we found any wheels
+wheel_count=$(find "${WHEEL_DIR}" -name "*.whl" | wc -l)
+if [ "${wheel_count}" -eq 0 ]; then
+  rapids-echo-stderr "No wheel files found in downloaded artifacts"
+  exit 1
+fi
+
+# Upload all wheels using the array
+rapids-echo-stderr "Uploading ${wheel_count} wheels to Anaconda.org"
+export RAPIDS_RETRY_SLEEP=180
+# shellcheck disable=SC2086
+rapids-retry anaconda \
+    -t "${RAPIDS_CONDA_TOKEN}" \
+    upload \
+    --skip-existing \
+    --no-progress \
+    "${WHEEL_DIR}"/*.whl
+echo ""

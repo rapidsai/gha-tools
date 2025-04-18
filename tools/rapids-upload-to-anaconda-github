@@ -1,0 +1,56 @@
+#!/bin/bash
+# A utility script that uploads all the conda packages from a
+# GitHub Actions workflow run to Anaconda.org
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda-github"
+
+case "${RAPIDS_BUILD_TYPE}" in
+  branch)
+    ;&
+  nightly)
+    ;;
+  *)
+    rapids-echo-stderr "Only branch builds and nightly builds are uploaded to Anaconda.org"
+    exit 1
+    ;;
+esac
+
+github_run_id="$(rapids-github-run-id)"
+unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
+
+#Download all artifacts with conda in the name to unzip_dest
+gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --dir "${unzip_dest}" --pattern "*conda*"
+
+# Find all directories within unzip_dest
+for artifact_dir in "${unzip_dest}"/*/; do
+  # Remove trailing slash
+  artifact_dir="${artifact_dir%/}"
+  rapids-echo-stderr "Processing artifact directory: ${artifact_dir}"
+
+  # Find packages to upload
+  PKGS_TO_UPLOAD=$(rapids-find-anaconda-uploads.py "${artifact_dir}")
+  
+  if [ -z "${PKGS_TO_UPLOAD}" ]; then
+    rapids-echo-stderr "Couldn't find any packages to upload in: ${artifact_dir}"
+    ls -l "${artifact_dir}/"*
+    continue
+  fi
+
+  # Format paths for display
+  # shellcheck disable=SC2001
+  DISPLAY_PATHS=$(echo "${PKGS_TO_UPLOAD}" | sed "s|^${unzip_dest}/||g")
+
+  rapids-echo-stderr "Uploading packages to Anaconda.org: ${DISPLAY_PATHS}"
+
+  export RAPIDS_RETRY_SLEEP=180
+  # shellcheck disable=SC2086
+  rapids-retry anaconda \
+    -t "${RAPIDS_CONDA_TOKEN}" \
+    upload \
+    --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
+    --skip-existing \
+    --no-progress \
+    ${PKGS_TO_UPLOAD}
+
+  echo ""
+done
