@@ -60,7 +60,6 @@ sleep_interval=${RAPIDS_CONDA_RETRY_SLEEP:=10}
 exitcode=0
 needToRetry=0
 retries=0
-args=""
 
 # Temporarily set this to something else (eg. a script called "testConda" that
 # prints "CondaHTTPError:" and exits with 1) for testing this script.
@@ -77,7 +76,7 @@ condaCmd=${RAPIDS_CONDA_EXE:=conda}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runConda {
     # shellcheck disable=SC2086
-    timeout --verbose "${timeout_duration}" "${condaCmd}" "${args}" 2>&1| tee "${outfile}"
+    timeout --verbose "${timeout_duration}" "${condaCmd}" "$@" 2>&1| tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0
@@ -192,6 +191,7 @@ segfault exit code 139"
 fi
 }
 
+args=()
 # Process and remove args recognized only by this script, save others for conda
 # Process help separately
 for arg in "$@"; do
@@ -206,7 +206,7 @@ for arg in "$@"; do
    elif [[ ${opt} == "--condaretry_sleep_interval" ]]; then
       sleep_interval=${val}
    else
-      args="${args} ${arg}"
+      args+=("${arg}")
    fi
 done
 
@@ -231,7 +231,7 @@ rapids-echo-stderr "timeout for conda operations: '${timeout_duration}'"
 # Run command
 outfile=$(mktemp)
 # shellcheck disable=SC2086
-runConda "${args}"
+runConda "${args[@]}"
 
 # Retry loop, only if needed
 while (( needToRetry == 1 )) && \
@@ -243,7 +243,7 @@ while (( needToRetry == 1 )) && \
    rapids-echo-stderr "Starting, retry ${retries} of ${max_retries} -> sleep done..."
 
    # shellcheck disable=SC2086
-   runConda "${args}"
+   runConda "${args[@]}"
 done
 
 rm -f "${outfile}"
