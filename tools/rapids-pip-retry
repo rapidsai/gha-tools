@@ -63,7 +63,7 @@ pipCmd=${RAPIDS_PIP_EXE:=python -m pip}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runPip {
     # shellcheck disable=SC2086
-    ${pipCmd} ${args} 2>&1  | tee "${outfile}"
+    ${pipCmd} "${args}" 2>&1  | tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0
@@ -119,7 +119,7 @@ done
 # Run command
 outfile=$(mktemp)
 # shellcheck disable=SC2086
-runPip ${args}
+runPip "${args}"
 
 # Retry loop, only if needed
 while (( needToRetry == 1 )) && \
@@ -131,7 +131,7 @@ while (( needToRetry == 1 )) && \
    rapids-echo-stderr "Starting, retry ${retries} of ${max_retries} -> sleep done..."
 
    # shellcheck disable=SC2086
-   runPip ${args}
+   runPip "${args}"
 done
 
 rm -f "${outfile}"
