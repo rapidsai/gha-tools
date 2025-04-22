@@ -45,7 +45,6 @@ sleep_interval=${RAPIDS_PIP_RETRY_SLEEP:=10}
 exitcode=0
 needToRetry=0
 retries=0
-args=""
 
 # Temporarily set this to something else (eg. a script called "testPip" that
 # prints "ERROR: THESE PACKAGES DO NOT MATCH THE HASHES" and exits with 1) for
@@ -63,7 +62,7 @@ pipCmd=${RAPIDS_PIP_EXE:=python -m pip}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runPip {
     # shellcheck disable=SC2086
-    ${pipCmd} "${args}" 2>&1  | tee "${outfile}"
+    ${pipCmd} "$@" 2>&1  | tee "${outfile}"
     exitcode=$?
     needToRetry=0
     needToClean=0
@@ -98,6 +97,7 @@ THESE PACKAGES DO NOT MATCH THE HASHES"
 fi
 }
 
+args=()
 # Process and remove args recognized only by this script, save others for pip
 # Process help separately
 for arg in "$@"; do
@@ -112,14 +112,14 @@ for arg in "$@"; do
    elif [[ ${opt} == "--pipretry_sleep_interval" ]]; then
       sleep_interval=${val}
    else
-      args="${args} ${arg}"
+      args+=("${arg}")
    fi
 done
 
 # Run command
 outfile=$(mktemp)
 # shellcheck disable=SC2086
-runPip "${args}"
+runPip "${args[@]}"
 
 # Retry loop, only if needed
 while (( needToRetry == 1 )) && \
@@ -131,7 +131,7 @@ while (( needToRetry == 1 )) && \
    rapids-echo-stderr "Starting, retry ${retries} of ${max_retries} -> sleep done..."
 
    # shellcheck disable=SC2086
-   runPip "${args}"
+   runPip "${args[@]}"
 done
 
 rm -f "${outfile}"
