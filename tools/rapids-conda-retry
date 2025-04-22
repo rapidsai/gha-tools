@@ -218,7 +218,7 @@ done
 if [ -n "${RAPIDS_CONDA_RETRY_TIMEOUT:-}" ]; then
     # allow timeout to be set by an environment variable
     timeout_duration=${RAPIDS_CONDA_RETRY_TIMEOUT}
-elif grep -q -E 'install|env.*create|env.*update' <<< "${args}"; then
+elif grep -q -E 'install|env.*create|env.*update' <<< "${args[@]}"; then
     # 'conda install', 'conda env create', 'conda env update' should never run for more than 45 minutes
     timeout_duration='45m'
 else
