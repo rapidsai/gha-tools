@@ -23,7 +23,7 @@ commit="${4:-}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid[0:7]')
+    commit=$(rapids-retry gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
 fi
 
 # Use a subshell to isolate environment variable changes
