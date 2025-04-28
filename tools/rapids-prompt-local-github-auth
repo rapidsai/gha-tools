@@ -1,0 +1,9 @@
+#!/bin/bash
+# A utility script that prompts user to authenticate with GitHub in
+# local environments
+
+if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
+  rapids-echo-stderr "No GitHub token detected in environment"
+  rapids-echo-stderr "Please authenticate with GitHub to continue"
+  gh auth login --web --git-protocol https
+fi
