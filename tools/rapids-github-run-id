@@ -8,7 +8,7 @@ export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request|branch)
-    run_id=${GITHUB_RUN_ID}
+    run_id=${GITHUB_RUN_ID:-$(rapids-retry gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')}
     ;;
   nightly)
     run_id=$(rapids-retry gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" --json databaseId --jq '.[0] | .databaseId')
