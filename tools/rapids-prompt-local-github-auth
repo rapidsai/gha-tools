@@ -6,4 +6,6 @@ if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
   rapids-echo-stderr "No GitHub token detected in environment"
   rapids-echo-stderr "Please authenticate with GitHub to continue"
   gh auth login --web --git-protocol https
+  GH_TOKEN=$(gh auth token)
+  export GH_TOKEN
 fi
