@@ -12,6 +12,7 @@ case "${RAPIDS_BUILD_TYPE}" in
       --repo "${RAPIDS_REPOSITORY}" \
       --branch "${RAPIDS_REF_NAME}" \
       --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}" \
       --json databaseId \
       --jq '.[0] | .databaseId')}
     ;;
