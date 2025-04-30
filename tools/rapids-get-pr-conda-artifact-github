@@ -23,20 +23,23 @@ commit="${4:-}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(rapids-retry gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
+    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
 fi
 
 # Use a subshell to isolate environment variable changes
 (
     # Set up environment variables needed for GitHub artifact download
-    export RAPIDS_REPOSITORY="rapidsai/${repo}"
-    export RAPIDS_BUILD_TYPE="pull-request"
-    export RAPIDS_SHA="${commit}"
-    export RAPIDS_REF_NAME="pull-request/${pr}"
+    RAPIDS_REPOSITORY="rapidsai/${repo}"
+    RAPIDS_SHA="${commit}"
+    RAPIDS_REF_NAME="pull-request/${pr}"
 
     # Generate the artifact name
-    artifact_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "conda_${package_type}")"
+    pkg_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "conda_${package_type}")"
+    github_run_id=$(gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')
+    unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
-    unzip_dir=$(rapids-download-from-github "${artifact_name}")
-    echo -n "${unzip_dir}"
+    rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
+    rapids-retry gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --name "${pkg_name}" --dir "${unzip_dest}"
+
+    echo -n "${unzip_dest}"
 )
