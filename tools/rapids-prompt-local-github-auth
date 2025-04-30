@@ -2,10 +2,38 @@
 # A utility script that prompts user to authenticate with GitHub in
 # local environments
 
-if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-  rapids-echo-stderr "No GitHub token detected in environment"
-  rapids-echo-stderr "Please authenticate with GitHub to continue"
-  gh auth login --web --git-protocol https
-  GH_TOKEN=$(gh auth token)
-  export GH_TOKEN
+declare -a scopes=("repo" "workflow")
+git_protocol="https"
+avoid_gh_cli_ssh_keygen_prompt=true
+
+# shellcheck disable=SC2068
+if ! gh auth status >/dev/null 2>&1; then
+    rapids-echo-stderr "No GitHub authentication detected"
+    rapids-echo-stderr "Please authenticate with GitHub to continue"
+
+    # Handle SSH keygen in container environments to avoid prompts
+    ssh_keygen="$(which ssh-keygen || echo "")"
+    if [ -n "${ssh_keygen}" ] && [ -n "${avoid_gh_cli_ssh_keygen_prompt}" ]; then
+        sudo mv "${ssh_keygen}"{,.bak} || true
+    fi
+
+    # Attempt authentication
+    if ! gh auth login \
+        --web --git-protocol ${git_protocol} \
+        --hostname "${GITHUB_HOST:-github.com}" \
+        ${scopes[@]/#/--scopes }; then
+        
+        # Restore SSH keygen before exiting
+        if [ -n "${ssh_keygen}" ] && [ -n "${avoid_gh_cli_ssh_keygen_prompt}" ]; then
+            sudo mv "${ssh_keygen}"{.bak,} || true
+        fi
+        
+        rapids-echo-stderr "GitHub authentication failed. Exiting."
+        exit 1
+    fi
+
+    # Restore SSH keygen
+    if [ -n "${ssh_keygen}" ] && [ -n "${avoid_gh_cli_ssh_keygen_prompt}" ]; then
+        sudo mv "${ssh_keygen}"{.bak,} || true
+    fi
 fi

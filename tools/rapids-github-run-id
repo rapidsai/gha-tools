@@ -5,13 +5,65 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
+function rapids-retry-capture-output {
+  local command=$1
+  shift
+  local max_retries=${RAPIDS_RETRY_MAX:=3}
+  local retries=0
+  local sleep_interval=${RAPIDS_RETRY_SLEEP:=10}
+  local output
+  local retcode
+  
+  output=$("${command}" "$@")
+  retcode=$?
+  
+  while (( retcode != 0 )) && (( retries < max_retries )); do
+    ((retries++))
+    rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&2
+    sleep "${sleep_interval}"
+    rapids-logger "rapids-retry: sleep done -> retrying..." >&2
+    
+    output=$("${command}" "$@")
+    retcode=$?
+  done
+  
+  if (( retcode == 0 )); then
+    echo "${output}"
+  fi
+  
+  return ${retcode}
+}
+
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
-  pull-request|branch)
-    run_id=${GITHUB_RUN_ID:-$(rapids-retry gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')}
+  pull-request)
+    run_id=${GITHUB_RUN_ID:-$(rapids-retry-capture-output gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')}
+    ;;
+  branch)
+    run_id=${GITHUB_RUN_ID:-$(rapids-retry-capture-output gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+      --event "push" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')}
     ;;
   nightly)
-    run_id=$(rapids-retry gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" --json databaseId --jq '.[0] | .databaseId')
+    run_id=$(rapids-retry-capture-output gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+      --event "workflow_dispatch" \
+      --created "${RAPIDS_NIGHTLY_DATE}" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')
     ;;
   *)
     rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"

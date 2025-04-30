@@ -23,7 +23,7 @@ commit="${4:-}"
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(rapids-retry gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
+    commit=$(git ls-remote https://github.com/rapidsai/"${repo}".git refs/heads/pull-request/"${pr}" | awk '{print $1}')
 fi
 
 # Use a subshell to isolate environment variable changes
