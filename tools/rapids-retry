@@ -48,6 +48,13 @@ function rapids-retry {
     max_retries=${RAPIDS_RETRY_MAX:=3}
     retries=0
     sleep_interval=${RAPIDS_RETRY_SLEEP:=10}
+
+    # Set up file descriptor 3 - point to stderr if quiet, otherwise stdout
+    if [[ "$quiet" == "true" ]]; then
+        exec 3>&2  # FD 3 points to stderr
+    else
+        exec 3>&1  # FD 3 points to stdout
+    fi
     
     local output
     local retcode
@@ -60,27 +67,29 @@ function rapids-retry {
         retcode=$?
     fi
     
+    # Retry loop
     while (( retcode != 0 )) && (( retries < max_retries )); do
         ((retries++))
         
+        # Logging now uses FD 3 consistently
+        rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&3
+        sleep "${sleep_interval}"
+        rapids-logger "rapids-retry: sleep done -> retrying..." >&3
+        
+        # Execute command based on quiet mode
         if [[ "$quiet" == "true" ]]; then
-            rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&2
-            sleep "${sleep_interval}"
-            rapids-logger "rapids-retry: sleep done -> retrying..." >&2
             output=$("${command}" "$@")
-            retcode=$?
         else
-            rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..."
-            sleep "${sleep_interval}"
-            rapids-logger "rapids-retry: sleep done -> retrying..."
             ${command} "$@"
-            retcode=$?
         fi
+        retcode=$?
     done
     
-    if [[ "$quiet" == "true" && retcode -eq 0 ]]; then
-        echo "${output}"
-    fi
+    # Clean up our file descriptor
+    exec 3>&-
+    
+    # Output captured result if in quiet mode and successful
+    [[ "$quiet" == "true" && $retcode -eq 0 ]] && echo "${output}"
     
     return ${retcode}
 }
