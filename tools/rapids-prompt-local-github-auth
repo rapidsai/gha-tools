@@ -2,8 +2,24 @@
 # A utility script that prompts user to authenticate with GitHub in
 # local environments
 
-if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-  rapids-echo-stderr "No GitHub token detected in environment"
-  rapids-echo-stderr "Please authenticate with GitHub to continue"
-  gh auth login --web --git-protocol https
+#!/bin/bash
+# A utility script that prompts user to authenticate with GitHub in
+# local environments
+
+declare -a scopes=("repo" "workflow")
+
+# shellcheck disable=SC2068
+if ! gh auth status >/dev/null 2>&1; then
+    rapids-echo-stderr "No GitHub authentication detected"
+    rapids-echo-stderr "Please authenticate with GitHub to continue"
+
+    # Attempt authentication
+    if ! gh auth login \
+        --web --git-protocol https \
+        --hostname "github.com" \
+        ${scopes[@]/#/--scopes }; then
+        
+        rapids-echo-stderr "GitHub authentication failed. Exiting."
+        exit 1
+    fi
 fi
