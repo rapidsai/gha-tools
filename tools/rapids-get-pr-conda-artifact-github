@@ -16,27 +16,4 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-get-pr-conda-artifact-github"
 
-repo="${1}"
-pr="${2}"
-package_type="${3}"
-commit="${4:-}"
-
-# If commit is not provided, get the latest commit on the PR
-if [[ -z "${commit}" ]]; then
-    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
-fi
-
-# Use a subshell to isolate environment variable changes
-(
-    # Set up environment variables needed for GitHub artifact download
-    export RAPIDS_REPOSITORY="rapidsai/${repo}"
-    export RAPIDS_BUILD_TYPE="pull-request"
-    export RAPIDS_SHA="${commit}"
-    export RAPIDS_REF_NAME="pull-request/${pr}"
-
-    # Generate the artifact name
-    artifact_name="$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "conda_${package_type}")"
-
-    unzip_dir=$(rapids-download-from-github "${artifact_name}")
-    echo -n "${unzip_dir}"
-)
+_rapids-get-pr-artifact-github "${1}" "${2}" "${3}" conda "${4:-}"

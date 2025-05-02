@@ -72,12 +72,15 @@ function runPip {
         # Show exit code
         rapids-echo-stderr "pip returned exit code: ${exitcode}"
 
-
-        if grep -q 'THESE PACKAGES DO NOT MATCH THE HASHES' "${outfile}"; then
+        if grep -q -E 'error.*incomplete\-download' "${outfile}"; then
+            retryingMsg="Retrying, found 'error: incomplete-download' in output..."
+            needToRetry=1
+        elif grep -q 'THESE PACKAGES DO NOT MATCH THE HASHES' "${outfile}"; then
             retryingMsg="Retrying, found Hash Mismatch Error in output..."
             needToRetry=1
         else
             rapids-echo-stderr "Exiting, no retryable ${RAPIDS_PIP_EXE} errors detected: \
+error: incomplete-download, \
 THESE PACKAGES DO NOT MATCH THE HASHES"
         fi
 
