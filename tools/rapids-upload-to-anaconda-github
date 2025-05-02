@@ -4,6 +4,7 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda-github"
 
+source rapids-prompt-local-github-auth
 case "${RAPIDS_BUILD_TYPE}" in
   branch)
     ;&

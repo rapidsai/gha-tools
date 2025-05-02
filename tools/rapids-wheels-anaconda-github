@@ -14,6 +14,8 @@
 set -eou pipefail
 export RAPIDS_SCRIPT_NAME="rapids-wheels-anaconda-github"
 
+source rapids-prompt-local-github-auth
+
 if [ -z "$1" ]; then
   rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
   exit 1
