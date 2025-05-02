@@ -16,4 +16,4 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-get-pr-wheel-artifact-github"
 
-_rapids-get-pr-artifact "${1}" "${2}" "${3}" wheel "${4:-}"
+_rapids-get-pr-artifact-github "${1}" "${2}" "${3}" wheel "${4:-}"
