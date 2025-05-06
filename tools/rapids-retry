@@ -14,7 +14,8 @@
 #   environment as a side-effect.
 #
 # Example usage:
-# $ rapids-retry conda install cudatoolkit=10.0 rapids=0.12
+# $ rapids-retry [--quiet] <command>
+# $ rapids-retry conda install python
 #
 # To capture the output of the command rather than displaying it:
 # $ output=$(rapids-retry --quiet gh run list --repo "myrepo/myproject")
@@ -49,22 +50,21 @@ function rapids-retry {
     retries=0
     sleep_interval=${RAPIDS_RETRY_SLEEP:=10}
 
-    local output
-    local retcode
-
-    if [[ "$quiet" == "true" ]]; then
-        output=$("${command}" "$@")
-        retcode=$?
-    else
-        ${command} "$@"
-        retcode=$?
-    fi
-
     # Choose rapids-logger FD based on quiet mode: stderr (FD 2) if quiet, stdout (FD 1) otherwise
     logger_fd="1"
     if [[ "$quiet" == "true" ]]; then
         logger_fd="2"
     fi
+
+    local output
+    local retcode
+
+    if [[ "$quiet" == "true" ]]; then
+        output=$("${command}" "$@")
+    else
+        ${command} "$@"
+    fi
+    retcode=$?
 
     # Retry loop
     while (( retcode != 0 )) && (( retries < max_retries )); do
