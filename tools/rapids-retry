@@ -60,19 +60,19 @@ function rapids-retry {
         retcode=$?
     fi
 
+    # Choose rapids-logger FD based on quiet mode: stderr (FD 2) if quiet, stdout (FD 1) otherwise
+    logger_fd="1"
+    if [[ "$quiet" == "true" ]]; then
+        logger_fd="2"
+    fi
+
     # Retry loop
     while (( retcode != 0 )) && (( retries < max_retries )); do
         ((retries++))
 
-        # Choose FD based on quiet mode: stderr (FD 2) if quiet, stdout (FD 1) otherwise
-        fd="1"
-        if [[ "$quiet" == "true" ]]; then
-            fd="2"
-        fi
-
-        rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&"${fd}"
+        rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&"${logger_fd}"
         sleep "${sleep_interval}"
-        rapids-logger "rapids-retry: sleep done -> retrying..." >&"${fd}"
+        rapids-logger "rapids-retry: sleep done -> retrying..." >&"${logger_fd}"
 
         # Execute command based on quiet mode
         if [[ "$quiet" == "true" ]]; then
