@@ -7,11 +7,35 @@ export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
-  pull-request|branch)
-    run_id=${GITHUB_RUN_ID}
+  pull-request)
+    run_id=${GITHUB_RUN_ID:-$(rapids-retry --quiet gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')}
+    ;;
+  branch)
+    run_id=${GITHUB_RUN_ID:-$(rapids-retry --quiet gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+      --event "push" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')}
     ;;
   nightly)
-    run_id=$(rapids-retry gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" --json databaseId --jq '.[0] | .databaseId')
+    run_id=$(rapids-retry --quiet gh run list \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --branch "${RAPIDS_REF_NAME}" \
+      --commit "${RAPIDS_SHA}" \
+      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+      --event "workflow_dispatch" \
+      --created "${RAPIDS_NIGHTLY_DATE}" \
+      --json databaseId \
+      --jq '.[0] | .databaseId')
     ;;
   *)
     rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"

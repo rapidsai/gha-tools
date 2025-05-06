@@ -22,7 +22,7 @@ fi
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
+    commit=$(rapids-retry --quiet gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
 fi
 
 # Set up environment variables needed for GitHub artifact download
@@ -32,7 +32,7 @@ RAPIDS_REF_NAME="pull-request/${pr}"
 
 # Generate the artifact name
 pkg_name=$(RAPIDS_NO_PKG_EXTENSION=true rapids-package-name "${package_format}_${package_type}")
-github_run_id=$(gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')
+github_run_id=$(rapids-retry --quiet gh run list --repo "${RAPIDS_REPOSITORY}" --branch "${RAPIDS_REF_NAME}" --commit "${RAPIDS_SHA}" --json databaseId --jq '.[0] | .databaseId')
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"

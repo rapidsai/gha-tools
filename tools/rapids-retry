@@ -14,7 +14,11 @@
 #   environment as a side-effect.
 #
 # Example usage:
-# $ rapids-retry conda install cudatoolkit=10.0 rapids=0.12
+# $ rapids-retry [--quiet] <command>
+# $ rapids-retry conda install python
+#
+# To capture the output of the command rather than displaying it:
+# $ output=$(rapids-retry --quiet gh run list --repo "myrepo/myproject")
 #
 # Configurable options are set using the following env vars:
 #
@@ -26,25 +30,62 @@
 #                          seconds, to wait between retries.
 #                          Default is a 10 second sleep
 #
+# Additional options:
+#
+# --quiet                - when specified as the first argument after the command,
+#                          captures the command's output instead of sending it to stdout.
+#                          Logger messages are redirected to stderr.
+#                          Returns the output of the command on success.
+#
 function rapids-retry {
+    # Handle the --quiet flag if it's the first argument
+    quiet=false
+    if [[ "$1" == "--quiet" ]]; then
+        quiet=true
+        shift
+    fi
     command=$1
     shift
     max_retries=${RAPIDS_RETRY_MAX:=3}
     retries=0
     sleep_interval=${RAPIDS_RETRY_SLEEP:=10}
 
-    ${command} "$@"
-    retcode=$?
-    while (( retcode != 0 )) && \
-          (( retries < max_retries )); do
-      ((retries++))
-      rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..."
-      sleep "${sleep_interval}"
-      rapids-logger "rapids-retry: sleep done -> retrying..."
+    # Choose rapids-logger FD based on quiet mode: stderr (FD 2) if quiet, stdout (FD 1) otherwise
+    logger_fd="1"
+    if [[ "$quiet" == "true" ]]; then
+        logger_fd="2"
+    fi
 
-      ${command} "$@"
-      retcode=$?
+    local output
+    local retcode
+
+    if [[ "$quiet" == "true" ]]; then
+        output=$("${command}" "$@")
+    else
+        ${command} "$@"
+    fi
+    retcode=$?
+
+    # Retry loop
+    while (( retcode != 0 )) && (( retries < max_retries )); do
+        ((retries++))
+
+        rapids-logger "rapids-retry: retry ${retries} of ${max_retries} | exit code: (${retcode}) -> sleeping for ${sleep_interval} seconds..." >&"${logger_fd}"
+        sleep "${sleep_interval}"
+        rapids-logger "rapids-retry: sleep done -> retrying..." >&"${logger_fd}"
+
+        # Execute command based on quiet mode
+        if [[ "$quiet" == "true" ]]; then
+            output=$("${command}" "$@")
+        else
+            ${command} "$@"
+        fi
+        retcode=$?
     done
+
+    # Output captured result if in quiet mode and successful
+    [[ "$quiet" == "true" && $retcode -eq 0 ]] && echo "${output}"
+
     return ${retcode}
 }
 
