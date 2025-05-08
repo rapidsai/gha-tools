@@ -1,6 +1,7 @@
 #!/bin/bash
-# A utility script that downloads an artifact from Github Artifacts, unzips it to a temporary directory,
+# Downloads an artifact from Github Artifacts, unzips it to a temporary directory,
 # and prints the location where it was unzipped.
+#
 # Positional Arguments:
 #   1) package name to download from Github Artifacts
 set -euo pipefail
