@@ -7,10 +7,12 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-download-from-github"
 
-if [ -z "$1" ]; then
+if [ -z "${1:-}" ]; then
   rapids-echo-stderr "Must specify input arguments: PKG_NAME"
   exit 1
 fi
+
+source rapids-prompt-local-github-auth
 
 github_run_id="$(rapids-github-run-id)"
 pkg_name="$1"

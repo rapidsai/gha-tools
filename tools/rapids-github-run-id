@@ -20,6 +20,8 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
+source rapids-prompt-local-github-auth
+
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request)

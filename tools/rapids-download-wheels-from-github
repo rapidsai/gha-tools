@@ -9,7 +9,6 @@ set -eo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-download-wheels-from-github"
 
 source rapids-prompt-local-repo-config
-source rapids-prompt-local-github-auth
 
 # Validate package type argument
 pkg_type="$1"

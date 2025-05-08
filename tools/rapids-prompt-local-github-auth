@@ -1,10 +1,30 @@
 #!/bin/bash
 #
-# A utility script that prompts user to authenticate with GitHub in
-# local environments
+# Checks if the current environment is authenticated to communicate with the GitHub API.
+#
+# If not, prompts for an interactive login to generate short-lived credentials.
+#
+# This exists primarily for interactive use cases, like trying to reproduce CI locally.
+#
 
-if [ -z "${GH_TOKEN:-}" ] && [ -z "${GITHUB_TOKEN:-}" ]; then
-  rapids-echo-stderr "No GitHub token detected in environment"
-  rapids-echo-stderr "Please authenticate with GitHub to continue"
-  gh auth login --web --git-protocol https
+if ! gh auth status >/dev/null 2>&1; then
+    rapids-echo-stderr "No GitHub authentication detected."
+    rapids-echo-stderr "Please authenticate with GitHub to continue."
+    rapids-echo-stderr "To avoid these interactive prompts in the future, set environment variable 'GH_TOKEN' or run 'gh auth login' with the GitHub CLI."
+
+    # Prompt for interactive login.
+    #
+    # By omitting --scopes, this will generate a short-lived GitHub auth token
+    # with only the minimum required scopes.
+    #
+    # You can run 'gh auth status' afterwards to check the scopes the GitHub CLI granted.
+    if ! gh auth login \
+        --web \
+        --git-protocol https \
+        --hostname "github.com" \
+        --skip-ssh-key;
+    then
+        rapids-echo-stderr "GitHub authentication failed. Exiting.";
+        exit 1;
+    fi
 fi
