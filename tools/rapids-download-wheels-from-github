@@ -1,6 +1,7 @@
 #!/bin/bash
-# A utility script that downloads a wheel artifact archive from Github Artifacts, unzips it,
+# Downloads a wheel artifact archive from Github Artifacts, unzips it,
 # and returns the path to the directory where it was unzipped.
+#
 # Positional Arguments:
 #   1) a string of "cpp" or "python" which determines which wheel artifact
 #      should be downloaded

@@ -1,4 +1,5 @@
 #!/bin/bash
+#
 # A utility script that prompts user to authenticate with GitHub in
 # local environments
 

@@ -1,6 +1,22 @@
 #!/bin/bash
-# A utility script that prompts user to setup repository information in
-# local environments
+# Sets environment variables reused by other scripts here to interact with
+# git, the GitHub API, and external artifact storage.
+#
+# If those variables are already defined when this script is called, it will not overwrite them.
+# If not, it prompts interactively for them.
+#
+# Variables:
+#
+#   * RAPIDS_BUILD_TYPE   = One of "branch", "nightly", or "pull-request".
+#   * RAPIDS_NIGHTLY_DATE = Date in YYYY-MM-DD format, used to organize nightly uploads.
+#                           If not provided, the current system time is used.
+#                           Only used when `RAPIDS_BUILD_TYPE` is "nightly".
+#   * RAPIDS_REF_NAME     = Branch or tag (e.g. "branch-25.08" or "pull-request/1234")
+#   * RAPIDS_REPOSITORY   = Repository the run happened in, in {org}/{repo} format (e.g. "rapidsai/rmm")
+#   * RAPIDS_SHA          = Commit SHA on the repository indicated by `RAPIDS_REPOSITORY`.
+#                           If not provided, this script assumes it's being run from within that repo
+#                           and checks the commit pointed to by HEAD.
+#
 
 if [ "${CI:-false}" = "false" ]; then
   rapids-echo-stderr "Local run detected."
