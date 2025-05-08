@@ -1,7 +1,22 @@
 #!/bin/bash
-# A utility script that examines environment variables provided
-# by GitHub Actions to print out a Github Workflow Run ID where the expected artifact
-# should be.
+# Determines the GitHub Actions run ID to use in operations with the GitHub API.
+#
+# When environment variable GITHUB_RUN_ID is defined, just returns that value.
+# GITHUB_RUN_ID is set automatically on GitHub Actions.
+# ref: https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
+#
+# Otherwise, tries to determine a run ID based on other context in the environment.
+# Most of that is provided by 'rapids-prompt-local-repo-config', see that
+# script's docs for details.
+#
+# Where multiple run IDs match the supplied configuration, the most-recently-created one
+# is chosen.
+#
+# Additional environment variables recognized by 'rapids-github-run-id':
+#
+#   * RAPIDS_BUILD_WORKFLOW_NAME = Filename for the workflow that the run corresponds to.
+#                                  Defaults to 'pr.yaml' for RAPIDS_BUILD_TYPE="pull-request" and 'build.yaml' otherwise).
+#
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
@@ -13,8 +28,8 @@ case "${RAPIDS_BUILD_TYPE}" in
       --branch "${RAPIDS_REF_NAME}" \
       --commit "${RAPIDS_SHA}" \
       --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}" \
-      --json databaseId \
-      --jq '.[0] | .databaseId')}
+      --json 'createdAt,databaseId' \
+      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
     ;;
   branch)
     run_id=${GITHUB_RUN_ID:-$(rapids-retry --quiet gh run list \
@@ -23,22 +38,30 @@ case "${RAPIDS_BUILD_TYPE}" in
       --commit "${RAPIDS_SHA}" \
       --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
       --event "push" \
-      --json databaseId \
-      --jq '.[0] | .databaseId')}
+      --json 'createdAt,databaseId' \
+      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
     ;;
   nightly)
+    # Notice that for nightly runs, this script intentionally does not return GITHUB_RUN_ID.
+    #
+    # In RAPIDS CI, projects often have 2 separate workflows for nightlies:
+    #
+    #   * build.yaml = builds and uploads packages
+    #   * test.yaml  = installs nightly packages and runs tests
+    #
+    # From GitHub's perspective, those are different "runs", with different IDs.
+    # GitHub Actions organizes artifacts by run ID.
     run_id=$(rapids-retry --quiet gh run list \
       --repo "${RAPIDS_REPOSITORY}" \
       --branch "${RAPIDS_REF_NAME}" \
       --commit "${RAPIDS_SHA}" \
       --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
       --event "workflow_dispatch" \
-      --created "${RAPIDS_NIGHTLY_DATE}" \
-      --json databaseId \
-      --jq '.[0] | .databaseId')
+      --json 'createdAt,databaseId' \
+      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')
     ;;
   *)
-    rapids-echo-stderr "please pass a valid RAPIDS_BUILD_TYPE"
+    rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request]"
     exit 1
     ;;
 esac
