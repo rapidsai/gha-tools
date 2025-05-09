@@ -57,6 +57,13 @@ It also contains some scripts for working with CI artifacts on `downloads.rapids
 
 * `rapids-upload-to-s3`: upload arbitrary files to the `downloads.rapids.ai` S3 bucket
 
+For more details, see the RAPIDS maintain docs:
+
+* "GitHub Actions" ([link](https://docs.rapids.ai/resources/github-actions/))
+* "Reproducing CI Locally" ([link](https://docs.rapids.ai/resources/reproducing-ci/))
+
+#### (deprecated) Storing conda packages and wheels on `downloads.rapids.ai`
+
 Support for storing conda packages and wheels on `downloads.rapids.ai` is considered **deprecated**.
 Switch those workloads to using the the GitHub Actions artifact store.
 But for backwards-compatibility, this project still contains some tools for doing that:
