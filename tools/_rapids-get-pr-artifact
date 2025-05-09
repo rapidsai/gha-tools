@@ -9,8 +9,8 @@
 #   5) full commit hash
 set -euo pipefail
 
-repo="$1"
-pr="$2"
+repo="rapidsai/${1}"
+pr="${2}"
 package_type="${3}"
 package_format="${4}"
 commit="${5:-}"
@@ -24,19 +24,19 @@ source rapids-prompt-local-github-auth
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
-    commit=$(rapids-retry --quiet gh pr view "${pr}" --repo rapidsai/"${repo}" --json headRefOid --jq '.headRefOid')
+    commit=$(rapids-retry --quiet gh pr view "${pr}" --repo "${repo}" --json headRefOid --jq '.headRefOid')
 fi
 
 # Generate the artifact name
 pkg_name=$(
     RAPIDS_NO_PKG_EXTENSION=true                               \
-    RAPIDS_REPOSITORY="rapidsai/${repo}"                       \
+    RAPIDS_REPOSITORY="${repo}"                                \
         rapids-package-name "${package_format}_${package_type}"
 )
 github_run_id=$(
     RAPIDS_BUILD_TYPE="pull-request"     \
     RAPIDS_REF_NAME="pull-request/${pr}" \
-    RAPIDS_REPOSITORY="rapidsai/${repo}" \
+    RAPIDS_REPOSITORY="${repo}"          \
     RAPIDS_SHA="${commit}"               \
         rapids-github-run-id
 )
