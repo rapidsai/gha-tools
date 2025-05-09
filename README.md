@@ -44,13 +44,25 @@ The `gpuci_*` tools in this project are wrappers around the new tools for backwa
 1. They print a deprecation warning to use the `rapids-*` equivalents
 2. They re-export `GPUCI_*` env vars to the new `RAPIDS_*` equivalents
 
-### S3 tools for downloads.rapids.ai
+### Managing CI artifacts
 
-Some enhancements have been made to the S3 tools for interacting with [downloads.rapids.ai](https://github.com/rapidsai/downloads):
-* Added support for uploading and downloading wheel tarballs (built with cibuildwheel) using `rapids-upload-wheels-to-s3` and `rapids-download-wheels-from-s3`
-* Added support for misc one-off file or directory uploads by calling `rapids-upload-to-s3` directly
-* Print the human-browsable `https://downloads.rapids.ai/...` URL in the logs for convenience
-* `rapids-package-name` takes a package type and generates the name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
+This project contains some scripts for managing CI artifacts.
+
+* `rapids-download-{conda,wheels}-from-github`: download conda packages and wheels from the GitHub Actions artifact store
+* `rapids-upload-to-anaconda-github`: downloads conda packages from GitHub Actions artifact store and uploads conda channels on anaconda.org 
+* `rapids-wheels-anaconda-github`: downloads wheels from GitHub Actions artifact store and uploads them to the RAPIDS nightly index at https://pypi.anaconda.org/rapidsai-wheels-nightly/simple/
+* `rapids-package-name`: takes a package type and generate the artifact name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
+
+It also contains some scripts for working with CI artifacts on `downloads.rapids.ai`.
+
+* `rapids-upload-to-s3`: upload arbitrary files to the `downloads.rapids.ai` S3 bucket
+
+Support for storing conda packages and wheels on `downloads.rapids.ai` is considered **deprecated**.
+Switch those workloads to using the the GitHub Actions artifact store.
+But for backwards-compatibility, this project still contains some tools for doing that:
+
+* `rapids-download-{conda,wheels}-from-s3`: download conda packages and wheels from the `downloads.rapids.ai` S3 bucket
+* `rapids-upload-{conda,wheels}-to-s3`: upload conda packages and wheels to the `downloads.rapids.ai` S3 bucket
 
 ### Testing Scripts Locally
 
