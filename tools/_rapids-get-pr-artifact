@@ -33,12 +33,21 @@ pkg_name=$(
     RAPIDS_REPOSITORY="${repo}"                                \
         rapids-package-name "${package_format}_${package_type}"
 )
+
+# get run ID
+# NOTE: cannot reuse rapids-github-run-id here, because the environment variable
+#       GITHUB_RUN_ID will refer to the run this is being called from, not
+#       the run that generated the artifact we're looking for.
+#
+#       For example, if this is called on a 'cudf' PR to download 'rmm' artifacts,
+#       here we want a run ID from an 'rmm' CI run, not the current 'cudf' one.
 github_run_id=$(
-    RAPIDS_BUILD_TYPE="pull-request"     \
-    RAPIDS_REF_NAME="pull-request/${pr}" \
-    RAPIDS_REPOSITORY="${repo}"          \
-    RAPIDS_SHA="${commit}"               \
-        rapids-github-run-id
+    rapids-retry --quiet gh run list  \
+        --repo "${repo}"              \
+        --branch "pull-request/${pr}" \
+        --commit "${commit}"          \
+        --json 'createdAt,databaseId' \
+        --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId'
 )
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
