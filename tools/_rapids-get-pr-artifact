@@ -52,10 +52,10 @@ github_run_id=$(
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
-rapids-retry gh run download      \
-    "${github_run_id}"            \
-    --repo "${RAPIDS_REPOSITORY}" \
-    --name "${pkg_name}"          \
+rapids-retry gh run download \
+    "${github_run_id}"       \
+    --repo "${repo}"         \
+    --name "${pkg_name}"     \
     --dir "${unzip_dest}"
 
 echo -n "${unzip_dest}"
