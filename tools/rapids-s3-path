@@ -9,7 +9,15 @@
 ## s3://rapids-downloads/ci/<REPO_NAME>/pull-request/<PR_NUMBER>/<SHORT_HASH>/
 
 ## For branch builds:
-## s3://rapids-downloads/ci/<REPO_NAME>/branch/<BRANCH_NAME>/<SHORT_HASH>/
+## s3://rapids-downloads/ci/<REPO_NAME>/<TYPE>/<IDENTIFIER>/<SHORT_HASH>/
+## where TYPE is one of:
+##   - main (for main branch)
+##   - release (for release/YY.MM branches)
+##   - branch (for legacy branch-YY.MM branches)
+## and IDENTIFIER is:
+##   - main (for main branch)
+##   - YY.MM (for release/YY.MM branches)
+##   - branch-YY.MM (for legacy branch-YY.MM branches)
 
 ## For nightly builds:
 ## s3://rapids-downloads/nightly/<REPO_NAME>/<DATE>/<SHORT_HASH>/
@@ -20,6 +28,7 @@ export RAPIDS_SCRIPT_NAME="rapids-s3-path"
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
 s3_directory_id=""
+s3_type_path_segment=""
 s3_prefix=""
 
 case "${RAPIDS_BUILD_TYPE}" in
@@ -29,12 +38,25 @@ case "${RAPIDS_BUILD_TYPE}" in
     # more info:
     #    CopyPRs plugin in ops-bot: https://github.com/rapidsai/ops-bot#plugins
     #    https://circleci.com/blog/triggering-trusted-ci-jobs-on-untrusted-forks/
+    s3_type_path_segment="pull-request"
     s3_directory_id="${RAPIDS_REF_NAME##*/}"
     s3_prefix="ci"
     ;;
   branch)
-    s3_directory_id="${RAPIDS_REF_NAME}"
     s3_prefix="ci"
+    if [[ "${RAPIDS_REF_NAME}" == "main" ]]; then
+      s3_type_path_segment="main"
+      s3_directory_id="main"
+    elif [[ "${RAPIDS_REF_NAME}" == release/* ]]; then
+      s3_type_path_segment="release"
+      s3_directory_id="${RAPIDS_REF_NAME#release/}"
+    elif [[ "${RAPIDS_REF_NAME}" == branch-* ]]; then # Legacy branches
+      s3_type_path_segment="branch"
+      s3_directory_id="${RAPIDS_REF_NAME}"
+    else
+      rapids-echo-stderr "Error: Unknown branch name format for RAPIDS_BUILD_TYPE 'branch': ${RAPIDS_REF_NAME}"
+      exit 1
+    fi
     ;;
   nightly)
     s3_directory_id="${RAPIDS_NIGHTLY_DATE}"
@@ -50,7 +72,7 @@ short_hash=${RAPIDS_SHA:0:7}
 
 s3_path="s3://${RAPIDS_DOWNLOADS_BUCKET}/${s3_prefix}/${repo_name}/"
 if [[ "${RAPIDS_BUILD_TYPE}" != "nightly" ]]; then
-  s3_path+="${RAPIDS_BUILD_TYPE}/"
+  s3_path+="${s3_type_path_segment}/"
 fi
 s3_path+="${s3_directory_id}/${short_hash}/"
 
