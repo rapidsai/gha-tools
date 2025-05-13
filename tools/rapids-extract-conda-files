@@ -1,6 +1,5 @@
 #!/bin/bash
-# A utility script that extracts all conda packages
-# after being downloaded by rapids-download-conda-from-s3
+# Extracts all conda packages in a directory into another directory that only includes conda packages.
 set -eo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-extract-conda-files"
 
