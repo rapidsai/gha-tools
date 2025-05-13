@@ -51,8 +51,6 @@ if [ "${CUDA_VERSION_ARRAY[0]}" -eq "11" ]; then
   CHANNEL_PRIORITY="disabled"
 fi
 
-channels=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
-
 # Process extra channels, prepended to work with strict channel priority.
 #
 # This is here, for example, to support customizations in CI like
@@ -61,6 +59,8 @@ channels=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
 if [[ -n "${RAPIDS_PREPENDED_CONDA_CHANNELS:-}" ]]; then
   channels+=("${RAPIDS_PREPENDED_CONDA_CHANNELS[@]}");
 fi
+
+channels+=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
 
 _add_c_prefix() {
   for channel in "${channels[@]}"; do
