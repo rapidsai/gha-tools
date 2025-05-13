@@ -1,5 +1,10 @@
 #!/bin/bash
-# A utility script that configures conda channels
+# Selectively removes conda channels from the system-wide conda configuration,
+# based on runtime context.
+#
+# WARNING: Some projects use "strict channel priority" (https://docs.conda.io/projects/conda/en/latest/user-guide/tasks/manage-channels.html#strict-channel-priority),
+# and so rely on the assumption that this script may remove but NEVER PREPENDS channels.
+#
 
 set -euo pipefail
 

@@ -1,11 +1,11 @@
 #!/bin/bash
-# A utility script that generates CUDA suffix in the format "cu${VER}" where `$VER`
+# Generates CUDA suffix in the format "cu${VER}" where `$VER`
 # is the CUDA major version (for example, "cu11").
 # Positional Arguments:
 #   1) ctk tag
 set -eu -o pipefail
 
-if [ -z "$1" ]; then
+if [ -z "${1-}" ]; then
   rapids-echo-stderr "Must specify input argument: CTK_TAG"
   exit 1
 fi
