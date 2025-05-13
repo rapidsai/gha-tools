@@ -4,10 +4,10 @@
 #   1) package name
 #   2) path to tar up
 set -eo pipefail
-source rapids-constants
+#source rapids-constants
 export RAPIDS_SCRIPT_NAME="rapids-upload-to-s3"
 
-if [ -z "$1" ] || [ -z "$2" ]; then
+if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
   rapids-echo-stderr "Must specify both input arguments: PACKAGE_NAME and PATH_TO_TAR_UP"
   exit 1
 fi
