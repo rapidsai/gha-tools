@@ -26,7 +26,7 @@ This command makes the following assumptions:
 Once the container above is running, change the `PATH` variable inside of it so that the scripts in the volume mounted `gha-tools` directory take precedence:
 
 ```sh
-export PATH="/usr/local/binn/gha-tools/tools:${PATH}"
+export PATH="/usr/local/bin/gha-tools/tools:${PATH}"
 ```
 
 Now, the volume mounted scripts will be run any time a `gha-tools` script is invoked.
