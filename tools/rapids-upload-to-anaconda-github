@@ -29,7 +29,7 @@ for artifact_dir in "${unzip_dest}"/*/; do
 
   # Find packages to upload
   PKGS_TO_UPLOAD=$(rapids-find-anaconda-uploads.py "${artifact_dir}")
-  
+
   if [ -z "${PKGS_TO_UPLOAD}" ]; then
     rapids-echo-stderr "Couldn't find any packages to upload in: ${artifact_dir}"
     ls -l "${artifact_dir}/"*

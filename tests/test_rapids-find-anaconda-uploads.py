@@ -1,8 +1,9 @@
+import importlib
 import sys
 from os import environ, path
-import importlib
-import pytest
 from unittest import mock
+
+import pytest
 
 tools_dir = path.join(path.dirname(path.realpath(__file__)), "..", "tools")
 sys.path.insert(0, tools_dir)
@@ -74,9 +75,7 @@ def test_file_filter_fn():
     file_filter_fn = mod.file_filter_fn
 
     # w/ env var
-    with mock.patch.dict(
-        environ, {"SKIP_UPLOAD_PKGS": "some-pkg-private libcudf-tests"}
-    ):
+    with mock.patch.dict(environ, {"SKIP_UPLOAD_PKGS": "some-pkg-private libcudf-tests"}):
         filtered_list = list(filter(file_filter_fn, TEST_FILES))
         assert filtered_list == [
             "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
