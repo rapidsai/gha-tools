@@ -57,6 +57,7 @@ fi
 # This is here, for example, to support customizations in CI like
 # "download these packages from another source and ensure they're used".
 #
+channels=()
 if [[ -n "${RAPIDS_PREPENDED_CONDA_CHANNELS:-}" ]]; then
   channels+=("${RAPIDS_PREPENDED_CONDA_CHANNELS[@]}");
 fi
