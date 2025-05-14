@@ -1,6 +1,6 @@
 #!/bin/bash
-# A utility script that uploads all the conda packages from a
-# GitHub Actions workflow run to Anaconda.org
+# Uploads all the conda packages from a GitHub Actions workflow run to Anaconda.org
+
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-upload-to-anaconda-github"
 
@@ -18,8 +18,12 @@ esac
 github_run_id="$(rapids-github-run-id)"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
-#Download all artifacts with conda in the name to unzip_dest
-rapids-retry gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --dir "${unzip_dest}" --pattern "*conda*"
+# Download all artifacts with conda in the name to unzip_dest
+rapids-retry gh run download    \
+  "${github_run_id}"            \
+  --repo "${RAPIDS_REPOSITORY}" \
+  --dir "${unzip_dest}"         \
+  --pattern '*conda*'
 
 # Find all directories within unzip_dest
 for artifact_dir in "${unzip_dest}"/*/; do
@@ -29,7 +33,7 @@ for artifact_dir in "${unzip_dest}"/*/; do
 
   # Find packages to upload
   PKGS_TO_UPLOAD=$(rapids-find-anaconda-uploads.py "${artifact_dir}")
-  
+
   if [ -z "${PKGS_TO_UPLOAD}" ]; then
     rapids-echo-stderr "Couldn't find any packages to upload in: ${artifact_dir}"
     ls -l "${artifact_dir}/"*

@@ -1,7 +1,8 @@
 import os.path
-import pytest
 import subprocess
 from textwrap import dedent
+
+import pytest
 
 TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "tools")
 
@@ -76,7 +77,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
                 """\
                 'pr-builder' job is missing the following dependent jobs:
                   - job3
-                
+
                 Update '{filename}' to include these missing jobs for 'pr-builder'.
                 Alternatively, you may ignore these jobs by passing them as an argument to this script.
                 """
@@ -100,7 +101,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
             dedent(
                 """\
                 If 'pr-builder' job has an 'if' condition, it must be set to 'always()'.
-                
+
                 Update '{filename}' to set the correct 'if' condition.
                 """
             ),
@@ -123,7 +124,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
             dedent(
                 """\
                 If 'pr-builder' job has an 'if' condition, it must also set the 'needs' input to '${{{{ toJSON(needs) }}}}'.
-                
+
                 Update '{filename}' to add the following:
 
                 with:
@@ -150,7 +151,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
             dedent(
                 """\
                 If 'pr-builder' job has an 'if' condition, it must also set the 'needs' input to '${{{{ toJSON(needs) }}}}'.
-                
+
                 Update '{filename}' to add the following:
 
                 with:
@@ -178,7 +179,7 @@ TOOLS_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "too
             dedent(
                 """\
                 If 'pr-builder' job has an 'if' condition, it must also set the 'needs' input to '${{{{ toJSON(needs) }}}}'.
-                
+
                 Update '{filename}' to add the following:
 
                 with:

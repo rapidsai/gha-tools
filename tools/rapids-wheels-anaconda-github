@@ -1,9 +1,9 @@
 #!/bin/bash
-# A utility script to upload Python wheel packages to Anaconda repository using anaconda-client.
-
+# Uploads Python wheels from a GitHub Actions workflow run to Anaconda.org
+#
 # Positional Arguments:
 #   1) wheel name
-#   2) package type (one of: 'cpp', 'python'). If not provided, defaults to 'python' for compatibility with older code where python was the only behavior.
+#   2) package type (one of: 'cpp', 'python')
 #
 # [usage]
 #
@@ -18,8 +18,8 @@ if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
   rapids-echo-stderr "Must specify input arguments: WHEEL_NAME and PKG_TYPE"
   exit 1
 fi
-WHEEL_NAME="$1"
-PKG_TYPE="${2:-python}"
+WHEEL_NAME="${1}"
+PKG_TYPE="${2}"
 
 case "${PKG_TYPE}" in
   cpp)
@@ -42,8 +42,12 @@ unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 rapids-echo-stderr "Downloading ${PKG_TYPE}_${WHEEL_NAME} wheels to ${unzip_dest}"
 
-#Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
-rapids-retry gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --dir "${unzip_dest}" --pattern "*${WHEEL_SEARCH_KEY}*"
+# Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
+rapids-retry gh run download        \
+  "${github_run_id}"                \
+  --repo "${RAPIDS_REPOSITORY}"     \
+  --dir "${unzip_dest}"             \
+  --pattern "*${WHEEL_SEARCH_KEY}*"
 
 find "${unzip_dest}" -name "*.whl" -exec cp {} "${WHEEL_DIR}/" \;
 
@@ -54,7 +58,7 @@ if [ "${wheel_count}" -eq 0 ]; then
   exit 1
 fi
 
-# Upload all wheels using the array
+# Upload all wheels
 rapids-echo-stderr "Uploading ${wheel_count} wheels to Anaconda.org"
 export RAPIDS_RETRY_SLEEP=180
 # shellcheck disable=SC2086
@@ -64,4 +68,5 @@ rapids-retry anaconda \
     --skip-existing \
     --no-progress \
     "${WHEEL_DIR}"/*.whl
+
 echo ""
