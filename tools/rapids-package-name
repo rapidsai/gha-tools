@@ -7,7 +7,7 @@ export RAPIDS_SCRIPT_NAME="rapids-package-name"
 
 repo_name="${RAPIDS_REPOSITORY##*/}"
 
-if [ -z "$1" ]; then
+if [ -z "${1:-}" ]; then
   rapids-echo-stderr "Must specify input arguments: PKG_TYPE"
   exit 1
 fi
