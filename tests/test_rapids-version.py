@@ -1,17 +1,21 @@
-from os import path
-import pytest
 import subprocess
 import tempfile
+from os import path
+
+import pytest
 
 TOOLS_DIR = path.join(path.dirname(path.realpath(__file__)), "..", "tools")
 
 
 def run_rapids_version(tool_name, cwd, exit_code, output):
-    process = subprocess.Popen([path.join(TOOLS_DIR, tool_name)], cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    process = subprocess.Popen(
+        [path.join(TOOLS_DIR, tool_name)], cwd=cwd, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
     process.wait()
     assert process.returncode == exit_code
     assert process.stdout.read() == output
     assert process.stderr.read() == ""
+
 
 @pytest.mark.parametrize(
     "version_contents, exit_code, version, version_major_minor",
@@ -21,7 +25,7 @@ def run_rapids_version(tool_name, cwd, exit_code, output):
         ("invalid\n", 1, "", ""),
         ("", 1, "", ""),
         (None, 1, "", ""),
-    ]
+    ],
 )
 def test_rapids_version(version_contents, exit_code, version, version_major_minor):
     with tempfile.TemporaryDirectory() as d:
