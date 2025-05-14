@@ -49,7 +49,7 @@ The `gpuci_*` tools in this project are wrappers around the new tools for backwa
 This project contains some scripts for managing CI artifacts.
 
 * `rapids-download-{conda,wheels}-from-github`: download conda packages and wheels from the GitHub Actions artifact store
-* `rapids-upload-to-anaconda-github`: downloads conda packages from GitHub Actions artifact store and uploads conda channels on anaconda.org 
+* `rapids-upload-to-anaconda-github`: downloads conda packages from GitHub Actions artifact store and uploads conda channels on anaconda.org
 * `rapids-wheels-anaconda-github`: downloads wheels from GitHub Actions artifact store and uploads them to the RAPIDS nightly index at https://pypi.anaconda.org/rapidsai-wheels-nightly/simple/
 * `rapids-package-name`: takes a package type and generate the artifact name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
 

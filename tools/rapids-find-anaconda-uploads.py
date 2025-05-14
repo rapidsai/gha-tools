@@ -54,9 +54,8 @@ def file_filter_fn(file_path):
 
 if __name__ == "__main__":
     directory_to_search = sys.argv[1]
-    conda_pkgs = (
-        glob.glob(f"{directory_to_search}/**/*.conda", recursive=True) +
-        glob.glob(f"{directory_to_search}/**/*.tar.bz2", recursive=True)
+    conda_pkgs = glob.glob(f"{directory_to_search}/**/*.conda", recursive=True) + glob.glob(
+        f"{directory_to_search}/**/*.tar.bz2", recursive=True
     )
 
     filtered_list = list(filter(file_filter_fn, conda_pkgs))
