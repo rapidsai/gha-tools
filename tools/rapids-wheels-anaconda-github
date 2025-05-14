@@ -14,8 +14,8 @@
 set -eou pipefail
 export RAPIDS_SCRIPT_NAME="rapids-wheels-anaconda-github"
 
-if [ -z "$1" ]; then
-  rapids-echo-stderr "Must specify input arguments: WHEEL_NAME"
+if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
+  rapids-echo-stderr "Must specify input arguments: WHEEL_NAME and PKG_TYPE"
   exit 1
 fi
 WHEEL_NAME="${1}"
