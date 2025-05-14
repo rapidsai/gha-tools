@@ -14,7 +14,9 @@
 # This is intended to be `source`'d, not invoked as an executable.
 #
 # Note that the exact name `PIP_CONSTRAINT` is specifically recognized by `pip`:
-# https://pip.pypa.io/en/latest/cli/pip_install/#cmdoption-c
+# https://pip.pypa.io/en/latest/cli/pip_install/#cmdoption-c. Exporting it is important
+# to ensure that the constraints are respected by all calls to `pip`, including nested
+# calls that happen when setting up an isolation build environment for wheel builds.
 #
 PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
 touch "${PIP_CONSTRAINT}"
