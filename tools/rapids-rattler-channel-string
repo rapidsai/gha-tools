@@ -1,5 +1,38 @@
 #!/bin/bash
 
+# Populates shell variables expected to be used by build scripts invoking `rattler-build`.
+#
+# This is intended to be `source`'d, not invoked as an executable.
+#
+# Variables:
+#
+#   * RATTLER_ARGS     = Bash array of arguments to be passed to invocations of `rattler-build build`
+#   * RATTLER_CHANNELS = Bash array of conda channels, where each item is prefixed with '--channel '.
+#                        If variable `RAPIDS_PREPENDED_CONDA_CHANNELS` is defined when this script is invoked,
+#                        it is expected to hold a bash array with additional conda channels (omitting the '--channel ' prefix).
+#                        Each of these is PREPENDED to the output in `RATTLER_CHANNELS`.
+#
+# Usage:
+#
+#   # standard usage
+#   source rapids-rattler-channel-string
+#   rattler-build build                           \
+#     --recipe conda/recipes/librmm               \
+#     --output-dir "$RAPIDS_CONDA_BLD_OUTPUT_DIR" \
+#     "${RATTLER_CHANNELS[@]}"
+#
+#   # prepend custom channels
+#   LIBRMM_CHANNEL=$(rapids-get-pr-conda-artifact rmm 1909 cpp)
+#   RMM_CHANNEL=$(rapids-get-pr-conda-artifact rmm 1909 python)
+#   RAPIDS_PREPENDED_CONDA_CHANNELS=("${LIBRMM_CHANNEL}" "${RMM_CHANNEL}")
+#
+#   source rapids-rattler-channel-string
+#   rattler-build build                           \
+#     --recipe conda/recipes/librmm               \
+#     --output-dir "$RAPIDS_CONDA_BLD_OUTPUT_DIR" \
+#     "${RATTLER_CHANNELS[@]}"
+#
+
 RAPIDS_CHANNEL="rapidsai-nightly"
 NVIDIA_CHANNEL=""
 
@@ -19,7 +52,17 @@ if [ "${CUDA_VERSION_ARRAY[0]}" -eq "11" ]; then
   CHANNEL_PRIORITY="disabled"
 fi
 
-channels=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
+# Process extra channels, prepended to work with strict channel priority.
+#
+# This is here, for example, to support customizations in CI like
+# "download these packages from another source and ensure they're used".
+#
+channels=()
+if [[ -n "${RAPIDS_PREPENDED_CONDA_CHANNELS:-}" ]]; then
+  channels+=("${RAPIDS_PREPENDED_CONDA_CHANNELS[@]}");
+fi
+
+channels+=("$RAPIDS_CHANNEL" "conda-forge" "$NVIDIA_CHANNEL")
 
 _add_c_prefix() {
   for channel in "${channels[@]}"; do
