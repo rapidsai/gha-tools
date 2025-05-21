@@ -7,8 +7,8 @@
 # This exists primarily for interactive use cases, like trying to reproduce CI locally.
 #
 
-if ! gh auth status >/dev/null 2>&1; then
-    rapids-echo-stderr "No GitHub authentication detected."
+if ! gh auth status >&2; then
+    rapids-echo-stderr "Not yet authenticated with GitHub."
     rapids-echo-stderr "Please authenticate with GitHub to continue."
     rapids-echo-stderr "To avoid these interactive prompts in the future, set environment variable 'GH_TOKEN' or run 'gh auth login' with the GitHub CLI."
 
@@ -22,7 +22,7 @@ if ! gh auth status >/dev/null 2>&1; then
         --web \
         --git-protocol https \
         --hostname "github.com" \
-        --skip-ssh-key;
+        --skip-ssh-key >&2;
     then
         rapids-echo-stderr "GitHub authentication failed. Exiting.";
         exit 1;

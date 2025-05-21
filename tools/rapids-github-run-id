@@ -25,23 +25,27 @@ source rapids-prompt-local-github-auth
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request)
-    run_id=${GITHUB_RUN_ID:-$(rapids-retry --quiet gh run list \
-      --repo "${RAPIDS_REPOSITORY}" \
-      --branch "${RAPIDS_REF_NAME}" \
-      --commit "${RAPIDS_SHA}" \
-      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}" \
-      --json 'createdAt,databaseId' \
-      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
+    run_id=${GITHUB_RUN_ID:-$(
+      RAPIDS_RETRY_SLEEP=30                                   \
+        rapids-retry --quiet gh run list                      \
+          --repo "${RAPIDS_REPOSITORY}"                       \
+          --branch "${RAPIDS_REF_NAME}"                       \
+          --commit "${RAPIDS_SHA}"                            \
+          --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}" \
+          --json 'createdAt,databaseId'                       \
+          --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
     ;;
   branch)
-    run_id=${GITHUB_RUN_ID:-$(rapids-retry --quiet gh run list \
-      --repo "${RAPIDS_REPOSITORY}" \
-      --branch "${RAPIDS_REF_NAME}" \
-      --commit "${RAPIDS_SHA}" \
-      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
-      --event "push" \
-      --json 'createdAt,databaseId' \
-      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
+    run_id=${GITHUB_RUN_ID:-$(
+      RAPIDS_RETRY_SLEEP=30                                      \
+        rapids-retry --quiet gh run list                         \
+          --repo "${RAPIDS_REPOSITORY}"                          \
+          --branch "${RAPIDS_REF_NAME}"                          \
+          --commit "${RAPIDS_SHA}"                               \
+          --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+          --event "push"                                         \
+          --json 'createdAt,databaseId'                          \
+          --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')}
     ;;
   nightly)
     # Notice that for nightly runs, this script intentionally does not return GITHUB_RUN_ID.
@@ -53,14 +57,17 @@ case "${RAPIDS_BUILD_TYPE}" in
     #
     # From GitHub's perspective, those are different "runs", with different IDs.
     # GitHub Actions organizes artifacts by run ID.
-    run_id=$(rapids-retry --quiet gh run list \
-      --repo "${RAPIDS_REPOSITORY}" \
-      --branch "${RAPIDS_REF_NAME}" \
-      --commit "${RAPIDS_SHA}" \
-      --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
-      --event "workflow_dispatch" \
-      --json 'createdAt,databaseId' \
-      --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId')
+    run_id=$(
+      RAPIDS_RETRY_SLEEP=30                                      \
+        rapids-retry --quiet gh run list                         \
+          --repo "${RAPIDS_REPOSITORY}"                          \
+          --branch "${RAPIDS_REF_NAME}"                          \
+          --commit "${RAPIDS_SHA}"                               \
+          --workflow "${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}" \
+          --event "workflow_dispatch"                            \
+          --json 'createdAt,databaseId'                          \
+          --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId'
+    )
     ;;
   *)
     rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request]"
