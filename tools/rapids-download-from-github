@@ -18,7 +18,17 @@ github_run_id="$(rapids-github-run-id)"
 pkg_name="$1"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
-rapids-echo-stderr "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
-rapids-retry gh run download "${github_run_id}" --repo "${RAPIDS_REPOSITORY}" --name "${pkg_name}" --dir "${unzip_dest}"
+# This script should only output `unzip_dest` to `stdout``.
+# Scripts that produce any other output should be sent to `stderr`
+# by adding them to this block.
+{
+  echo "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
+  RAPIDS_RETRY_SLEEP=30             \
+    rapids-retry gh run download    \
+      "${github_run_id}"            \
+      --repo "${RAPIDS_REPOSITORY}" \
+      --name "${pkg_name}"          \
+      --dir "${unzip_dest}"
+} >&2
 
 echo -n "${unzip_dest}"
