@@ -32,6 +32,6 @@ elif ! gh auth status >&2; then
         --skip-ssh-key >&2;
     then
         rapids-echo-stderr "GitHub authentication failed. Exiting.";
-        # exit 1;
+        exit 1;
     fi
 fi
