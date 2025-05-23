@@ -7,7 +7,14 @@
 # This exists primarily for interactive use cases, like trying to reproduce CI locally.
 #
 
-if ! gh auth status >&2; then
+# In CI, assume that we've already authenticated by the time this script is called.
+#
+# 'gh auth status' makes network requests to the GitHub API. Skipping it in CI
+# reduces the risk of hitting GitHub API rate limits.
+#
+if [ "${CI:-false}" = "true" ]; then
+    rapids-echo-stderr "Detected CI=true. Skipping running 'gh auth status'."
+elif ! gh auth status >&2; then
     rapids-echo-stderr "Not yet authenticated with GitHub."
     rapids-echo-stderr "Please authenticate with GitHub to continue."
     rapids-echo-stderr "To avoid these interactive prompts in the future, set environment variable 'GH_TOKEN' or run 'gh auth login' with the GitHub CLI."

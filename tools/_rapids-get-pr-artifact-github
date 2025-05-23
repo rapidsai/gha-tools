@@ -20,7 +20,7 @@ if [[ "${package_format}" = "wheel" && -z "${RAPIDS_PY_WHEEL_NAME:+placeholder}"
     exit 1
 fi
 
-source rapids-prompt-local-github-auth
+rapids-prompt-local-github-auth
 
 # If commit is not provided, get the latest commit on the PR
 if [[ -z "${commit}" ]]; then
