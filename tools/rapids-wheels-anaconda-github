@@ -43,7 +43,7 @@ unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 rapids-echo-stderr "Downloading ${PKG_TYPE}_${WHEEL_NAME} wheels to ${unzip_dest}"
 
 # Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
-RAPIDS_RETRY_SLEEP=30                 \
+RAPIDS_RETRY_SLEEP=120                \
   rapids-retry gh run download        \
     "${github_run_id}"                \
     --repo "${RAPIDS_REPOSITORY}"     \

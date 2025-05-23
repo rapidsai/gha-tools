@@ -20,13 +20,13 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
-source rapids-prompt-local-github-auth
+rapids-prompt-local-github-auth
 
 # While called by CI, all the environment variables are set by the caller. However when run locally, these environment variables are set by rapids-prompt-local-repo-config
 case "${RAPIDS_BUILD_TYPE}" in
   pull-request)
     run_id=${GITHUB_RUN_ID:-$(
-      RAPIDS_RETRY_SLEEP=30                                   \
+      RAPIDS_RETRY_SLEEP=120                                  \
         rapids-retry --quiet gh run list                      \
           --repo "${RAPIDS_REPOSITORY}"                       \
           --branch "${RAPIDS_REF_NAME}"                       \
@@ -37,7 +37,7 @@ case "${RAPIDS_BUILD_TYPE}" in
     ;;
   branch)
     run_id=${GITHUB_RUN_ID:-$(
-      RAPIDS_RETRY_SLEEP=30                                      \
+      RAPIDS_RETRY_SLEEP=120                                     \
         rapids-retry --quiet gh run list                         \
           --repo "${RAPIDS_REPOSITORY}"                          \
           --branch "${RAPIDS_REF_NAME}"                          \
@@ -58,7 +58,7 @@ case "${RAPIDS_BUILD_TYPE}" in
     # From GitHub's perspective, those are different "runs", with different IDs.
     # GitHub Actions organizes artifacts by run ID.
     run_id=$(
-      RAPIDS_RETRY_SLEEP=30                                      \
+      RAPIDS_RETRY_SLEEP=120                                     \
         rapids-retry --quiet gh run list                         \
           --repo "${RAPIDS_REPOSITORY}"                          \
           --branch "${RAPIDS_REF_NAME}"                          \

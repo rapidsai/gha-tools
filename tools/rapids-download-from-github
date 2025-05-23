@@ -12,7 +12,7 @@ if [ -z "${1:-}" ]; then
   exit 1
 fi
 
-source rapids-prompt-local-github-auth
+rapids-prompt-local-github-auth
 
 github_run_id="$(rapids-github-run-id)"
 pkg_name="$1"
@@ -23,7 +23,7 @@ unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 # by adding them to this block.
 {
   echo "Downloading and decompressing ${pkg_name} from Run ID ${github_run_id} into ${unzip_dest}"
-  RAPIDS_RETRY_SLEEP=30             \
+  RAPIDS_RETRY_SLEEP=120            \
     rapids-retry gh run download    \
       "${github_run_id}"            \
       --repo "${RAPIDS_REPOSITORY}" \
