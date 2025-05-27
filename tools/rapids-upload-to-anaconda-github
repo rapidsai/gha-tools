@@ -19,7 +19,7 @@ github_run_id="$(rapids-github-run-id)"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
 # Download all artifacts with conda in the name to unzip_dest
-RAPIDS_RETRY_SLEEP=30             \
+RAPIDS_RETRY_SLEEP=120            \
   rapids-retry gh run download    \
     "${github_run_id}"            \
     --repo "${RAPIDS_REPOSITORY}" \
