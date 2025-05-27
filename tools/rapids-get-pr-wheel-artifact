@@ -1,5 +1,8 @@
 #!/bin/bash
-# Echo path to an artifact for a specific PR. Finds and uses the latest commit on the PR.
+# Downloads and decompresses a wheel for a specific PR from GitHub Actions artifact store.
+# Finds and uses the latest commit on the PR.
+#
+# Echoes an absolute path to the directory the files were downloaded to.
 #
 # Positional Arguments:
 #   1) repo name
@@ -7,9 +10,11 @@
 #   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
 #   4) [optional] commit hash, to get the artifact for a specific commit
 #
-# RAPIDS_PY_WHEEL_NAME must be set to indicate the package name to fetch.
 # Example Usage:
-#   rapids-get-pr-wheel-artifact rmm 1095 cpp
+#
+# RMM_WHEELHOUSE=$(RAPIDS_PY_WHEEL_NAME="rmm_cu12" rapids-get-pr-wheel-artifact rmm 1095 python)
+# pip install "${RMM_WHEELHOUSE}"/rmm_*.whl
+#
 set -euo pipefail
 
 _rapids-get-pr-artifact "${1}" "${2}" "${3}" wheel "${4:-}"
