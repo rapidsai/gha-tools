@@ -18,31 +18,20 @@ This tools repo can be installed from GitHub directly with git clone or wget com
 
 ### Environment variables and variable naming conventions
 
-In gha-tools we introduced some variable naming conventions:
+Scripts here get much of their configuration from environment variables.
+
+Those tend to follow these conventions:
+
 * Environment variables should be capitalized, local variables should be lower-case
 * RAPIDS-specific environment variables should be named `RAPIDS_*`
     * This distinguishes them from external environment variables e.g. `GITHUB_*` that are defined by GitHub Actions
 
-List of variables that have had a `RAPIDS_*` prefix added, which should be reflected by consumers switching from gpuci-tools to gha-tools:
-* `CONDA_EXE`, `CONDA_TOKEN`, `CONDA_UPLOAD_LABEL` -> `RAPIDS_CONDA_EXE`, `RAPIDS_CONDA_TOKEN`, `RAPIDS_CONDA_UPLOAD_LABEL`
-* `MAMBA_BIN` -> `RAPIDS_MAMBA_BIN`
-* `PY_VER` -> `RAPIDS_PY_VERSION`
-* `BUILD_TYPE` -> `RAPIDS_BUILD_TYPE`
-* `GH_TOKEN` -> `RAPIDS_GH_TOKEN`
-
 In GitHub Actions, the [default secret GITHUB_TOKEN](https://docs.github.com/en/actions/security-guides/automatic-token-authentication#using-the-github_token-in-a-workflow) can be used by setting:
-```
+
+```yaml
 env:
   RAPIDS_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-
-### gpuci deprecation
-
-This repo replaces [rapidsai/gpuci-tools](https://github.com/rapidsai/gpuci-tools). All scripts called `gpuci_*`, configured with `GPUCI_*` env vars, are now called `rapids-*` with the equivalent `RAPIDS_*` env vars
-
-The `gpuci_*` tools in this project are wrappers around the new tools for backwards compatibility:
-1. They print a deprecation warning to use the `rapids-*` equivalents
-2. They re-export `GPUCI_*` env vars to the new `RAPIDS_*` equivalents
 
 ### Managing CI artifacts
 
