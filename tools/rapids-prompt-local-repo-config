@@ -20,7 +20,6 @@
 
 if [ "${CI:-false}" = "false" ]; then
   rapids-echo-stderr "Local run detected."
-  rapids-echo-stderr "NVIDIA VPN connectivity is required to download workflow artifacts."
 
   if [ -z "${RAPIDS_BUILD_TYPE:-}" ]; then
     {
