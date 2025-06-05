@@ -75,4 +75,9 @@ case "${RAPIDS_BUILD_TYPE}" in
     ;;
 esac
 
+if [[ -z "${run_id}" ]]; then
+  rapids-echo-stderr "ERROR: failed to find a GitHub Actions run for [RAPIDS_BUILD_TYPE=${RAPIDS_BUILD_TYPE}, RAPID_REPOSITORY=${RAPIDS_REPOSITORY}, RAPIDS_REF_NAME=${RAPIDS_REF_NAME}, RAPIDS_SHA=${RAPIDS_SHA}]"
+  exit 1
+fi
+
 echo -n "${run_id}"
