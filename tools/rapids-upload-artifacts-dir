@@ -23,6 +23,9 @@ if [ "$(ls -A "$RAPIDS_ARTIFACTS_DIR")" ]; then
     upload_name=$(basename "${art_file}")
     pkg_name="${pkg_prefix}.${upload_name}"
     rapids-upload-to-s3 "${pkg_name}" "${art_file}"
+    if [ -d telemetry-artifacts ]; then
+      ls -l "${art_file}" >> telemetry-artifacts/artifact-list.txt
+    fi
   done
 else
   echo "No additional artifacts found."
