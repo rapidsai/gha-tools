@@ -51,15 +51,6 @@ For more details, see the RAPIDS maintain docs:
 * "GitHub Actions" ([link](https://docs.rapids.ai/resources/github-actions/))
 * "Reproducing CI Locally" ([link](https://docs.rapids.ai/resources/reproducing-ci/))
 
-#### (deprecated) Storing conda packages and wheels on `downloads.rapids.ai`
-
-Support for storing conda packages and wheels on `downloads.rapids.ai` is considered **deprecated**.
-Switch those workloads to using the the GitHub Actions artifact store.
-But for backwards-compatibility, this project still contains some tools for doing that:
-
-* `rapids-download-{conda,wheels}-from-s3`: download conda packages and wheels from the `downloads.rapids.ai` S3 bucket
-* `rapids-upload-{conda,wheels}-to-s3`: upload conda packages and wheels to the `downloads.rapids.ai` S3 bucket
-
 ### Testing Scripts Locally
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to test these scripts locally.
