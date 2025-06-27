@@ -76,7 +76,7 @@ else
         --repo "${RAPIDS_REPOSITORY}"                          \
         --branch "${RAPIDS_REF_NAME}"                          \
         --commit "${RAPIDS_SHA}"                               \
-        --workflow "${workflow_that_produced_artifacts}".      \
+        --workflow "${workflow_that_produced_artifacts}"       \
         --json 'createdAt,databaseId'                          \
         --jq 'sort_by(.createdAt) | reverse | .[0] | .databaseId'
   )
