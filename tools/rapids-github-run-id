@@ -23,18 +23,27 @@ export RAPIDS_SCRIPT_NAME="rapids-github-run-id"
 
 rapids-prompt-local-github-auth
 
-case "${RAPIDS_BUILD_TYPE}" in
-  pull-request)
-    workflow_that_produced_artifacts="${RAPIDS_BUILD_WORKFLOW_NAME:-pr.yaml}"
-    ;;
-  branch|nightly)
-    workflow_that_produced_artifacts="${RAPIDS_BUILD_WORKFLOW_NAME:-build.yaml}"
-    ;;
-  *)
-    rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request]"
-    exit 1
-    ;;
-esac
+# if RAPIDS_BUILD_WORKFLOW_NAME is set, use that instead of any RAPIDS conventions
+if [[ -n "${RAPIDS_BUILD_WORKFLOW_NAME:-}" ]]; then
+  workflow_that_produced_artifacts="${RAPIDS_BUILD_WORKFLOW_NAME}"
+  workflow_that_produced_artifacts_regex="\.github/workflows/${RAPIDS_BUILD_WORKFLOW_NAME}"
+else
+  # otherwise, rely on the RAPIDS workflow name conventions
+  case "${RAPIDS_BUILD_TYPE}" in
+    pull-request)
+      workflow_that_produced_artifacts="pr.yaml"
+      workflow_that_produced_artifacts_regex="\\.github/workflows/pr\\.yaml"
+      ;;
+    branch|nightly)
+      workflow_that_produced_artifacts="build.yaml"
+      workflow_that_produced_artifacts_regex="\\.github/workflows/build\\.yaml"
+      ;;
+    *)
+      rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request]"
+      exit 1
+      ;;
+  esac
+fi
 
 if [[ -z "${workflow_that_produced_artifacts:-}" ]]; then
   rapids-echo-stderr "ERROR: Failed to determine workflow file that produced artifacts. Environment variable RAPIDS_BUILD_WORKFLOW_NAME should be non-empty if it is set."
@@ -57,7 +66,7 @@ fi
 #
 if [[ -n "${GITHUB_WORKFLOW_REF:-}" ]] && \
     [[ -n "${GITHUB_RUN_ID:-}" ]] && \
-    [[ "${GITHUB_WORKFLOW_REF:-}" =~ github/workflows/${workflow_that_produced_artifacts} ]];
+    [[ "${GITHUB_WORKFLOW_REF:-}" =~ ${workflow_that_produced_artifacts_regex} ]];
 then
   run_id="${GITHUB_RUN_ID}"
   rapids-echo-stderr "Assuming artifacts should be fetched from this same run of '${workflow_that_produced_artifacts}'"
