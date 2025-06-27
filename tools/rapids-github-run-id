@@ -26,7 +26,7 @@ rapids-prompt-local-github-auth
 # if RAPIDS_BUILD_WORKFLOW_NAME is set, use that instead of any RAPIDS conventions
 if [[ -n "${RAPIDS_BUILD_WORKFLOW_NAME:-}" ]]; then
   workflow_that_produced_artifacts="${RAPIDS_BUILD_WORKFLOW_NAME}"
-  workflow_that_produced_artifacts_regex="\.github/workflows/${RAPIDS_BUILD_WORKFLOW_NAME}"
+  workflow_that_produced_artifacts_regex="\.github/workflows/${workflow_that_produced_artifacts}"
 else
   # otherwise, rely on the RAPIDS workflow name conventions
   case "${RAPIDS_BUILD_TYPE}" in
@@ -43,11 +43,6 @@ else
       exit 1
       ;;
   esac
-fi
-
-if [[ -z "${workflow_that_produced_artifacts:-}" ]]; then
-  rapids-echo-stderr "ERROR: Failed to determine workflow file that produced artifacts. Environment variable RAPIDS_BUILD_WORKFLOW_NAME should be non-empty if it is set."
-  exit 1
 fi
 
 # If the workflow we want artifacts from is the same one that's currently running, just
