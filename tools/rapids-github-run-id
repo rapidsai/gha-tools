@@ -60,6 +60,7 @@ if [[ -n "${GITHUB_WORKFLOW_REF:-}" ]] && \
     [[ "${GITHUB_WORKFLOW_REF:-}" =~ github/workflows/${workflow_that_produced_artifacts} ]];
 then
   run_id="${GITHUB_RUN_ID}"
+  rapids-echo-stderr "Assuming artifacts should be fetched from this same run of '${workflow_that_produced_artifacts}'"
 else
   # Otherwise, need to look it up via the GitHub API.
   #
@@ -68,6 +69,7 @@ else
   # On those types of runs, get the artifacts from the most recent run on a given
   # branch and commit, without worrying about whether that was technically a 'branch' (triggered by a merge)
   # or 'nightly' (triggered by a schedule) run.
+  rapids-echo-stderr "Querying the GitHub API to determine relevant run of '${workflow_that_produced_artifacts}'."
   run_id=$(
     RAPIDS_RETRY_SLEEP=120                                     \
       rapids-retry --quiet gh run list                         \
