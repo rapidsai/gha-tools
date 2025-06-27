@@ -47,7 +47,7 @@ fi
 #
 # In normal use, GITHUB_WORKFLOW_REF will have a value similar to:
 #
-#    GITHUB_WORKFLOW_RUN=rapidsai/cudf/.github/workflows/pr.yaml@refs/heads/pull-request/19146
+#    GITHUB_WORKFLOW_REF=rapidsai/cudf/.github/workflows/pr.yaml@refs/heads/pull-request/19146
 #
 #    or
 #
