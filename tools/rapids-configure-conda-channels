@@ -33,5 +33,4 @@ fi
 # Remove nightly channels if build is a release build
 if rapids-is-release-build; then
   remove_conda_channel 'rapidsai-nightly'
-  remove_conda_channel 'dask/label/dev'
 fi
