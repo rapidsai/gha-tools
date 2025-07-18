@@ -16,19 +16,19 @@ mod = importlib.import_module("rapids-find-anaconda-uploads")
     "filename, pkg_name",
     [
         (
-            "custreamz-23.02.00a230103-py39_g1deec38683_209.tar.bz2",
+            "custreamz-23.02.00a230103-py312_g1deec38683_209.tar.bz2",
             "custreamz",
         ),
         (
-            "strings_udf-23.02.00a230103-cuda_11_py39_g1deec38683_209.tar.bz2",
+            "strings_udf-23.02.00a230103-cuda_12_py312_g1deec38683_209.tar.bz2",
             "strings_udf",
         ),
         (
-            "dask-cudf-23.02.00a230103-cuda_11_py39_g1deec38683_209.tar.bz2",
+            "dask-cudf-23.02.00a230103-cuda_12_py312_g1deec38683_209.tar.bz2",
             "dask-cudf",
         ),
         (
-            "some-random-long-pkg-name-23.02.00a230103-cuda_11_py39_g1deec38683_209.tar.bz2",
+            "some-random-long-pkg-name-23.02.00a230103-cuda_12_py312_g1deec38683_209.tar.bz2",
             "some-random-long-pkg-name",
         ),
     ],
@@ -56,18 +56,18 @@ def test_is_skip_pkg(env_var, pkg_name, result):
 
 
 TEST_FILES = [
-    "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-    "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-    "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-    "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-    "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-    "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+    "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+    "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+    "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+    "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+    "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
 ]
 
 
@@ -78,45 +78,45 @@ def test_file_filter_fn():
     with mock.patch.dict(environ, {"SKIP_UPLOAD_PKGS": "some-pkg-private libcudf-tests"}):
         filtered_list = list(filter(file_filter_fn, TEST_FILES))
         assert filtered_list == [
-            "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
         ]
 
     # w/ empty env var
     with mock.patch.dict(environ, {"SKIP_UPLOAD_PKGS": ""}):
         filtered_list = list(filter(file_filter_fn, TEST_FILES))
         assert filtered_list == [
-            "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-            "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+            "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
         ]
 
     # w/ no env var
     filtered_list = list(filter(file_filter_fn, TEST_FILES))
     assert filtered_list == [
-        "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_39_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_38_x86_64/linux-64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py39_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-        "./cudf_conda_python_cuda11_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda11_py38_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_aarch64/linux-aarch64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-tests-23.02.00a-cuda11_g10bab945_72.tar.bz2",
-        "./cudf_conda_cpp_cuda11_x86_64/linux-64/libcudf-23.02.00a-cuda11_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_39_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_38_x86_64/linux-64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_39_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py312_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-private-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+        "./cudf_conda_python_cuda12_38_aarch64/linux-aarch64/some-pkg-23.02.00a-cuda12_py313_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda12_aarch64/linux-aarch64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-tests-23.02.00a-cuda12_g10bab945_72.tar.bz2",
+        "./cudf_conda_cpp_cuda12_x86_64/linux-64/libcudf-23.02.00a-cuda12_g10bab945_72.tar.bz2",
     ]
