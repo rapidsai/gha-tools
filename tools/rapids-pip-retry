@@ -6,7 +6,7 @@
 # (usually) results from an interrupted network connection
 #
 # Example usage:
-# $ rapids-pip-retry install nvidia-cublas-cu11
+# $ rapids-pip-retry install nvidia-cublas-cu12
 #
 # Configurable options are set using the following env vars:
 #

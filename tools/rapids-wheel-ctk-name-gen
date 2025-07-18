@@ -1,6 +1,6 @@
 #!/bin/bash
 # Generates CUDA suffix in the format "cu${VER}" where `$VER`
-# is the CUDA major version (for example, "cu11").
+# is the CUDA major version (for example, "cu12").
 # Positional Arguments:
 #   1) ctk tag
 set -eu -o pipefail
