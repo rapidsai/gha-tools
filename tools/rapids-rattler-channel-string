@@ -22,8 +22,8 @@
 #     "${RATTLER_CHANNELS[@]}"
 #
 #   # prepend custom channels
-#   LIBRMM_CHANNEL=$(rapids-get-pr-conda-artifact rmm 1909 cpp)
-#   RMM_CHANNEL=$(rapids-get-pr-conda-artifact rmm 1909 python)
+#   LIBRMM_CHANNEL=$(rapids-get-pr-artifact rmm 1909 cpp conda)
+#   RMM_CHANNEL=$(rapids-get-pr-artifact rmm 1909 python conda)
 #   RAPIDS_PREPENDED_CONDA_CHANNELS=("${LIBRMM_CHANNEL}" "${RMM_CHANNEL}")
 #
 #   source rapids-rattler-channel-string
