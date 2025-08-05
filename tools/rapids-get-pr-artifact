@@ -6,7 +6,7 @@
 #   2) PR number
 #   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
 #   4) "wheel" or "conda", to get the wheel or conda package artifact, respectively
-#   4) [optional] full commit hash, to get the artifact for a specific commit
+#   5) [optional] full commit hash, to get the artifact for a specific commit
 set -euo pipefail
 
 repo="rapidsai/${1}"
