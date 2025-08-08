@@ -7,7 +7,7 @@
 #
 #     source rapids-init-pip;
 #     LIBRMM_WHEELHOUSE=$(
-#       RAPIDS_PY_WHEEL_NAME="librmm_cu12" rapids-get-pr-wheel-artifact rmm 1909 cpp
+#       RAPIDS_PY_WHEEL_NAME="librmm_cu12" rapids-get-pr-artifact rmm 1909 cpp wheel
 #     )
 #     echo "librmm-${RAPIDS_PY_CUDA_SUFFIX} @ file://$(echo "${LIBRMM_WHEELHOUSE}"/librmm_*.whl)" >> "${PIP_CONSTRAINT}"
 #
