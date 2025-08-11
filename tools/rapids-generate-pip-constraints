@@ -28,6 +28,7 @@ if [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]]; then
         --output requirements \
         --file-key "${file_key}" \
         --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
+    | sed -E 's/\[[^]]+\]//g' \
     | tee "${out_file}"
 elif [[ "${RAPIDS_DEPENDENCIES}" == "latest" ]]; then
     echo "" > "${out_file}"
