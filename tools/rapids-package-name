@@ -18,6 +18,7 @@ append_cuda=0
 append_wheelname=0
 append_pyver=0
 append_arch=0
+append_noarch=0
 
 case "${pkg_type}" in
   conda_cpp)
@@ -25,9 +26,14 @@ case "${pkg_type}" in
     append_arch=1
     ;;
   conda_python)
-    append_cuda=1
-    append_pyver=1
-    append_arch=1
+    # Pure conda packages do not need cuda, python version, or arch appended
+    if [[ ! -v RAPIDS_PY_CONDA_NOARCH ]] || [[ "${RAPIDS_PY_CONDA_NOARCH}" != "1" ]]; then
+      append_cuda=1
+      append_pyver=1
+      append_arch=1
+    else
+      append_noarch=1
+    fi
     ;;
   wheel_cpp)
     append_wheelname=1
@@ -73,6 +79,11 @@ if (( append_arch == 1)); then
     # otherwise use architecture of the host that's running the upload command
     pkg_name+="_$(arch)"
   fi
+fi
+
+# for conda python packages that are `noarch: python`  builds
+if (( append_noarch == 1 )); then
+  pkg_name+="_noarch"
 fi
 
 # for cpp and python package types, it's a tarball, append .tar.gz and prepend project name
