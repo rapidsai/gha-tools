@@ -86,12 +86,6 @@ if (( append_noarch == 1 )); then
   pkg_name+="_noarch"
 fi
 
-# for cpp and python package types, it's a tarball, append .tar.gz and prepend project name
-pkg_extension=".tar.gz"
-if [[ "${RAPIDS_NO_PKG_EXTENSION:-}" == "true" ]]; then
-  pkg_extension=""
-fi
-
-pkg_name="${repo_name}_${pkg_name}${pkg_extension}"
+pkg_name="${repo_name}_${pkg_name}"
 
 echo -n "${pkg_name}"
