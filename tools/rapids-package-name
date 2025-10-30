@@ -70,15 +70,9 @@ if (( append_pyver == 1 )); then
   pkg_name+="_py${RAPIDS_PY_VERSION//./}"
 fi
 
-# for cpp and python package types (except pure wheels), append the arch
+# for cpp and python package types (except pure wheels), append the arch of the host that's running the upload command
 if (( append_arch == 1)); then
-  if [[ -v RAPIDS_ARCH ]] && [[ "${RAPIDS_ARCH}" != "" ]]; then
-    # use arch override if specified
-    pkg_name+="_${RAPIDS_ARCH}"
-  else
-    # otherwise use architecture of the host that's running the upload command
-    pkg_name+="_$(arch)"
-  fi
+  pkg_name+="_$(arch)"
 fi
 
 # for conda python packages that are `noarch: python`  builds
@@ -86,12 +80,6 @@ if (( append_noarch == 1 )); then
   pkg_name+="_noarch"
 fi
 
-# for cpp and python package types, it's a tarball, append .tar.gz and prepend project name
-pkg_extension=".tar.gz"
-if [[ "${RAPIDS_NO_PKG_EXTENSION:-}" == "true" ]]; then
-  pkg_extension=""
-fi
-
-pkg_name="${repo_name}_${pkg_name}${pkg_extension}"
+pkg_name="${repo_name}_${pkg_name}"
 
 echo -n "${pkg_name}"
