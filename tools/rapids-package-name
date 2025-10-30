@@ -2,17 +2,68 @@
 # A utility script that generates a package name from a package type
 # Positional Arguments:
 #   1) package type
+#   2) repo_name (optional): overrides repo name derived from RAPIDS_REPOSITORY
+# Flags:
+#   --pure: treats conda_python as noarch and wheel_python as pure
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-package-name"
 
-repo_name="${RAPIDS_REPOSITORY##*/}"
+is_pure_flag=0
+pkg_type=""
+repo_name=""
 
-if [ -z "${1:-}" ]; then
-  rapids-echo-stderr "Must specify input arguments: PKG_TYPE"
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --pure)
+      is_pure_flag=1
+      shift
+      ;;
+    -*)
+      rapids-echo-stderr "Unknown flag: $1. Supported flags: --pure"
+      exit 1
+      ;;
+    *)
+      # Handle positional arguments - first is required pkg_type, second is optional repo_name
+      if [[ -z "${pkg_type}" ]]; then
+        pkg_type="$1"
+        shift
+      elif [[ -z "${repo_name}" ]]; then
+        repo_name="$1"
+        shift
+      else
+        rapids-echo-stderr "Too many positional arguments: $1"
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+if [[ -z "${pkg_type}" ]]; then
+  rapids-echo-stderr "Must specify input arguments: PKG_TYPE [REPO_NAME] [--pure]"
   exit 1
 fi
 
-pkg_type="$1"
+# Set repo_name to default from RAPIDS_REPOSITORY if not provided as argument
+if [[ -z "${repo_name}" ]]; then
+  repo_name="${RAPIDS_REPOSITORY##*/}"
+fi
+
+# TODO: once `RAPIDS_PY_WHEEL_PURE` is removed, these flags can be collapsed
+# into a single variable `is_pure`.
+# Set flags based on --pure flag or existing environment variable
+is_pure_conda=0
+is_pure_wheel=0
+
+if (( is_pure_flag == 1 )); then
+  is_pure_conda=1
+  is_pure_wheel=1
+fi
+
+# TODO: remove support for this enviroment variable once all RAPIDS repos have
+# been updated to pass CLI flags directly.
+if [[ "${RAPIDS_PY_WHEEL_PURE:-}" == "1" ]]; then
+  is_pure_wheel=1
+fi
 
 append_cuda=0
 append_wheelname=0
@@ -27,7 +78,7 @@ case "${pkg_type}" in
     ;;
   conda_python)
     # Pure conda packages do not need cuda, python version, or arch appended
-    if [[ ! -v RAPIDS_PY_CONDA_NOARCH ]] || [[ "${RAPIDS_PY_CONDA_NOARCH}" != "1" ]]; then
+    if (( is_pure_conda == 0 )); then
       append_cuda=1
       append_pyver=1
       append_arch=1
@@ -42,7 +93,7 @@ case "${pkg_type}" in
   wheel_python)
     append_wheelname=1
     # Pure wheels do not need a pyver or arch
-    if [[ ! -v RAPIDS_PY_WHEEL_PURE ]] || [[ "${RAPIDS_PY_WHEEL_PURE}" != "1" ]]; then
+    if (( is_pure_wheel == 0 )); then
       append_pyver=1
       append_arch=1
     fi
