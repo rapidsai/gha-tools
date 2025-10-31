@@ -5,10 +5,14 @@
 #   2) repo_name (optional): overrides repo name derived from RAPIDS_REPOSITORY
 # Flags:
 #   --pure: treats conda_python as noarch and wheel_python as pure
+#   --cuda [version]: appends CUDA suffix processed by rapids-wheel-ctk-name-gen
+#                     if no version provided, uses RAPIDS_CUDA_VERSION
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-package-name"
 
 is_pure_flag=0
+cuda_flag=0
+cuda_version=""
 pkg_type=""
 repo_name=""
 
@@ -18,8 +22,20 @@ while [[ $# -gt 0 ]]; do
       is_pure_flag=1
       shift
       ;;
+    --cuda)
+      cuda_flag=1
+      shift
+      # Check if next argument exists and doesn't start with "-" (i.e., it's a version)
+      if [[ $# -gt 0 && "$1" != -* ]]; then
+        cuda_version="$1"
+        shift
+      else
+        # No argument provided, will use RAPIDS_CUDA_VERSION
+        cuda_version=""
+      fi
+      ;;
     -*)
-      rapids-echo-stderr "Unknown flag: $1. Supported flags: --pure"
+      rapids-echo-stderr "Unknown flag: $1. Supported flags: --pure, --cuda"
       exit 1
       ;;
     *)
@@ -39,7 +55,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "${pkg_type}" ]]; then
-  rapids-echo-stderr "Must specify input arguments: PKG_TYPE [REPO_NAME] [--pure]"
+  rapids-echo-stderr "Must specify input arguments: PKG_TYPE [REPO_NAME] [--pure] [--cuda [version]]"
   exit 1
 fi
 
@@ -129,6 +145,21 @@ fi
 # for conda python packages that are `noarch: python`  builds
 if (( append_noarch == 1 )); then
   pkg_name+="_noarch"
+fi
+
+# if --cuda flag is used, process the version and append to package name
+if (( cuda_flag == 1 )); then
+  # Use provided version or fall back to RAPIDS_CUDA_VERSION
+  if [[ -z "${cuda_version}" ]]; then
+    if [[ -z "${RAPIDS_CUDA_VERSION:-}" ]]; then
+      rapids-echo-stderr "RAPIDS_CUDA_VERSION environment variable must be set when using --cuda without version argument"
+      exit 1
+    fi
+    cuda_version="${RAPIDS_CUDA_VERSION}"
+  fi
+  # Process the CUDA version through rapids-wheel-ctk-name-gen
+  cuda_suffix=$(rapids-wheel-ctk-name-gen "${cuda_version}")
+  pkg_name+="_${cuda_suffix}"
 fi
 
 pkg_name="${repo_name}_${pkg_name}"
