@@ -19,5 +19,5 @@ fi
 
 # Configure sccache-dist
 if test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
-    rapids-configure-sccache-dist
+    . rapids-configure-sccache-dist
 fi
