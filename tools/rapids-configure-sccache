@@ -16,3 +16,8 @@ if [ "${CI:-false}" = "false" ]; then
   # are available in local builds.
   export SCCACHE_S3_NO_CREDENTIALS=true
 fi
+
+# Configure sccache-dist
+if test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
+    rapids-configure-sccache-dist
+fi

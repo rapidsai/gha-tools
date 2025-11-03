@@ -1,11 +1,6 @@
 #!/bin/bash
 # A utility script that configures sccache-dist environment variables
 
-if ! test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
-    echo "Missing required environment variable \`SCCACHE_DIST_AUTH_TOKEN\`" >&2
-    exit 1
-fi
-
 SCCACHE_REPO="${SCCACHE_REPO:-rapidsai/sccache}"
 SCCACHE_VERSION="${SCCACHE_VERSION:-latest}"
 
@@ -33,7 +28,6 @@ export PARALLEL_LEVEL="$(ulimit -Hn)"
 export NVCC_APPEND_FLAGS="${NVCC_APPEND_FLAGS:+$NVCC_APPEND_FLAGS }-t=100"
 
 # sccache configuration
-source rapids-configure-sccache
 export SCCACHE_IDLE_TIMEOUT=0
 export SCCACHE_ERROR_LOG="${SCCACHE_ERROR_LOG:-/tmp/sccache.log}"
 export SCCACHE_SERVER_LOG="${SCCACHE_SERVER_LOG:-sccache=debug}"
