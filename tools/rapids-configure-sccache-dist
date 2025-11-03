@@ -1,0 +1,57 @@
+#!/bin/bash
+# A utility script that configures sccache-dist environment variables
+
+SCCACHE_REPO="${SCCACHE_REPO:-rapidsai/sccache}"
+SCCACHE_VERSION="${SCCACHE_VERSION:-latest}"
+
+# Install sccache to /usr/bin
+while ! tar -C /usr/bin -z --wildcards --strip-components=1 -x '*/sccache' -f <(
+    if [ "${SCCACHE_VERSION:-latest}" = latest ]; then
+    # Install latest version
+    wget --no-hsts -q -O- "https://api.github.com/repos/${SCCACHE_REPO}/releases/latest" \
+    | jq -r ".assets[] | select(.name | test(\"^sccache-v.*?-$(uname -m)-unknown-linux-musl.tar.gz\$\")) | .browser_download_url" \
+    | wget --no-hsts -q -O- -i-
+    else
+    # Install pinned version
+    wget --no-hsts -q -O- "https://github.com/${SCCACHE_REPO}/releases/download/v${SCCACHE_VERSION}/sccache-v${SCCACHE_VERSION}-$(uname -m)-unknown-linux-musl.tar.gz"
+    fi
+); do
+    sleep 10;
+done
+
+# Verify installation
+sccache --version
+
+# Runner configuration
+# shellcheck disable=SC2155
+export PARALLEL_LEVEL="$(ulimit -Hn)"
+export NVCC_APPEND_FLAGS="${NVCC_APPEND_FLAGS:+$NVCC_APPEND_FLAGS }-t=100"
+
+# sccache configuration
+export SCCACHE_IDLE_TIMEOUT=0
+export SCCACHE_ERROR_LOG="${SCCACHE_ERROR_LOG:-/tmp/sccache.log}"
+export SCCACHE_SERVER_LOG="${SCCACHE_SERVER_LOG:-sccache=debug}"
+
+# sccache-dist configuration
+export SCCACHE_DIST_AUTH_TYPE="${SCCACHE_DIST_AUTH_TYPE:-token}"
+export SCCACHE_DIST_MAX_RETRIES="${SCCACHE_DIST_MAX_RETRIES:-inf}"
+export SCCACHE_DIST_REQUEST_TIMEOUT="${SCCACHE_DIST_REQUEST_TIMEOUT:-7140}"
+export SCCACHE_DIST_FALLBACK_TO_LOCAL_COMPILE="${SCCACHE_DIST_FALLBACK_TO_LOCAL_COMPILE:-false}"
+
+case "$(uname -m)" in
+    x86_64 | amd64)
+    export SCCACHE_DIST_SCHEDULER_URL="https://amd64.linux.sccache.rapids.nvidia.com"
+    ;;
+    aarch64 | arm64)
+    export SCCACHE_DIST_SCHEDULER_URL="https://arm64.linux.sccache.rapids.nvidia.com"
+    ;;
+    *)
+    echo "Unsupported CPU architecture '$(uname -m)'" >&2
+    exit 1
+    ;;
+esac
+
+# Start the sccache client daemon
+mkdir -p "$(dirname "$SCCACHE_ERROR_LOG")"
+ulimit -n "$(ulimit -Hn)"
+sccache --start-server
