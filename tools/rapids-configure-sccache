@@ -1,6 +1,7 @@
 #!/bin/bash
 # A utility script that configures sccache environment variables
 
+export RUSTC_WRAPPER=sccache
 export CMAKE_CUDA_COMPILER_LAUNCHER=sccache
 export CMAKE_CXX_COMPILER_LAUNCHER=sccache
 export CMAKE_C_COMPILER_LAUNCHER=sccache
