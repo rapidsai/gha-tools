@@ -10,6 +10,11 @@ if [ "${CI:-false}" = "false" ]; then
   exit 0
 fi
 
+if [ ! -n "${RAPIDS_ARTIFACTS_DIR:+x}" ]; then
+  rapids-echo-stderr "RAPIDS_ARTIFACTS_DIR not defined, not uploading artifacts."
+  exit 0
+fi
+
 if [ ! -d "${RAPIDS_ARTIFACTS_DIR}" ]; then
   rapids-echo-stderr "Artifacts directory ${RAPIDS_ARTIFACTS_DIR} not found."
   exit 0
