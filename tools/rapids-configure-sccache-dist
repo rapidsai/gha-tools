@@ -69,5 +69,10 @@ export SCCACHE_DIST_REQUEST_TIMEOUT="${SCCACHE_DIST_REQUEST_TIMEOUT:-7140}"
 export SCCACHE_DIST_FALLBACK_TO_LOCAL_COMPILE="${SCCACHE_DIST_FALLBACK_TO_LOCAL_COMPILE:-false}"
 export SCCACHE_DIST_SCHEDULER_URL="https://${CPU_ARCH}.linux.sccache.rapids.nvidia.com"
 
+# Disable build caching for release builds
+if rapids-is-release-build; then
+    export SCCACHE_NO_CACHE=1
+fi
+
 # Start the sccache client daemon
 mkdir -p "$(dirname "$SCCACHE_ERROR_LOG")"
