@@ -32,7 +32,11 @@ case "${PKG_TYPE}" in
     ;;
 esac
 
-WHEEL_SEARCH_KEY="wheel_${PKG_TYPE}_${WHEEL_NAME}"
+# Use WHEEL_SEARCH_KEY from environment if set, otherwise construct default
+if [[ -z "${WHEEL_SEARCH_KEY:-}" ]]; then
+  WHEEL_SEARCH_KEY="wheel_${PKG_TYPE}_${WHEEL_NAME}"
+fi
+export WHEEL_SEARCH_KEY
 
 WHEEL_DIR="./dist"
 mkdir -p "${WHEEL_DIR}"
@@ -40,6 +44,7 @@ mkdir -p "${WHEEL_DIR}"
 github_run_id="$(rapids-github-run-id)"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
+rapids-echo-stderr "Using search key: ${WHEEL_SEARCH_KEY}"
 rapids-echo-stderr "Downloading ${PKG_TYPE}_${WHEEL_NAME} wheels to ${unzip_dest}"
 
 # Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
