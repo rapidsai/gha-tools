@@ -1,24 +1,29 @@
 #!/bin/bash
-# A utility script that configures sccache environment variables
+# A utility script that installs and configures sccache
 
 # Configure sccache-dist
 if test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
     . rapids-configure-sccache-dist
+else
+    # Install sccache to /usr/bin
+    rapids-install-sccache
 fi
 
 export RUSTC_WRAPPER=sccache
 export CMAKE_CUDA_COMPILER_LAUNCHER=sccache
 export CMAKE_CXX_COMPILER_LAUNCHER=sccache
 export CMAKE_C_COMPILER_LAUNCHER=sccache
-export PARALLEL_LEVEL=${PARALLEL_LEVEL:-$(nproc --all --ignore=2)}
-export SCCACHE_BUCKET=rapids-sccache-east
-export SCCACHE_IDLE_TIMEOUT=0
-export SCCACHE_REGION=us-east-2
-export SCCACHE_S3_NO_CREDENTIALS=false
-export SCCACHE_S3_USE_SSL=true
+export PARALLEL_LEVEL="${PARALLEL_LEVEL:-$(nproc --all --ignore=2)}"
+export SCCACHE_BUCKET="${SCCACHE_BUCKET:-rapids-sccache-east}"
+export SCCACHE_IDLE_TIMEOUT="${SCCACHE_IDLE_TIMEOUT:-0}"
+export SCCACHE_REGION="${SCCACHE_REGION:-us-east-2}"
+export SCCACHE_S3_USE_SSL="${SCCACHE_S3_USE_SSL:-true}"
 
-if [ "${CI:-false}" = "false" ]; then
-  # Configure sccache for read-only mode since no credentials
-  # are available in local builds.
-  export SCCACHE_S3_NO_CREDENTIALS=true
+if [ "${CI:-false}" = "true" ]; then
+    # Always require credentials to access the sccache bucket in CI
+    export SCCACHE_S3_NO_CREDENTIALS=false
+else
+    # Configure sccache for read-only mode since no credentials
+    # are available in local builds.
+    export SCCACHE_S3_NO_CREDENTIALS="${SCCACHE_S3_NO_CREDENTIALS:-true}"
 fi
