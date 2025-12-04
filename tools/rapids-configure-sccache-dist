@@ -1,5 +1,5 @@
 #!/bin/bash
-# A utility script that configures sccache-dist environment variables
+# A utility script that configures sccache for distributed compilation
 
 case "$(uname -m)" in
     x86_64)
@@ -14,28 +14,10 @@ case "$(uname -m)" in
     ;;
 esac
 
-SCCACHE_REPO="${SCCACHE_REPO:-rapidsai/sccache}"
-SCCACHE_VERSION="${SCCACHE_VERSION:-latest}"
-
 # Install sccache to /usr/bin
-while ! tar -C /usr/bin -z --wildcards --strip-components=1 -x '*/sccache' -f <(
-    if [ "${SCCACHE_VERSION:-latest}" = latest ]; then
-    # Install latest version
-    wget --no-hsts -q -O- "https://api.github.com/repos/${SCCACHE_REPO}/releases/latest" \
-    | jq -r ".assets[] | select(.name | test(\"^sccache-v.*?-$(uname -m)-unknown-linux-musl.tar.gz\$\")) | .browser_download_url" \
-    | wget --no-hsts -q -O- -i-
-    else
-    # Install pinned version
-    wget --no-hsts -q -O- "https://github.com/${SCCACHE_REPO}/releases/download/v${SCCACHE_VERSION}/sccache-v${SCCACHE_VERSION}-$(uname -m)-unknown-linux-musl.tar.gz"
-    fi
-); do
-    sleep 10;
-done
+rapids-install-sccache
 
-# Verify installation
-sccache --version
-
-# sccache client configuration
+# Configure sccache client
 
 # Set dynamically if unset
 if ! test -n "${PARALLEL_LEVEL:+x}"; then

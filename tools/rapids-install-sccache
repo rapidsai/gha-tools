@@ -1,0 +1,48 @@
+#!/bin/bash
+# A utility script that installs sccache
+
+SCCACHE_VERSION="${SCCACHE_VERSION:-"latest"}"
+SCCACHE_REPO="${SCCACHE_REPO:-"rapidsai/sccache"}"
+
+SCCACHE_BIN_DIR="$(dirname "$(which sccache 2>/dev/null || echo "/usr/bin/sccache")")"
+CURRENT_SCCACHE_VERSION="$(sccache --version | cut -d' ' -f2 || echo "sccache not installed")"
+
+if test "$SCCACHE_VERSION" = rapids; then
+    SCCACHE_VERSION="latest"
+    SCCACHE_REPO="rapidsai/sccache"
+fi
+
+ATTEMPTS=0
+while [ "${SCCACHE_VERSION:-latest}" = latest ]; do
+    SCCACHE_VERSION="$(wget --no-hsts -q -O- "https://api.github.com/repos/${SCCACHE_REPO}/releases/latest" | jq -r '.tag_name | sub("^v"; "")')"
+    if test -n "${SCCACHE_VERSION:+x}"; then
+        break
+    elif test "$((ATTEMPTS++))" -lt 10; then
+        echo "(!) Failed to load latest ${SCCACHE_REPO} version. Retrying (${ATTEMPTS}/10)..." >&2
+        SCCACHE_VERSION="latest"
+        sleep 10
+    else
+        echo "(!) Failed to retrieve latest sccache version after 10 attempts." >&2
+        exit 1
+    fi
+done
+
+if [ -n "${CURRENT_SCCACHE_VERSION##"${SCCACHE_VERSION}"}" ]; then
+    echo "Downloading sccache v${SCCACHE_VERSION}..." >&2
+    ATTEMPTS=0
+    # Install sccache to $SCCACHE_BIN_DIR
+    while ! wget --no-hsts -q -O- "https://github.com/${SCCACHE_REPO}/releases/download/v${SCCACHE_VERSION}/sccache-v${SCCACHE_VERSION}-$(uname -m)-unknown-linux-musl.tar.gz" \
+          | tar -C "$SCCACHE_BIN_DIR" -zf - --overwrite --wildcards --strip-components=1 -x '*/sccache'; do
+        if test "$((ATTEMPTS++))" -lt 10; then
+            echo "(!) Failed to download sccache v${SCCACHE_VERSION}. Retrying (${ATTEMPTS}/10)..." >&2
+            sleep 10
+        else
+            echo "(!) Failed to download sccache v${SCCACHE_VERSION} after 10 attempts." >&2
+            exit 1
+        fi
+    done
+    # Verify installation
+    echo "Installed $(sccache --version) to $(which sccache)" >&2
+else
+    echo "sccache v${SCCACHE_VERSION} is already installed, skipping" >&2
+fi
