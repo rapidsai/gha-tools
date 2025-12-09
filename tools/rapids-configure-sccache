@@ -1,12 +1,9 @@
 #!/bin/bash
-# A utility script that installs and configures sccache
+# A utility script that configures sccache
 
 # Configure sccache-dist
 if test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
     . rapids-configure-sccache-dist
-else
-    # Install sccache to /usr/bin
-    rapids-install-sccache
 fi
 
 export RUSTC_WRAPPER=sccache
