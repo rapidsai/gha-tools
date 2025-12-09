@@ -47,8 +47,8 @@ commit="${positional_args[4]:-}"
 # Validate --noarch flag
 if (( noarch_flag == 1 )); then
   if [[ "${package_format}" != "conda" ]] || [[ "${package_type}" != "python" ]] || [[ -z "${RAPIDS_PY_NOARCH_SUFFIX:-}" ]]; then
-    echo "Error: --noarch flag requires package_format='conda', package_type='python', and RAPIDS_PY_NOARCH_SUFFIX environment variable to be set" >&2
-    echo "Got: package_format='${package_format}' package_type='${package_type}' RAPIDS_PY_NOARCH_SUFFIX='${RAPIDS_PY_NOARCH_SUFFIX:-<unset>}'" >&2
+    rapids-echo-stderr "Error: --noarch flag requires package_format='conda', package_type='python', and RAPIDS_PY_NOARCH_SUFFIX environment variable to be set"
+    rapids-echo-stderr "Got: package_format='${package_format}' package_type='${package_type}' RAPIDS_PY_NOARCH_SUFFIX='${RAPIDS_PY_NOARCH_SUFFIX:-<unset>}'"
     exit 1
   fi
 fi
