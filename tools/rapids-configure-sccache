@@ -1,5 +1,5 @@
 #!/bin/bash
-# A utility script that installs and configures sccache
+# A utility script that configures sccache
 
 # Configure sccache-dist
 if test -n "${SCCACHE_DIST_AUTH_TOKEN:+x}"; then
