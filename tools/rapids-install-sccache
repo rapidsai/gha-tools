@@ -5,7 +5,7 @@ SCCACHE_VERSION="${SCCACHE_VERSION:-"latest"}"
 SCCACHE_REPO="${SCCACHE_REPO:-"rapidsai/sccache"}"
 
 SCCACHE_BIN_DIR="$(dirname "$(which sccache 2>/dev/null || echo "/usr/bin/sccache")")"
-CURRENT_SCCACHE_VERSION="$(sccache --version | cut -d' ' -f2 || echo "sccache not installed")"
+CURRENT_SCCACHE_VERSION="$(command -v sccache &>/dev/null && sccache --version | cut -d' ' -f2 || echo "sccache not installed")"
 
 if test "$SCCACHE_VERSION" = rapids; then
     SCCACHE_VERSION="latest"
