@@ -7,13 +7,51 @@
 #   3) "cpp" or "python", to get the artifact for the C++ or Python build, respectively
 #   4) "wheel" or "conda", to get the wheel or conda package artifact, respectively
 #   5) [optional] full commit hash, to get the artifact for a specific commit
+# Flags:
+#   --noarch: for conda python packages that use RAPIDS_PY_NOARCH_SUFFIX
 set -euo pipefail
 
-repo="rapidsai/${1}"
-pr="${2}"
-package_type="${3}"
-package_format="${4}"
-commit="${5:-}"
+# Parse flags
+noarch_flag=0
+positional_args=()
+
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --noarch)
+      noarch_flag=1
+      shift
+      ;;
+    -*)
+      echo "Unknown flag: $1" >&2
+      exit 1
+      ;;
+    *)
+      positional_args+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Check for minimum required arguments
+if [[ ${#positional_args[@]} -lt 4 ]]; then
+  echo "Must specify: REPO_NAME PR_NUMBER PACKAGE_TYPE PACKAGE_FORMAT [COMMIT]" >&2
+  exit 1
+fi
+
+repo="rapidsai/${positional_args[0]}"
+pr="${positional_args[1]}"
+package_type="${positional_args[2]}"
+package_format="${positional_args[3]}"
+commit="${positional_args[4]:-}"
+
+# Validate --noarch flag
+if (( noarch_flag == 1 )); then
+  if [[ "${package_format}" != "conda" ]] || [[ "${package_type}" != "python" ]] || [[ -z "${RAPIDS_PY_NOARCH_SUFFIX:-}" ]]; then
+    rapids-echo-stderr "Error: --noarch flag requires package_format='conda', package_type='python', and RAPIDS_PY_NOARCH_SUFFIX environment variable to be set"
+    rapids-echo-stderr "Got: package_format='${package_format}' package_type='${package_type}' RAPIDS_PY_NOARCH_SUFFIX='${RAPIDS_PY_NOARCH_SUFFIX:-<unset>}'"
+    exit 1
+  fi
+fi
 
 if [[ "${package_format}" = "wheel" && -z "${RAPIDS_PY_WHEEL_NAME:+placeholder}" ]]; then
     echo "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"

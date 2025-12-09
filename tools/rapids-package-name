@@ -81,6 +81,12 @@ if [[ "${RAPIDS_PY_WHEEL_PURE:-}" == "1" ]]; then
   is_pure_wheel=1
 fi
 
+# Check for RAPIDS_PY_NOARCH_SUFFIX override for conda_python packages
+use_custom_conda_name=0
+if [[ -n "${RAPIDS_PY_NOARCH_SUFFIX:-}" ]] && [[ "${pkg_type}" == "conda_python" ]]; then
+  use_custom_conda_name=1
+fi
+
 append_cuda=0
 append_wheelname=0
 append_pyver=0
@@ -121,6 +127,17 @@ case "${pkg_type}" in
 esac
 
 pkg_name="${pkg_type}"
+
+# If RAPIDS_PY_NOARCH_SUFFIX is set for conda_python, use custom name and skip all other naming
+if (( use_custom_conda_name == 1 )); then
+  pkg_name+="_${RAPIDS_PY_NOARCH_SUFFIX}"
+  # Skip to the end - set all append flags to 0
+  append_cuda=0
+  append_wheelname=0
+  append_pyver=0
+  append_arch=0
+  append_noarch=0
+fi
 
 # for conda package types, append CUDA version
 if (( append_cuda == 1 )); then
