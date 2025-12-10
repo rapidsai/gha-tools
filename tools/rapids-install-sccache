@@ -12,6 +12,8 @@ if test "$SCCACHE_VERSION" = rapids; then
     SCCACHE_REPO="rapidsai/sccache"
 fi
 
+rapids-prompt-local-github-auth
+
 if [ "${SCCACHE_VERSION:-latest}" = latest ]; then
     SCCACHE_VERSION="$(rapids-retry --quiet gh release view --repo "${SCCACHE_REPO}" --json tagName --jq '.tagName | sub("^v"; "")')"
 fi
