@@ -1,5 +1,6 @@
 #!/bin/bash
 # A utility script that installs sccache
+set -euo pipefail
 
 SCCACHE_VERSION="${SCCACHE_VERSION:-"latest"}"
 SCCACHE_REPO="${SCCACHE_REPO:-"rapidsai/sccache"}"
