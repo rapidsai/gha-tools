@@ -9,16 +9,22 @@
 #   5) [optional] full commit hash, to get the artifact for a specific commit
 # Flags:
 #   --noarch: for conda python packages that use RAPIDS_PY_NOARCH_SUFFIX
+#   --stable: for wheel python packages that use stable ABI (abi3)
 set -euo pipefail
 
 # Parse flags
 noarch_flag=0
+stable_flag=0
 positional_args=()
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --noarch)
       noarch_flag=1
+      shift
+      ;;
+    --stable)
+      stable_flag=1
       shift
       ;;
     -*)
@@ -44,6 +50,12 @@ package_type="${positional_args[2]}"
 package_format="${positional_args[3]}"
 commit="${positional_args[4]:-}"
 
+# Validate mutually exclusive flags
+if (( noarch_flag == 1 )) && (( stable_flag == 1 )); then
+  rapids-echo-stderr "Error: --noarch and --stable flags are mutually exclusive"
+  exit 1
+fi
+
 # Validate --noarch flag
 if (( noarch_flag == 1 )); then
   if [[ "${package_format}" != "conda" ]] || [[ "${package_type}" != "python" ]] || [[ -z "${RAPIDS_PY_NOARCH_SUFFIX:-}" ]]; then
@@ -53,9 +65,13 @@ if (( noarch_flag == 1 )); then
   fi
 fi
 
-if [[ "${package_format}" = "wheel" && -z "${RAPIDS_PY_WHEEL_NAME:+placeholder}" ]]; then
-    echo "The RAPIDS_PY_WHEEL_NAME variable must be set when fetching a wheel artifact"
+# Validate --stable flag
+if (( stable_flag == 1 )); then
+  if [[ "${package_type}" != "python" ]]; then
+    rapids-echo-stderr "Error: --stable flag is only compatible with package_type='python'"
+    rapids-echo-stderr "Got: package_format='${package_format}'"
     exit 1
+  fi
 fi
 
 source rapids-prompt-local-github-auth
@@ -66,10 +82,18 @@ if [[ -z "${commit}" ]]; then
 fi
 
 # Generate the artifact name
+if ((stable_flag == 0)); then
 pkg_name=$(
     RAPIDS_REPOSITORY="${repo}"                                \
         rapids-package-name "${package_format}_${package_type}"
 )
+# If it's a stable build, pass through stable and cuda flags
+else
+  pkg_name=$(
+      RAPIDS_REPOSITORY="${repo}"                                \
+          rapids-package-name "${package_format}_${package_type}" --stable --cuda "${RAPIDS_CUDA_VERSION}"
+  )
+fi
 
 # get run ID
 # NOTE: cannot reuse rapids-github-run-id here, because the environment variable
