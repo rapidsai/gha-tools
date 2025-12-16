@@ -169,7 +169,12 @@ fi
 
 # for conda package types, append CUDA version
 if (( append_cuda == 1 )); then
-  pkg_name+="_cuda${RAPIDS_CUDA_VERSION%%.*}"
+  # Use command-line cuda_version if provided, otherwise fall back to env var
+  if [[ -n "${cuda_version}" ]]; then
+    pkg_name+="_cuda${cuda_version%%.*}"
+  else
+    pkg_name+="_cuda${RAPIDS_CUDA_VERSION%%.*}"
+  fi
 fi
 
 # for wheels, add the python wheel name if env var is set
