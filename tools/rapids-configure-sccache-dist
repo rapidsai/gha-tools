@@ -53,5 +53,8 @@ if rapids-is-release-build; then
     export SCCACHE_NO_CACHE=1
 fi
 
-# Start the sccache client daemon
+# Ensure the sccache logfile dir exists
 mkdir -p "$(dirname "$SCCACHE_ERROR_LOG")"
+
+# Increase nofile ulimit so massively parallel builds don't fail
+ulimit -n "$(ulimit -Hn)"
