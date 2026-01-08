@@ -10,11 +10,13 @@
 # Flags:
 #   --noarch: for conda python packages that use RAPIDS_PY_NOARCH_SUFFIX
 #   --stable: for wheel python packages that use stable ABI (abi3)
+#   --pkg_name: specify the package name to download if different from repo name (e.g. pylibraft)
 set -euo pipefail
 
 # Parse flags
 noarch_flag=0
 stable_flag=0
+pkg_name_arg=""
 positional_args=()
 
 while [[ $# -gt 0 ]]; do
@@ -26,6 +28,10 @@ while [[ $# -gt 0 ]]; do
     --stable)
       stable_flag=1
       shift
+      ;;
+    --pkg_name)
+      pkg_name_arg="$2"
+      shift 2
       ;;
     -*)
       echo "Unknown flag: $1" >&2
@@ -84,13 +90,13 @@ fi
 # Generate the artifact name
 if ((stable_flag == 0)); then
 pkg_name=$(
-    RAPIDS_REPOSITORY="${repo}"                                \
+    RAPIDS_REPOSITORY="${pkg_name_arg:-${repo}}"                   \
         rapids-package-name "${package_format}_${package_type}"
 )
 # If it's a stable build, pass through stable and cuda flags
 else
   pkg_name=$(
-      RAPIDS_REPOSITORY="${repo}"                                \
+      RAPIDS_REPOSITORY="${pkg_name_arg:-${repo}}"                 \
           rapids-package-name "${package_format}_${package_type}" --stable --cuda "${RAPIDS_CUDA_VERSION}"
   )
 fi
