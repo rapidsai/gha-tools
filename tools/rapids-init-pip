@@ -19,5 +19,7 @@
 # calls that happen when setting up an isolation build environment for wheel builds.
 #
 PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
+PIP_BUILD_CONSTRAINT="${PIP_CONSTRAINT}"
 touch "${PIP_CONSTRAINT}"
 export PIP_CONSTRAINT
+export PIP_BUILD_CONSTRAINT
