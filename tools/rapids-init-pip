@@ -21,3 +21,7 @@
 PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
 touch "${PIP_CONSTRAINT}"
 export PIP_CONSTRAINT
+
+# opt in to pip's behavior (introduced in late 2025) of not allowing 'PIP_CONSTRAINT' to affect isolated build environments
+PIP_USE_FEATURE="build-constraint"
+export PIP_USE_FEATURE
