@@ -17,7 +17,7 @@ case "${pkg_type}" in
     pkg_name="$(rapids-package-name "wheel_${pkg_type}")"
     ;;
   pure_python)
-    pkg_name="$(rapids-package-name "wheel_${pkg_type}" --pure)"
+    pkg_name="$(rapids-package-name "wheel_python" --pure)"
     ;;
   *)
     rapids-echo-stderr 'Pass "cpp", "python", or "pure_python" as an argument.'
