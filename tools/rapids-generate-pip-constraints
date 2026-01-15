@@ -23,8 +23,9 @@ export RAPIDS_SCRIPT_NAME="rapids-generate-pip-constraints"
 file_key="${1}"
 out_file="${2}"
 
-if   [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]] \
-  || [[ "${RAPIDS_DEPENDENCIES}" == "intermediate" ]] \
+if   [[ "${RAPIDS_DEPENDENCIES}" == "intermediate" ]] \
+  || [[ "${RAPIDS_DEPENDENCIES}" == "nightly" ]] \
+  || [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]] \
 ; then
     rapids-dependency-file-generator \
         --output requirements \
@@ -36,6 +37,6 @@ if   [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]] \
 elif [[ "${RAPIDS_DEPENDENCIES}" == "latest" ]]; then
     echo "" > "${out_file}"
 else
-    rapids-echo-stderr "Got unrecognized value for RAPIDS_DEPENDENCIES: '${RAPIDS_DEPENDENCIES}'. Expected one of ('intermediate', 'latest', 'oldest')."
+    rapids-echo-stderr "Got unrecognized value for RAPIDS_DEPENDENCIES: '${RAPIDS_DEPENDENCIES}'. Expected one of ('intermediate', 'latest', 'nightly', 'oldest')."
     exit 1
 fi
