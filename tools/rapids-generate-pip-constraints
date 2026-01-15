@@ -23,15 +23,19 @@ export RAPIDS_SCRIPT_NAME="rapids-generate-pip-constraints"
 file_key="${1}"
 out_file="${2}"
 
-if [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]]; then
+if   [[ "${RAPIDS_DEPENDENCIES}" == "oldest" ]] \
+  || [[ "${RAPIDS_DEPENDENCIES}" == "intermediate" ]] \
+; then
     rapids-dependency-file-generator \
         --output requirements \
         --file-key "${file_key}" \
         --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
     | tee "${out_file}"
+# 'latest' should be a no-op and not constrain dependencies at all
+# (pip will prefer the latest versions of dependencies by default)
 elif [[ "${RAPIDS_DEPENDENCIES}" == "latest" ]]; then
     echo "" > "${out_file}"
 else
-    rapids-echo-stderr "Got unrecognized value for RAPIDS_DEPENDENCIES: '${RAPIDS_DEPENDENCIES}'. Expected one of ('latest', 'oldest')."
+    rapids-echo-stderr "Got unrecognized value for RAPIDS_DEPENDENCIES: '${RAPIDS_DEPENDENCIES}'. Expected one of ('intermediate', 'latest', 'oldest')."
     exit 1
 fi
