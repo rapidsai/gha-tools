@@ -26,7 +26,7 @@ export PIP_CONSTRAINT
 #
 # Patching out pypi.nvidia.com in this script allows a slow migration across RAPIDS
 # without ever breaking CI (unlike just removing this in CI images and seeing what breaks).
-if [[ "${RAPIDS_INIT_PIP_REMOVE_NVIDIA_INDEX}" == "true" ]]; then
+if [[ "${RAPIDS_INIT_PIP_REMOVE_NVIDIA_INDEX:-}" == "true" ]]; then
     rapids-logger "patching pypi.nvidia.com out of pip.conf"
     sed -i '/pypi\.nvidia\.com/d' /etc/xdg/pip/pip.conf
     rapids-logger "updated 'pip.conf':"
