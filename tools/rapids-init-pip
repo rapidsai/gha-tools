@@ -30,7 +30,7 @@ if [[ "${RAPIDS_INIT_PIP_REMOVE_NVIDIA_INDEX:-}" == "true" ]]; then
     rapids-logger "patching pypi.nvidia.com out of pip.conf"
     sed -i '/pypi\.nvidia\.com/d' /etc/xdg/pip/pip.conf
     rapids-logger "updated 'pip.conf':"
-    rapids-logger ""
+    echo ""
     cat /etc/xdg/pip/pip.conf
-    rapids-logger ""
+    echo ""
 fi
