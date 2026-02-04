@@ -4,27 +4,51 @@ set -euo pipefail
 
 SCCACHE_VERSION="${SCCACHE_VERSION:-"latest"}"
 SCCACHE_REPO="${SCCACHE_REPO:-"rapidsai/sccache"}"
-
 SCCACHE_BIN_DIR="$(dirname "$(which sccache 2>/dev/null || echo "/usr/bin/sccache")")"
-CURRENT_SCCACHE_VERSION="$(command -v sccache &>/dev/null && sccache --version | cut -d' ' -f2 || echo "sccache not installed")"
 
-if test "$SCCACHE_VERSION" = rapids; then
+if [ "$SCCACHE_VERSION" = rapids ]; then
     SCCACHE_VERSION="latest"
     SCCACHE_REPO="rapidsai/sccache"
 fi
 
-rapids-prompt-local-github-auth
-
-if [ "${SCCACHE_VERSION:-latest}" = latest ]; then
-    SCCACHE_VERSION="$(rapids-retry --quiet gh release view --repo "${SCCACHE_REPO}" --json tagName --jq '.tagName | sub("^v"; "")')"
+if [ "$SCCACHE_VERSION" = latest ]; then
+    # First try to download with the new stable URL (no GitHub API calls necessary)
+    # If this 404's, try `gh release download` below
+    SCCACHE_LATEST_STABLE_URL="https://github.com/$SCCACHE_REPO/releases/latest/download/sccache-$(uname -m)-unknown-linux-musl.tar.gz";
+    if wget -q --method=HEAD --tries=10 "$SCCACHE_LATEST_STABLE_URL"; then
+        echo "Downloading latest sccache..." >&2
+        if wget -q -O- --tries=10 "$SCCACHE_LATEST_STABLE_URL" \
+            | tar -C "$SCCACHE_BIN_DIR" -zf - --overwrite --wildcards --strip-components=1 -x '*/sccache'; then
+            # Verify installation
+            if command -v sccache &>/dev/null; then
+                SCCACHE_VERSION="$(sccache --version | cut -d' ' -f2)"
+                echo "Installed $SCCACHE_VERSION to $(which sccache)" >&2
+            fi
+        fi
+    fi
 fi
+
+CURRENT_SCCACHE_VERSION="$(command -v sccache &>/dev/null && sccache --version | cut -d' ' -f2 || echo "sccache not installed")"
 
 if [ -n "${CURRENT_SCCACHE_VERSION##"${SCCACHE_VERSION}"}" ]; then
+    rapids-prompt-local-github-auth
+    if [ "${SCCACHE_VERSION:-latest}" = latest ]; then
+        SCCACHE_VERSION="$(rapids-retry --quiet gh release view --repo "${SCCACHE_REPO}" --json tagName --jq '.tagName | sub("^v"; "")')"
+    fi
+
     echo "Downloading sccache v${SCCACHE_VERSION}..." >&2
+
     SCCACHE_ASSET="sccache-v${SCCACHE_VERSION}-$(uname -m)-unknown-linux-musl.tar.gz"
+
     rapids-retry gh release download "v${SCCACHE_VERSION}" --repo "${SCCACHE_REPO}" --pattern "${SCCACHE_ASSET}" --output - \
         | tar -C "$SCCACHE_BIN_DIR" -zf - --overwrite --wildcards --strip-components=1 -x '*/sccache'
+
     echo "Installed $(sccache --version) to $(which sccache)" >&2
-else
-    echo "sccache v${SCCACHE_VERSION} is already installed, skipping" >&2
 fi
+
+unset CURRENT_SCCACHE_VERSION
+unset SCCACHE_ASSET
+unset SCCACHE_BIN_DIR
+unset SCCACHE_VERSION
+unset SCCACHE_REPO
+unset SCCACHE_LATEST_STABLE_URL
