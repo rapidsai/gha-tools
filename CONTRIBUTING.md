@@ -39,7 +39,7 @@ Here is an example test workflow:
 # Set up environment variables for `gha-tools` scripts below
 export RAPIDS_BUILD_TYPE=branch
 export RAPIDS_REPOSITORY=rapidsai/cugraph
-export RAPIDS_REF_NAME=branch-25.06
+export RAPIDS_REF_NAME=main
 
 # latest commit on that branch
 export RAPIDS_SHA="$(git ls-remote https://github.com/${RAPIDS_REPOSITORY}.git refs/heads/${RAPIDS_REF_NAME} | awk '{print $1}')"

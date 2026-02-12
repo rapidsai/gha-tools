@@ -11,7 +11,7 @@
 #   * RAPIDS_NIGHTLY_DATE = Date in YYYY-MM-DD format, used to organize nightly uploads.
 #                           If not provided, the current system time is used.
 #                           Only used when `RAPIDS_BUILD_TYPE` is "nightly".
-#   * RAPIDS_REF_NAME     = Branch or tag (e.g. "branch-25.08" or "pull-request/1234")
+#   * RAPIDS_REF_NAME     = Branch or tag (e.g. "main", "release/26.04", or "pull-request/1234")
 #   * RAPIDS_REPOSITORY   = Repository the run happened in, in {org}/{repo} format (e.g. "rapidsai/rmm")
 #   * RAPIDS_SHA          = Commit SHA on the repository indicated by `RAPIDS_REPOSITORY`.
 #                           If not provided, this script assumes it's being run from within that repo
@@ -52,7 +52,7 @@ if [ "${CI:-false}" = "false" ]; then
         read -r -p "Enter pull-request number (e.g. 1546): " PR_NUMBER
         RAPIDS_REF_NAME=pull-request/${PR_NUMBER}
       else
-        read -r -p "Enter branch name (e.g. branch-23.08): " RAPIDS_REF_NAME
+        read -r -p "Enter branch name (e.g. main): " RAPIDS_REF_NAME
       fi
       export RAPIDS_REF_NAME
       echo ""
