@@ -9,7 +9,7 @@
 # Positional arguments:
 #
 #    1) file key to be passed to `rapids-dependency-file-generator --file-key`
-#    2) filepath to write the constraint data to
+#    2) filepath to append the constraint data to (creates it if it doesn't exist)
 #
 # [usage]
 #
@@ -27,4 +27,4 @@ rapids-dependency-file-generator \
     --output requirements \
     --file-key "${file_key}" \
     --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
-| tee "${out_file}"
+| tee -a "${out_file}"
