@@ -26,5 +26,5 @@ out_file="${2}"
 rapids-dependency-file-generator \
     --output requirements \
     --file-key "${file_key}" \
-    --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES}" \
+    --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES};use_cuda_wheels=true" \
 | tee -a "${out_file}"
