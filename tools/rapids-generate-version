@@ -3,13 +3,23 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
-dunamai_format="{base}"
-if ! rapids-is-release-build; then
-    # Nightlies include the distance from the last tag as the alpha version.
-    dunamai_format="{base}{stage}{distance}"
+if rapids-is-release-build; then
+    dunamai_version=$(python -m dunamai from git --format "{base}")
+else
+    # Non-release builds include the distance from the last tag as the alpha version.
+    # We use Python to detect whether the nearest tag has a stage (e.g., "a" for alpha).
+    # If it does, use {base}{stage}{distance} (e.g., "25.12.00a62").
+    # If it doesn't (nearest tag is a release like v25.10.00), the stage is empty and
+    # {base}{stage}{distance} would produce garbage (e.g., "25.10.000"). In that case,
+    # we default to "a" as the stage separator (e.g., "25.10.00a0").
+    dunamai_version=$(python -c "
+from dunamai import Version
+v = Version.from_git()
+if v.stage:
+    print(v.serialize(format='{base}{stage}{distance}'))
+else:
+    print(v.serialize(format='{base}a{distance}'))
+")
 fi
-
-# Now change the version.
-dunamai_version=$(python -m dunamai from git --format ${dunamai_format})
 
 echo -n "${dunamai_version}"
