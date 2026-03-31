@@ -7,8 +7,8 @@
 rapids-logger "Print env"
 env | sort
 
-rapids-logger "Print arch"
-arch
+rapids-logger "Print system info"
+uname -a
 
 rapids-logger "Check python version"
 python --version
