@@ -41,7 +41,7 @@ This project contains some scripts for managing CI artifacts.
 * `rapids-get-pr-artifact`: downloads conda packages or wheels produced by pull rquest CI in another repo
 * `rapids-upload-to-anaconda-github`: downloads conda packages from GitHub Actions artifact store and uploads conda channels on anaconda.org
 * `rapids-wheels-anaconda-github`: downloads wheels from GitHub Actions artifact store and uploads them to the RAPIDS nightly index at https://pypi.anaconda.org/rapidsai-wheels-nightly/simple/
-* `rapids-package-name`: takes a package type and generate the artifact name (e.g. `conda_cpp` -> `rmm_conda_cpp_x86_64.tar.gz`)
+* `rapids-artifact-name`: takes a package type and generates an artifact name (e.g. `conda_cpp librmm rmm --cuda 12.8` -> `rmm_conda_cpp_librmm_amd64_cu12`)
 
 It also contains some scripts for working with CI artifacts on `downloads.rapids.ai`.
 
