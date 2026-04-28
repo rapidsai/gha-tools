@@ -1,4 +1,7 @@
 #!/bin/bash
+# DEPRECATED
+# Please use `rapids-artifact-name` instead of `rapids-package-name` to generate consistent artifact names
+#
 # A utility script that generates a package name from a package type
 # Positional Arguments:
 #   1) package type
