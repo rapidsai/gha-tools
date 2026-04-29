@@ -1,8 +1,7 @@
 #!/bin/bash
 # Generates a standardized artifact name following the template:
-#   python:           {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}_{cpython_version}[_{cuda_version}]
-#   cpp:              {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}[_{cuda_version}]
-#   pure (no --cuda): {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{cpython_version}
+#   python: {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}_{cpython_version}[_{cuda_version}]
+#   cpp:    {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}[_{cuda_version}]
 # Positional Arguments:
 #   1) package type (conda_cpp, conda_python, wheel_cpp, wheel_python)
 #   2) package name (e.g. librmm, rmm)
@@ -13,13 +12,16 @@
 #                   (python packages only; mutually exclusive with --stable and --pure)
 #   --stable: set `cpython_version` equal to `abi3` (python packages only)
 #   --pure: set `cpython_version` equal to `pure` (python packages only)
+#   --arch <string>: override arch field
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-artifact-name"
 
+arch_flag=0
 cuda_flag=0
 py_flag=0
 stable_flag=0
 pure_flag=0
+arch_value=""
 cuda_version=""
 py_version=""
 pkg_type=""
@@ -28,6 +30,17 @@ repo_name=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
+    --arch)
+      arch_flag=1
+      shift
+      if [[ $# -gt 0 && "$1" != -* ]]; then
+        arch_value="$1"
+        shift
+      else
+        rapids-echo-stderr "--arch requires a value"
+        exit 1
+      fi
+      ;;
     --cuda)
       cuda_flag=1
       shift
@@ -53,7 +66,7 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     -*)
-      rapids-echo-stderr "Unknown flag: $1. Supported flags: --cuda, --py, --stable, --pure"
+      rapids-echo-stderr "Unknown flag: $1. Supported flags: --arch, --cuda, --py, --stable, --pure"
       exit 1
       ;;
     *)
@@ -148,20 +161,13 @@ else
   cpython_version="cp${py_version//./}"
 fi
 
-raw_arch="$(arch)"
-case "${raw_arch}" in
-  x86_64)  arch_field="amd64" ;;
-  aarch64) arch_field="arm64" ;;
-  *)       arch_field="${raw_arch}" ;;
-esac
-
-artifact_name="${repo_name}_${pkg_type_part}_${pkg_lang}_${pkg_name}"
-if (( pure_flag == 0 || cuda_flag == 1 )); then
-# we have two categories of "pure" artifacts
-# "true" purity -- independent of architecture, Python version, or CUDA version
-# "python" purity -- independent of Python version, but dependent on CUDA version (and therefore on architecture)
-  artifact_name+="_${arch_field}"
+if (( arch_flag == 1 )); then
+  arch_field="${arch_value}"
+else
+  arch_field="$(arch)"
 fi
+
+artifact_name="${repo_name}_${pkg_type_part}_${pkg_lang}_${pkg_name}_${arch_field}"
 if [[ -n "${cpython_version}" ]]; then
   artifact_name+="_${cpython_version}"
 fi
