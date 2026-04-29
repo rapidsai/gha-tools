@@ -1,7 +1,8 @@
 #!/bin/bash
 # Generates a standardized artifact name following the template:
-#   python: {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}_{cpython_version}[_{cuda_version}]
-#   cpp:    {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}[_{cuda_version}]
+#   python:           {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}_{cpython_version}[_{cuda_version}]
+#   cpp:              {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{arch}[_{cuda_version}]
+#   pure (no --cuda): {repo}_{pkg_type}_{pkg_lang}_{pkg_name}_{cpython_version}
 # Positional Arguments:
 #   1) package type (conda_cpp, conda_python, wheel_cpp, wheel_python)
 #   2) package name (e.g. librmm, rmm)
@@ -154,7 +155,13 @@ case "${raw_arch}" in
   *)       arch_field="${raw_arch}" ;;
 esac
 
-artifact_name="${repo_name}_${pkg_type_part}_${pkg_lang}_${pkg_name}_${arch_field}"
+artifact_name="${repo_name}_${pkg_type_part}_${pkg_lang}_${pkg_name}"
+if (( pure_flag == 0 || cuda_flag == 1 )); then
+# we have two categories of "pure" artifacts
+# "true" purity -- independent of architecture, Python version, or CUDA version
+# "python" purity -- independent of Python version, but dependent on CUDA version (and therefore on architecture)
+  artifact_name+="_${arch_field}"
+fi
 if [[ -n "${cpython_version}" ]]; then
   artifact_name+="_${cpython_version}"
 fi
