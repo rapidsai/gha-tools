@@ -12,7 +12,7 @@
 #                   (python packages only; mutually exclusive with --stable and --pure)
 #   --stable: set `cpython_version` equal to `abi3` (python packages only)
 #   --pure: set `cpython_version` equal to `pure` (python packages only)
-#   --arch <string>: override arch field
+#   --arch <string>: override arch field (default is the output of $(arch))
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-artifact-name"
 
