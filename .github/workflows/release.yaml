@@ -11,9 +11,11 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write
     env:
       RELEASE_FILE_NAME: tools.tar.gz
     runs-on: ubuntu-latest

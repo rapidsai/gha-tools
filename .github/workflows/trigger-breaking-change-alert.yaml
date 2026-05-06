@@ -1,5 +1,4 @@
 name: Trigger Breaking Change Notifications
-
 on:
   pull_request_target:
     types:
@@ -7,7 +6,7 @@ on:
       - reopened
       - labeled
       - unlabeled
-
+permissions: {}
 jobs:
   trigger-notifier:
     if: contains(github.event.pull_request.labels.*.name, 'breaking')
