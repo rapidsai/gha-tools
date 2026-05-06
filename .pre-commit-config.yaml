@@ -21,3 +21,7 @@ repos:
     hooks:
       - id: shellcheck
         args: ["--rcfile", ".shellcheckrc"]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.24.1
+    hooks:
+      - id: zizmor

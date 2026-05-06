@@ -1,5 +1,4 @@
 name: release main
-
 on:
   push:
     branches:
@@ -7,34 +6,39 @@ on:
     paths:
       - "tools/*"
       - ".github/workflows/release.yaml"
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
+permissions: {}
 jobs:
   release:
+    permissions:
+      contents: write
     env:
       RELEASE_FILE_NAME: tools.tar.gz
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Package tools
         run: |
           tar -czf ${{ env.RELEASE_FILE_NAME }} -C ./tools .
       - name: Compute Next Tag Name
         run: |
           LAST_TAG=$(git describe --tags --abbrev=0 || echo "v0.0.0")
-          NEXT_PATCH_VERSION=$(echo ${LAST_TAG} | awk -F. -v OFS=. '{$NF += 1 ; print}')
-          echo "NEXT_PATCH_VERSION=$NEXT_PATCH_VERSION" >> $GITHUB_ENV
+          NEXT_PATCH_VERSION=$(echo "${LAST_TAG}" | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          echo "NEXT_PATCH_VERSION=${NEXT_PATCH_VERSION}" >> "${GITHUB_ENV}"
       - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ${{ env.RELEASE_FILE_NAME }}
-          tag_name: ${{ env.NEXT_PATCH_VERSION }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${NEXT_PATCH_VERSION}" "${RELEASE_FILE_NAME}" \
+            --target "${GITHUB_SHA}" \
+            --title "${NEXT_PATCH_VERSION}" \
+            --notes ""
   trigger-pipeline:
     runs-on: ubuntu-latest
     needs: release
