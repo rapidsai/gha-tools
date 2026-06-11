@@ -8,9 +8,13 @@
 #   4) "wheel" or "conda", to get the wheel or conda package artifact, respectively
 #   5) [optional] full commit hash, to get the artifact for a specific commit
 # Flags:
-#   --noarch: for conda python packages that use RAPIDS_PY_NOARCH_SUFFIX
-#   --stable: for wheel python packages that use stable ABI (abi3)
-#   --pkg_name: specify the package name to download if different from repo name (e.g. pylibraft)
+#   --pkg_name PACKAGE_NAME: specify the package name to download if different from repo name (e.g. pylibraft from raft)
+#                              defaults to `lib{repo name}` for C++ artifacts and `{repo_name}` for Python artifacts
+#   --py [PY_VERSION]: for python packages that don't use the stable ABI (abi3),
+#                      pass `py` to download version-specific artifacts. Defaults to
+#                      `$RAPIDS_PY_VERSION` if Python version is not given.
+#   --noarch: for artifacts built without a strict `$ARCH` dependency (Pure-python packages)
+#   --override-artifact-name ARTIFACT_NAME: pass in full artifact name and override all other flags
 #
 # Additional environment variables recognized by 'rapids-get-pr-artifact':
 #
@@ -20,24 +24,40 @@
 set -euo pipefail
 
 # Parse flags
-noarch_flag=0
-stable_flag=0
 pkg_name_arg=""
+py_flag=0
+noarch_flag=0
+override_flag=0
+override_name=""
+
 positional_args=()
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --noarch)
-      noarch_flag=1
-      shift
-      ;;
-    --stable)
-      stable_flag=1
-      shift
-      ;;
     --pkg_name)
       pkg_name_arg="$2"
       shift 2
+      ;;
+    --py)
+      py_flag=1
+      shift
+      # Check if next argument exists and doesn't start with "-" (i.e., it's a version)
+      if [[ $# -gt 0 && "$1" != -* ]]; then
+        py_version="$1"
+        shift
+      else
+        # No argument provided, will use RAPIDS_PY_VERSION
+        py_version="$RAPIDS_PY_VERSION"
+      fi
+      ;;
+    --override-artifact-name)
+      override_name="$2"
+      override_flag=1
+      shift 2
+      ;;
+    --noarch)
+      noarch_flag=1
+      shift
       ;;
     -*)
       echo "Unknown flag: $1" >&2
@@ -56,31 +76,17 @@ if [[ ${#positional_args[@]} -lt 4 ]]; then
   exit 1
 fi
 
+repo_name="${positional_args[0]}"
 repo="rapidsai/${positional_args[0]}"
 pr="${positional_args[1]}"
 package_type="${positional_args[2]}"
 package_format="${positional_args[3]}"
 commit="${positional_args[4]:-}"
 
-# Validate mutually exclusive flags
-if (( noarch_flag == 1 )) && (( stable_flag == 1 )); then
-  rapids-echo-stderr "Error: --noarch and --stable flags are mutually exclusive"
-  exit 1
-fi
-
-# Validate --noarch flag
-if (( noarch_flag == 1 )); then
-  if [[ "${package_format}" != "conda" ]] || [[ "${package_type}" != "python" ]] || [[ -z "${RAPIDS_PY_NOARCH_SUFFIX:-}" ]]; then
-    rapids-echo-stderr "Error: --noarch flag requires package_format='conda', package_type='python', and RAPIDS_PY_NOARCH_SUFFIX environment variable to be set"
-    rapids-echo-stderr "Got: package_format='${package_format}' package_type='${package_type}' RAPIDS_PY_NOARCH_SUFFIX='${RAPIDS_PY_NOARCH_SUFFIX:-<unset>}'"
-    exit 1
-  fi
-fi
-
-# Validate --stable flag
-if (( stable_flag == 1 )); then
+# Validate --py flag
+if (( py_flag == 1 )); then
   if [[ "${package_type:-}" != "python" ]]; then
-    rapids-echo-stderr "Error: --stable flag is only compatible with package_type='python'"
+    rapids-echo-stderr "Error: --py flag is only compatible with package_type='python'"
     rapids-echo-stderr "Got: package_format='${package_format}'"
     exit 1
   fi
@@ -93,18 +99,42 @@ if [[ -z "${commit:-}" ]]; then
     commit=$(rapids-retry --quiet gh pr view "${pr}" --repo "${repo}" --json headRefOid --jq '.headRefOid')
 fi
 
+
 # Generate the artifact name
-if ((stable_flag == 0)); then
-pkg_name=$(
-    RAPIDS_REPOSITORY="${pkg_name_arg:-${repo}}"                   \
-        rapids-package-name "${package_format}_${package_type}"
-)
-# If it's a stable build, pass through stable and cuda flags
+# For `cpp` artifacts, assume a default package name of `lib{repo}`
+# so `libraft` for `raft`
+# For `python` artifacts, assume a default package name of `{repo}`
+if [[ "${package_type:-}" == "cpp" ]]; then
+  PACKAGE_NAME="${pkg_name_arg:-lib${repo_name}}"
 else
-  pkg_name=$(
-      RAPIDS_REPOSITORY="${pkg_name_arg:-${repo}}"                 \
-          rapids-package-name "${package_format}_${package_type}" --stable --cuda "${RAPIDS_CUDA_VERSION}"
-  )
+  PACKAGE_NAME="${pkg_name_arg:-${repo_name}}"
+fi
+
+# Non-cuda-suffixed packages are rare enough that we just assume we need the cuda suffix
+# For the edge cases, uses can use the override functionality
+RAPIDS_ARTIFACT_NAME_ARGS=("${package_format}_${package_type}" "$PACKAGE_NAME" "${repo_name}" "--cuda")
+
+if [[ "${package_type:-}" == "python" && (( $noarch_flag == 0 ))]]; then
+  if (( py_flag == 1 )); then
+    RAPIDS_ARTIFACT_NAME_ARGS+=("--py" "$py_version")
+  else
+    RAPIDS_ARTIFACT_NAME_ARGS+=("--stable")
+  fi
+fi
+
+# Artifacts with an `any` arch are almost always also `pure`, so group those options
+# together to cover 95% of all artifacts.
+if (( noarch_flag == 1 )); then
+  RAPIDS_ARTIFACT_NAME_ARGS+=("--arch" "any" "--pure")
+fi
+pkg_name="$(rapids-artifact-name "${RAPIDS_ARTIFACT_NAME_ARGS[@]}")"
+
+if (( override_flag == 1 )); then
+  pkg_name=$override_name
+fi
+
+if [[ ${GHA_TOOLS_DEBUG:-} == "1" ]]; then
+  rapids-logger "$pkg_name"
 fi
 
 # if RAPIDS_BUILD_WORKFLOW_NAME is set, use that instead of any RAPIDS conventions
