@@ -1,13 +1,13 @@
 #!/bin/bash
-# Uploads Python wheels from a GitHub Actions workflow run to Anaconda.org
+# Uploads Python sdists and wheels from a GitHub Actions workflow run to Anaconda.org.
 #
 # Positional Arguments:
-#   1) wheel name
+#   1) package name
 #   2) package type (one of: 'cpp', 'python')
 #
 # [usage]
 #
-#   # upload any wheels found in Github artifacts with names like '*wheel_python_sparkly-unicorn*'
+#   # upload any sdists or wheels found in GitHub artifacts with names like '*wheel_python_sparkly-unicorn*'
 #   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python'
 #
 
@@ -38,14 +38,13 @@ if [[ -z "${WHEEL_SEARCH_KEY:-}" ]]; then
 fi
 export WHEEL_SEARCH_KEY
 
-WHEEL_DIR="./dist"
-mkdir -p "${WHEEL_DIR}"
+UPLOAD_DIR="$(mktemp -d)"
 
 github_run_id="$(rapids-github-run-id)"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
-rapids-echo-stderr "Using search key: ${WHEEL_SEARCH_KEY}"
-rapids-echo-stderr "Downloading ${PKG_TYPE}_${WHEEL_NAME} wheels to ${unzip_dest}"
+rapids-echo-stderr "Using search key: '${WHEEL_SEARCH_KEY}'"
+rapids-echo-stderr "Downloading '${PKG_TYPE}_${WHEEL_NAME}' packages to '${unzip_dest}'"
 
 # Download all artifacts with WHEEL_SEARCH_KEY in the name to unzip_dest
 RAPIDS_RETRY_SLEEP=120                \
@@ -55,24 +54,24 @@ RAPIDS_RETRY_SLEEP=120                \
     --dir "${unzip_dest}"             \
     --pattern "*${WHEEL_SEARCH_KEY}*"
 
-find "${unzip_dest}" -name "*.whl" -exec cp {} "${WHEEL_DIR}/" \;
+find "${unzip_dest}" -name "*.tar.gz" -exec cp {} "${UPLOAD_DIR}/" \;
+find "${unzip_dest}" -name "*.whl" -exec cp {} "${UPLOAD_DIR}/" \;
 
-# Check if we found any wheels
-wheel_count=$(find "${WHEEL_DIR}" -name "*.whl" | wc -l)
-if [ "${wheel_count}" -eq 0 ]; then
-  rapids-echo-stderr "No wheel files found in downloaded artifacts"
+# Check if we found any packages
+mapfile -t files_to_upload < <(find "${UPLOAD_DIR}" \( -name "*.whl" -o -name "*.tar.gz" \))
+if [ "${#files_to_upload[@]}" -eq 0 ]; then
+  rapids-echo-stderr "No sdist or wheel files found in downloaded artifacts"
   exit 1
 fi
 
-# Upload all wheels
-rapids-echo-stderr "Uploading ${wheel_count} wheels to Anaconda.org"
+# Upload all packages
+rapids-echo-stderr "Uploading ${#files_to_upload[@]} packages to Anaconda.org"
 export RAPIDS_RETRY_SLEEP=180
-# shellcheck disable=SC2086
 rapids-retry anaconda \
     -t "${RAPIDS_CONDA_TOKEN}" \
     upload \
     --skip-existing \
     --no-progress \
-    "${WHEEL_DIR}"/*.whl
+    "${files_to_upload[@]}"
 
 echo ""
