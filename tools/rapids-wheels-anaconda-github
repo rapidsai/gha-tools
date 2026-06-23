@@ -7,7 +7,7 @@
 #
 # [usage]
 #
-#   # upload any sdists or wheels found in Github artifacts with names like '*wheel_python_sparkly-unicorn*'
+#   # upload any sdists or wheels found in GitHub artifacts with names like '*wheel_python_sparkly-unicorn*'
 #   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python'
 #
 
