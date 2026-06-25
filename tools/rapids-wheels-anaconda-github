@@ -4,11 +4,15 @@
 # Positional Arguments:
 #   1) package name
 #   2) package type (one of: 'cpp', 'python')
+#   3) upload location: directory that to-be-uploaded packages are written to (optional, default = "./dist")
 #
 # [usage]
 #
 #   # upload any sdists or wheels found in GitHub artifacts with names like '*wheel_python_sparkly-unicorn*'
 #   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python'
+#
+#   # customize upload directory
+#   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python' /tmp/wheels
 #
 
 set -eou pipefail
