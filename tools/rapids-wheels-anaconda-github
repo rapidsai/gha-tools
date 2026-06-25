@@ -4,11 +4,15 @@
 # Positional Arguments:
 #   1) package name
 #   2) package type (one of: 'cpp', 'python')
+#   3) upload location: directory that to-be-uploaded packages are written to (optional, default = "./dist")
 #
 # [usage]
 #
 #   # upload any sdists or wheels found in GitHub artifacts with names like '*wheel_python_sparkly-unicorn*'
 #   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python'
+#
+#   # customize upload directory
+#   rapids-wheels-anaconda-github 'sparkly-unicorn' 'python' /tmp/wheels
 #
 
 set -eou pipefail
@@ -20,6 +24,7 @@ if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
 fi
 WHEEL_NAME="${1}"
 PKG_TYPE="${2}"
+UPLOAD_DIR="${3:-./dist}"
 
 case "${PKG_TYPE}" in
   cpp)
@@ -38,8 +43,7 @@ if [[ -z "${WHEEL_SEARCH_KEY:-}" ]]; then
 fi
 export WHEEL_SEARCH_KEY
 
-UPLOAD_DIR="$(mktemp -d)"
-
+mkdir -p "${UPLOAD_DIR}"
 github_run_id="$(rapids-github-run-id)"
 unzip_dest="${RAPIDS_UNZIP_DIR:-$(mktemp -d)}"
 
