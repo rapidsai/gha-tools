@@ -52,6 +52,7 @@ for artifact_dir in "${unzip_dest}"/*/; do
   rapids-retry anaconda \
     -t "${RAPIDS_CONDA_TOKEN}" \
     upload \
+    --force \
     --label "${RAPIDS_CONDA_UPLOAD_LABEL:-main}" \
     --no-progress \
     ${PKGS_TO_UPLOAD}

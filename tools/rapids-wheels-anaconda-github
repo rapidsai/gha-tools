@@ -74,6 +74,7 @@ export RAPIDS_RETRY_SLEEP=180
 rapids-retry anaconda \
     -t "${RAPIDS_CONDA_TOKEN}" \
     upload \
+    --force \
     --no-progress \
     "${files_to_upload[@]}"
 
