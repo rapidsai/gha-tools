@@ -76,7 +76,7 @@ if [[ ${#positional_args[@]} -lt 4 ]]; then
   exit 1
 fi
 
-if [[ "$positional_args[0]" == */* ]]; then
+if [[ "${positional_args[0]}" == */* ]]; then
   repo="${positional_args[0]}"
 else
   repo="rapidsai/${positional_args[0]}"
