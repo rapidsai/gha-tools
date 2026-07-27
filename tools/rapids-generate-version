@@ -20,6 +20,10 @@ if v.stage:
 else:
     print(v.serialize(format='{base}rc{distance}'))
 ")
+
+    # In some cases (like nightly builds), an additional suffix is passed in to help
+    # differentiate builds. Append that if it's provided.
+    dunamai_version="${dunamai_version}${RAPIDS_VERSION_SUFFIX:-}"
 fi
 
 echo -n "${dunamai_version}"
