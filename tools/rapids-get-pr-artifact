@@ -76,8 +76,12 @@ if [[ ${#positional_args[@]} -lt 4 ]]; then
   exit 1
 fi
 
-repo_name="${positional_args[0]}"
-repo="rapidsai/${positional_args[0]}"
+if [[ "$positional_args[0]" == */* ]]; then
+  repo="${positional_args[0]}"
+else
+  repo="rapidsai/${positional_args[0]}"
+fi
+repo_name="$(echo "${repo}" | cut -d/ -f2)"
 pr="${positional_args[1]}"
 package_type="${positional_args[2]}"
 package_format="${positional_args[3]}"
