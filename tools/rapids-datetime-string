@@ -1,0 +1,24 @@
+#!/bin/bash
+#
+# rapids-datetime-string
+#
+# Ensure the expected date-time environment variables used in
+# package building are set.
+#
+# Example usage:
+# 
+#   source rapids-datetime-string
+#
+
+# TODO: remove 'RAPIDS_DATE_STRING' once all projects have been converted over to 'RAPIDS_DATETIME_STRING'
+
+if [ "${CI:-false}" = "false" ]; then
+  # for local builds, just compute right here
+  RAPIDS_DATETIME_STRING="$(date -u +'%y%m%d%H%M%S')"
+  export RAPIDS_DATETIME_STRING
+else
+  if [ -z "${RAPIDS_DATETIME_STRING:-}" ]; then
+    rapids-echo-stderr "Expected environment variable 'RAPIDS_DATETIME_STRING' to be set and non-empty."
+    exit 1
+  fi
+fi
