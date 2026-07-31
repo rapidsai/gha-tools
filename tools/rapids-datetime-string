@@ -9,9 +9,6 @@
 # 
 #   source rapids-datetime-string
 #
-
-# TODO: remove 'RAPIDS_DATE_STRING' once all projects have been converted over to 'RAPIDS_DATETIME_STRING'
-
 if [ "${CI:-false}" = "false" ]; then
   # for local builds, just compute right here
   RAPIDS_DATETIME_STRING="$(date -u +'%y%m%d%H%M%S')"
