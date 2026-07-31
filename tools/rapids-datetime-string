@@ -6,7 +6,7 @@
 # package building are set.
 #
 # Example usage:
-# 
+#
 #   source rapids-datetime-string
 #
 if [ "${CI:-false}" = "false" ]; then
