@@ -10,10 +10,12 @@
 #
 #    1) file key to be passed to `rapids-dependency-file-generator --file-key`
 #    2) filepath to append the constraint data to (creates it if it doesn't exist)
+#    3) optional output type to pass to `rapids-dependency-file-generator --output`,
+#       set to `requirements` by default
 #
 # [usage]
 #
-#   rapids-generate-pip-constraints test_python ./constraints.txt
+#   rapids-generate-pip-constraints test_python ./constraints.txt requirements
 #
 
 set -euo pipefail
@@ -22,9 +24,10 @@ export RAPIDS_SCRIPT_NAME="rapids-generate-pip-constraints"
 
 file_key="${1}"
 out_file="${2}"
+output_type="${3:-requirements}"
 
 rapids-dependency-file-generator \
-    --output requirements \
+    --output "${output_type}" \
     --file-key "${file_key}" \
     --matrix "cuda=${RAPIDS_CUDA_VERSION%.*};arch=$(arch);py=${RAPIDS_PY_VERSION};dependencies=${RAPIDS_DEPENDENCIES};cuda_suffixed=true;use_cuda_wheels=true" \
 | tee -a "${out_file}"
