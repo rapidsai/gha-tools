@@ -4,16 +4,22 @@ from pathlib import Path
 
 import pytest
 
-
 TOOLS_DIRECTORY = Path(__file__).resolve().parents[1] / "tools"
 
 
-def _generate_version(tmp_path: Path, candidate_version: str | None) -> subprocess.CompletedProcess[str]:
+def _generate_version(
+    tmp_path: Path,
+    candidate_version: str | None,
+    source_version: str | None = None,
+) -> subprocess.CompletedProcess[str]:
     environment = os.environ.copy()
+    environment.pop("RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION", None)
     if candidate_version is None:
         environment.pop("RAPIDS_RELEASE_CANDIDATE_VERSION", None)
     else:
         environment["RAPIDS_RELEASE_CANDIDATE_VERSION"] = candidate_version
+    if source_version is not None:
+        environment["RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION"] = source_version
     return subprocess.run(
         [TOOLS_DIRECTORY / "rapids-generate-version"],
         cwd=tmp_path,
@@ -34,14 +40,23 @@ def test_release_candidate_version_returns_exact_final_version_without_git_tag(t
     assert result.stderr == ""
 
 
-@pytest.mark.parametrize("candidate_version", ["v26.10.00", "26.10", "26.10.0", "26.10.00rc0"])
+@pytest.mark.parametrize("candidate_version", ["v26.10.00", "26.10", "26.10.00rc0"])
 def test_release_candidate_version_rejects_non_final_formats(tmp_path, candidate_version):
     tmp_path.joinpath("VERSION").write_text("26.10.00\n")
 
     result = _generate_version(tmp_path, candidate_version)
 
     assert result.returncode == 1
-    assert "must use YY.MM.PP format" in result.stderr
+    assert "must use a three-component numeric format" in result.stderr
+
+
+def test_release_candidate_version_supports_independently_versioned_repository(tmp_path):
+    tmp_path.joinpath("VERSION").write_text("0.3.0\n")
+
+    result = _generate_version(tmp_path, "0.3.0")
+
+    assert result.returncode == 0
+    assert result.stdout == "0.3.0"
 
 
 def test_release_candidate_version_rejects_different_source_major_minor(tmp_path):
@@ -50,7 +65,16 @@ def test_release_candidate_version_rejects_different_source_major_minor(tmp_path
     result = _generate_version(tmp_path, "26.10.00")
 
     assert result.returncode == 1
-    assert "does not match VERSION major/minor '26.12'" in result.stderr
+    assert "does not match source major/minor '26.12'" in result.stderr
+
+
+def test_release_candidate_version_uses_preserved_source_after_output_truncation(tmp_path):
+    tmp_path.joinpath("VERSION").write_text("")
+
+    result = _generate_version(tmp_path, "26.10.00", source_version="26.10.00")
+
+    assert result.returncode == 0
+    assert result.stdout == "26.10.00"
 
 
 def test_release_candidate_version_requires_version_file(tmp_path):
