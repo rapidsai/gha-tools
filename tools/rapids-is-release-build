@@ -1,14 +1,15 @@
 #!/bin/bash
 # A utility script that examines environment variables provided by
 # GitHub Actions to determine whether the current build is a "release" build.
-# A "release" build occurs when the GITHUB_REF environment variable matches
-# the pattern "refs/tags/vYY.MM.PP".
+# A "release" build occurs when the workflow explicitly identifies a release
+# candidate or when GITHUB_REF matches the pattern "refs/tags/vYY.MM.PP".
 # Example:
 #    if rapids-is-release-build; then echo "hi"; fi
 set -e
 export RAPIDS_SCRIPT_NAME="rapids-is-release-build"
 
-if [[ "${GITHUB_REF}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ "${RAPIDS_BUILD_TYPE:-}" == "release-candidate" ]] ||
+   [[ "${GITHUB_REF:-}" =~ ^refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
   rapids-echo-stderr "is release build"
   exit 0
 fi

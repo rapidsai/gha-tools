@@ -35,8 +35,11 @@
 
 RAPIDS_CHANNEL="rapidsai-nightly"
 
-# Replace dev/nightly channels if build is a release build
-if rapids-is-release-build; then
+# Candidate dependencies come only from the frozen local candidate channel and
+# conda-forge. They must not resolve from either public RAPIDS channel.
+if [[ "${RAPIDS_BUILD_TYPE:-}" == "release-candidate" ]]; then
+  RAPIDS_CHANNEL=""
+elif rapids-is-release-build; then
   RAPIDS_CHANNEL="rapidsai"
 fi
 
