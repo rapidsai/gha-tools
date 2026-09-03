@@ -40,14 +40,14 @@ def test_release_candidate_version_returns_exact_final_version_without_git_tag(t
     assert result.stderr == ""
 
 
-@pytest.mark.parametrize("candidate_version", ["v26.10.00", "26.10", "26.10.00rc0"])
+@pytest.mark.parametrize("candidate_version", ["v26.10.00", "26", "26.10.00.1", "26.10.00rc0"])
 def test_release_candidate_version_rejects_non_final_formats(tmp_path, candidate_version):
     tmp_path.joinpath("VERSION").write_text("26.10.00\n")
 
     result = _generate_version(tmp_path, candidate_version)
 
     assert result.returncode == 1
-    assert "must use a three-component numeric format" in result.stderr
+    assert "must use a numeric YY.MM or YY.MM.XX format" in result.stderr
 
 
 def test_release_candidate_version_supports_independently_versioned_repository(tmp_path):
@@ -57,6 +57,15 @@ def test_release_candidate_version_supports_independently_versioned_repository(t
 
     assert result.returncode == 0
     assert result.stdout == "0.3.0"
+
+
+def test_release_candidate_version_supports_ucxx_two_component_version(tmp_path):
+    tmp_path.joinpath("VERSION").write_text("0.52.00\n")
+
+    result = _generate_version(tmp_path, "0.52")
+
+    assert result.returncode == 0
+    assert result.stdout == "0.52"
 
 
 def test_release_candidate_version_rejects_different_source_major_minor(tmp_path):

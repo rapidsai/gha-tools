@@ -1,7 +1,7 @@
 #!/bin/bash
 # A utility script that examines environment variables provided by
 # GitHub Actions to determine whether the current build is a "release" build.
-# A "release" build occurs when the workflow explicitly identifies a release
+# A "release" build occurs when the workflow explicitly specifies a release
 # candidate or when GITHUB_REF matches the pattern "refs/tags/vYY.MM.PP".
 # Example:
 #    if rapids-is-release-build; then echo "hi"; fi
