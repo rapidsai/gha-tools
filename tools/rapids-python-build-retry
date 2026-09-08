@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+# rapids-python-build-retry
+#
+# wrapper for `python -m build`
+#
+# Example usage:
+# $ rapids-python-build-retry --wheel .
+#
+# RAPIDS_PYTHON_BUILD_BIN - override the python build command
+#                           Default is "python -m build"
+set -o pipefail
+
+buildCmd=${RAPIDS_PYTHON_BUILD_BIN:="python -m build"}
+
+# shellcheck disable=SC2086
+${buildCmd} "$@"
