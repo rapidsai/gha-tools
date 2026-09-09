@@ -3,6 +3,40 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
+if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
+    readonly candidate_version="${RAPIDS_RELEASE_CANDIDATE_VERSION}"
+    readonly candidate_version_regex='^([0-9]+)\.([0-9]+)(\.[0-9]+)?$'
+    if [[ ! "${candidate_version}" =~ ${candidate_version_regex} ]]; then
+        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
+        exit 1
+    fi
+    # A successful Bash '=~' comparison stores each parenthesized capture in
+    # BASH_REMATCH. Save these captures before the source-version match below
+    # replaces them.
+    readonly candidate_major_minor="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+    source_version="${RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION:-}"
+    if [[ -z "${source_version}" ]]; then
+        if [[ ! -f VERSION ]]; then
+            echo "RAPIDS_RELEASE_CANDIDATE_VERSION requires a VERSION file or RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION" >&2
+            exit 1
+        fi
+        source_version="$(head -n 1 VERSION)"
+    fi
+    readonly source_version
+    readonly source_version_regex='^([0-9]+)\.([0-9]+)(\.|$)'
+    if [[ ! "${source_version}" =~ ${source_version_regex} ]]; then
+        echo "source version must begin with two numeric components, got '${source_version}'" >&2
+        exit 1
+    fi
+    readonly source_major_minor="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+    if [[ "${source_major_minor}" != "${candidate_major_minor}" ]]; then
+        echo "release-candidate version '${candidate_version}' does not match source major/minor '${source_major_minor}'" >&2
+        exit 1
+    fi
+    echo -n "${candidate_version}"
+    exit 0
+fi
+
 if rapids-is-release-build; then
     dunamai_version=$(python -m dunamai from git --format "{base}")
 else

@@ -7,7 +7,8 @@
 #
 # Variables:
 #
-#   * RAPIDS_BUILD_TYPE   = One of "branch", "nightly", or "pull-request".
+#   * RAPIDS_BUILD_TYPE   = One of "branch", "nightly", "pull-request", or
+#                           "release-candidate".
 #   * RAPIDS_NIGHTLY_DATE = Date in YYYY-MM-DD format, used to organize nightly uploads.
 #                           If not provided, the current system time is used.
 #                           Only used when `RAPIDS_BUILD_TYPE` is "nightly".
@@ -24,7 +25,7 @@ if [ "${CI:-false}" = "false" ]; then
   if [ -z "${RAPIDS_BUILD_TYPE:-}" ]; then
     {
       echo ""
-      read -r -p "Enter workflow type (one of: pull-request|branch|nightly): " RAPIDS_BUILD_TYPE
+      read -r -p "Enter workflow type (one of: pull-request|branch|nightly|release-candidate): " RAPIDS_BUILD_TYPE
       export RAPIDS_BUILD_TYPE
       echo ""
       echo "Suppress this prompt in the future by setting the 'RAPIDS_BUILD_TYPE' environment variable:"
