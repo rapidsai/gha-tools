@@ -5,9 +5,11 @@ export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
 if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
     readonly candidate_version="${RAPIDS_RELEASE_CANDIDATE_VERSION}"
-    readonly candidate_version_regex='^([0-9]+)\.([0-9]+)$'
+    # Keep leading zeroes outside the capture groups so equivalent components
+    # such as 0 and 00 compare equally below.
+    readonly candidate_version_regex='^0*([0-9]+)\.0*([0-9]+)(\.[0-9]+)?$'
     if [[ ! "${candidate_version}" =~ ${candidate_version_regex} ]]; then
-        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM format, got '${candidate_version}'" >&2
+        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
         exit 1
     fi
     source_version="${RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION:-}"
@@ -19,19 +21,15 @@ if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
         source_version="$(head -n 1 VERSION)"
     fi
     readonly source_version
-    readonly source_version_regex='^([0-9]+)\.([0-9]+)(\.|$)'
+    readonly source_version_regex='^0*([0-9]+)\.0*([0-9]+)(\.|$)'
     if [[ ! "${source_version}" =~ ${source_version_regex} ]]; then
         echo "source version must begin with two numeric components, got '${source_version}'" >&2
         exit 1
     fi
-    # BASH_REMATCH is an array that gets set by the [[ =~ ]] regex match above.
-    # item 0 is the complete match. subsequent items are group matches.
-    # https://www.bashsupport.com/bash/variables/bash_rematch/
+    # BASH_REMATCH[0] is the complete match and subsequent items are the
+    # parenthesized captures. Save them before the candidate match replaces it.
     readonly source_major_minor="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-    # Each successful Bash '=~' comparison replaces BASH_REMATCH. Match the
-    # already-validated candidate again so these captures are its major/minor.
     [[ "${candidate_version}" =~ ${candidate_version_regex} ]]
-    # BASH_REMATCH is now the candidate major/minor match
     if [[ "${source_major_minor}" != "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" ]]; then
         echo "release-candidate version '${candidate_version}' does not match source major/minor '${source_major_minor}'" >&2
         exit 1

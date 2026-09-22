@@ -59,13 +59,14 @@ def test_release_candidate_version_supports_independently_versioned_repository(t
     assert result.stdout == "0.3.0"
 
 
-def test_release_candidate_version_supports_ucxx_two_component_version(tmp_path):
+@pytest.mark.parametrize("candidate_version", ["0.52", "00.52", "00.52.01"])
+def test_release_candidate_version_supports_ucxx_versions(tmp_path, candidate_version):
     tmp_path.joinpath("VERSION").write_text("0.52.00\n")
 
-    result = _generate_version(tmp_path, "0.52")
+    result = _generate_version(tmp_path, candidate_version)
 
     assert result.returncode == 0
-    assert result.stdout == "0.52"
+    assert result.stdout == candidate_version
 
 
 def test_release_candidate_version_rejects_different_source_major_minor(tmp_path):
