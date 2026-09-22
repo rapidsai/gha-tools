@@ -87,8 +87,9 @@ def test_release_candidate_version_uses_preserved_source_after_output_truncation
     assert result.stdout == "26.10.00"
 
 
-def test_release_candidate_version_requires_version_file(tmp_path):
+def test_release_candidate_version_requires_source_version(tmp_path):
     result = _generate_version(tmp_path, "26.10.00")
 
     assert result.returncode == 1
-    assert "requires a VERSION file" in result.stderr
+    assert "requires the source checkout's original version for major/minor validation" in result.stderr
+    assert "provide it in VERSION or via RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION" in result.stderr

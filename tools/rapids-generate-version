@@ -1,5 +1,14 @@
 #!/bin/bash
 # A utility script that generates a package version
+#
+# Environment variables:
+#
+#   * RAPIDS_RELEASE_CANDIDATE_VERSION = Exact version to emit for a release-candidate
+#                                         build. Its major/minor components must match
+#                                         the source checkout's version.
+#   * RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION = Original version of the source checkout,
+#                                                used for major/minor validation. Defaults
+#                                                to the first line of VERSION when unset.
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
@@ -15,7 +24,8 @@ if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
     source_version="${RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION:-}"
     if [[ -z "${source_version}" ]]; then
         if [[ ! -f VERSION ]]; then
-            echo "RAPIDS_RELEASE_CANDIDATE_VERSION requires a VERSION file or RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION" >&2
+            echo "RAPIDS_RELEASE_CANDIDATE_VERSION requires the source checkout's original version for major/minor validation;" >&2
+            echo "provide it in VERSION or via RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION." >&2
             exit 1
         fi
         source_version="$(head -n 1 VERSION)"
