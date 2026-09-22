@@ -21,3 +21,10 @@
 PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
 touch "${PIP_CONSTRAINT}"
 export PIP_CONSTRAINT
+
+# GitHub mounts /github/home from the host in job containers, which can make
+# pip's default cache directory unavailable to the container user. Keep the
+# cache in the writable workspace unless a caller supplies its own location.
+PIP_CACHE_DIR="${PIP_CACHE_DIR:-${GITHUB_WORKSPACE:-${PWD}}/.cache/pip}"
+mkdir -p "${PIP_CACHE_DIR}"
+export PIP_CACHE_DIR

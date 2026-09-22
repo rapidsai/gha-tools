@@ -2,7 +2,7 @@ ci:
   autoupdate_schedule: 'monthly'
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.16.1
+    rev: v0.16.6
     hooks:
       - id: ruff-format
         args: ["--config", "pyproject.toml"]
@@ -17,11 +17,11 @@ repos:
       - id: debug-statements
       - id: requirements-txt-fixer
   - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: v0.11.0.1
+    rev: v0.11.0.1-1
     hooks:
       - id: shellcheck
         args: ["--rcfile", ".shellcheckrc"]
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.29.0
+    rev: v1.30.0
     hooks:
       - id: zizmor
