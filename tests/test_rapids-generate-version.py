@@ -9,17 +9,9 @@ TOOLS_DIRECTORY = Path(__file__).resolve().parents[1] / "tools"
 
 def _generate_version(
     tmp_path: Path,
-    candidate_version: str | None,
-    source_version: str | None = None,
 ) -> subprocess.CompletedProcess[str]:
     environment = os.environ.copy()
-    environment.pop("RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION", None)
-    if candidate_version is None:
-        environment.pop("RAPIDS_RELEASE_CANDIDATE_VERSION", None)
-    else:
-        environment["RAPIDS_RELEASE_CANDIDATE_VERSION"] = candidate_version
-    if source_version is not None:
-        environment["RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION"] = source_version
+    environment["RAPIDS_BUILD_TYPE"] = "release-candidate"
     return subprocess.run(
         [TOOLS_DIRECTORY / "rapids-generate-version"],
         cwd=tmp_path,
@@ -30,66 +22,66 @@ def _generate_version(
     )
 
 
-def test_release_candidate_version_returns_exact_final_version_without_git_tag(tmp_path):
-    tmp_path.joinpath("VERSION").write_text("26.10.00\n")
+@pytest.mark.parametrize("source_version", ["26.10.00", "0.3.0", "0.52", "00.52", "00.52.01"])
+def test_release_candidate_version_returns_source_version(tmp_path, source_version):
+    tmp_path.joinpath("VERSION").write_text(f"{source_version}\n")
 
-    result = _generate_version(tmp_path, "26.10.00")
+    result = _generate_version(tmp_path)
 
     assert result.returncode == 0
-    assert result.stdout == "26.10.00"
+    assert result.stdout == source_version
     assert result.stderr == ""
 
 
-@pytest.mark.parametrize("candidate_version", ["v26.10.00", "26", "26.10.00.1", "26.10.00rc0"])
-def test_release_candidate_version_rejects_non_final_formats(tmp_path, candidate_version):
+@pytest.mark.parametrize("source_version", ["v26.10.00", "26", "26.10.00.1", "26.10.00rc0"])
+def test_release_candidate_version_rejects_non_final_formats(tmp_path, source_version):
+    tmp_path.joinpath("VERSION").write_text(f"{source_version}\n")
+
+    result = _generate_version(tmp_path)
+
+    assert result.returncode == 1
+    assert "release-candidate VERSION must use a numeric YY.MM or YY.MM.XX format" in result.stderr
+
+
+def test_release_candidate_version_uses_committed_version_when_output_redirect_truncates_file(tmp_path):
     tmp_path.joinpath("VERSION").write_text("26.10.00\n")
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(["git", "add", "VERSION"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        [
+            "git",
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.com",
+            "-c",
+            "commit.gpgsign=false",
+            "commit",
+            "-m",
+            "Add version",
+        ],
+        cwd=tmp_path,
+        check=True,
+        capture_output=True,
+    )
+    environment = os.environ.copy()
+    environment["RAPIDS_BUILD_TYPE"] = "release-candidate"
 
-    result = _generate_version(tmp_path, candidate_version)
-
-    assert result.returncode == 1
-    assert "must use a numeric YY.MM or YY.MM.XX format" in result.stderr
-
-
-def test_release_candidate_version_supports_independently_versioned_repository(tmp_path):
-    tmp_path.joinpath("VERSION").write_text("0.3.0\n")
-
-    result = _generate_version(tmp_path, "0.3.0")
-
-    assert result.returncode == 0
-    assert result.stdout == "0.3.0"
-
-
-@pytest.mark.parametrize("candidate_version", ["0.52", "00.52", "00.52.01"])
-def test_release_candidate_version_supports_ucxx_versions(tmp_path, candidate_version):
-    tmp_path.joinpath("VERSION").write_text("0.52.00\n")
-
-    result = _generate_version(tmp_path, candidate_version)
-
-    assert result.returncode == 0
-    assert result.stdout == candidate_version
-
-
-def test_release_candidate_version_rejects_different_source_major_minor(tmp_path):
-    tmp_path.joinpath("VERSION").write_text("26.12.00a0\n")
-
-    result = _generate_version(tmp_path, "26.10.00")
-
-    assert result.returncode == 1
-    assert "does not match source major/minor '26.12'" in result.stderr
-
-
-def test_release_candidate_version_uses_preserved_source_after_output_truncation(tmp_path):
-    tmp_path.joinpath("VERSION").write_text("")
-
-    result = _generate_version(tmp_path, "26.10.00", source_version="26.10.00")
+    result = subprocess.run(
+        ["bash", "-c", f'"{TOOLS_DIRECTORY / "rapids-generate-version"}" > VERSION'],
+        cwd=tmp_path,
+        env=environment,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
 
     assert result.returncode == 0
-    assert result.stdout == "26.10.00"
+    assert tmp_path.joinpath("VERSION").read_text() == "26.10.00"
 
 
-def test_release_candidate_version_requires_source_version(tmp_path):
-    result = _generate_version(tmp_path, "26.10.00")
+def test_release_candidate_version_requires_version_file(tmp_path):
+    result = _generate_version(tmp_path)
 
     assert result.returncode == 1
-    assert "requires the source checkout's original version for major/minor validation" in result.stderr
-    assert "provide it in VERSION or via RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION" in result.stderr
+    assert "require a non-empty VERSION file in the working tree or at HEAD" in result.stderr

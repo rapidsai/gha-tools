@@ -1,47 +1,23 @@
 #!/bin/bash
 # A utility script that generates a package version
-#
-# Environment variables:
-#
-#   * RAPIDS_RELEASE_CANDIDATE_VERSION = Exact version to emit for a release-candidate
-#                                         build. Its major/minor components must match
-#                                         the source checkout's version.
-#   * RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION = Original version of the source checkout,
-#                                                used for major/minor validation. Defaults
-#                                                to the first line of VERSION when unset.
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
-if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
-    readonly candidate_version="${RAPIDS_RELEASE_CANDIDATE_VERSION}"
-    # Keep leading zeroes outside the capture groups so equivalent components
-    # such as 0 and 00 compare equally below.
-    readonly candidate_version_regex='^0*([0-9]+)\.0*([0-9]+)(\.[0-9]+)?$'
+if [[ "${RAPIDS_BUILD_TYPE:-}" == "release-candidate" ]]; then
+    if [[ -s VERSION ]]; then
+        candidate_version="$(head -n 1 VERSION)"
+    elif git cat-file -e HEAD:VERSION 2>/dev/null; then
+        # Some build scripts redirect this command's output back to VERSION,
+        # which truncates the working file before this script starts.
+        candidate_version="$(git show HEAD:VERSION | sed -n '1p')"
+    else
+        echo "release-candidate builds require a non-empty VERSION file in the working tree or at HEAD" >&2
+        exit 1
+    fi
+    readonly candidate_version
+    readonly candidate_version_regex='^[0-9]+\.[0-9]+(\.[0-9]+)?$'
     if [[ ! "${candidate_version}" =~ ${candidate_version_regex} ]]; then
-        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
-        exit 1
-    fi
-    source_version="${RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION:-}"
-    if [[ -z "${source_version}" ]]; then
-        if [[ ! -f VERSION ]]; then
-            echo "RAPIDS_RELEASE_CANDIDATE_VERSION requires the source checkout's original version for major/minor validation;" >&2
-            echo "provide it in VERSION or via RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION." >&2
-            exit 1
-        fi
-        source_version="$(head -n 1 VERSION)"
-    fi
-    readonly source_version
-    readonly source_version_regex='^0*([0-9]+)\.0*([0-9]+)(\.|$)'
-    if [[ ! "${source_version}" =~ ${source_version_regex} ]]; then
-        echo "source version must begin with two numeric components, got '${source_version}'" >&2
-        exit 1
-    fi
-    # BASH_REMATCH[0] is the complete match and subsequent items are the
-    # parenthesized captures. Save them before the candidate match replaces it.
-    readonly source_major_minor="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
-    [[ "${candidate_version}" =~ ${candidate_version_regex} ]]
-    if [[ "${source_major_minor}" != "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" ]]; then
-        echo "release-candidate version '${candidate_version}' does not match source major/minor '${source_major_minor}'" >&2
+        echo "release-candidate VERSION must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
         exit 1
     fi
     echo -n "${candidate_version}"
