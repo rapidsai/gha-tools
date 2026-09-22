@@ -5,9 +5,9 @@ export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
 if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
     readonly candidate_version="${RAPIDS_RELEASE_CANDIDATE_VERSION}"
-    readonly candidate_version_regex='^([0-9]+)\.([0-9]+)(\.[0-9]+)?$'
+    readonly candidate_version_regex='^([0-9]+)\.([0-9]+)$'
     if [[ ! "${candidate_version}" =~ ${candidate_version_regex} ]]; then
-        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
+        echo "RAPIDS_RELEASE_CANDIDATE_VERSION must use a numeric YY.MM format, got '${candidate_version}'" >&2
         exit 1
     fi
     source_version="${RAPIDS_RELEASE_CANDIDATE_SOURCE_VERSION:-}"
@@ -31,6 +31,7 @@ if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
     # Each successful Bash '=~' comparison replaces BASH_REMATCH. Match the
     # already-validated candidate again so these captures are its major/minor.
     [[ "${candidate_version}" =~ ${candidate_version_regex} ]]
+    # BASH_REMATCH is now the candidate major/minor match
     if [[ "${source_major_minor}" != "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}" ]]; then
         echo "release-candidate version '${candidate_version}' does not match source major/minor '${source_major_minor}'" >&2
         exit 1
