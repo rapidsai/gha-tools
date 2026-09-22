@@ -40,7 +40,7 @@ def test_release_candidate_version_rejects_non_final_formats(tmp_path, source_ve
     result = _generate_version(tmp_path)
 
     assert result.returncode == 1
-    assert "release-candidate VERSION must use a numeric YY.MM or YY.MM.XX format" in result.stderr
+    assert "VERSION file must use a numeric YY.MM or YY.MM.XX format" in result.stderr
 
 
 def test_release_candidate_version_uses_committed_version_when_output_redirect_truncates_file(tmp_path):
