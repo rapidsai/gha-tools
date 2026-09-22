@@ -24,6 +24,9 @@ if [[ -n "${RAPIDS_RELEASE_CANDIDATE_VERSION:-}" ]]; then
         echo "source version must begin with two numeric components, got '${source_version}'" >&2
         exit 1
     fi
+    # BASH_REMATCH is an array that gets set by the [[ =~ ]] regex match above.
+    # item 0 is the complete match. subsequent items are group matches.
+    # https://www.bashsupport.com/bash/variables/bash_rematch/
     readonly source_major_minor="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
     # Each successful Bash '=~' comparison replaces BASH_REMATCH. Match the
     # already-validated candidate again so these captures are its major/minor.
