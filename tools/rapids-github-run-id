@@ -34,12 +34,12 @@ else
       workflow_that_produced_artifacts="pr.yaml"
       workflow_that_produced_artifacts_regex="\\.github/workflows/pr\\.yaml"
       ;;
-    branch|nightly)
+    branch|nightly|release-candidate)
       workflow_that_produced_artifacts="build.yaml"
       workflow_that_produced_artifacts_regex="\\.github/workflows/build\\.yaml"
       ;;
     *)
-      rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request]"
+      rapids-echo-stderr "RAPIDS_BUILD_TYPE must be one of [branch, nightly, pull-request, release-candidate]"
       exit 1
       ;;
   esac

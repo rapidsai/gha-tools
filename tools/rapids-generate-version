@@ -3,6 +3,27 @@
 set -euo pipefail
 export RAPIDS_SCRIPT_NAME="rapids-generate-version"
 
+if [[ "${RAPIDS_BUILD_TYPE:-}" == "release-candidate" ]]; then
+    if [[ -s VERSION ]]; then
+        candidate_version="$(head -n 1 VERSION)"
+    elif git cat-file -e HEAD:VERSION 2>/dev/null; then
+        # Some build scripts redirect this command's output back to VERSION,
+        # which truncates the working file before this script starts.
+        candidate_version="$(git show HEAD:VERSION | sed -n '1p')"
+    else
+        echo "release-candidate builds require a non-empty VERSION file in the working tree or at HEAD" >&2
+        exit 1
+    fi
+    readonly candidate_version
+    readonly candidate_version_regex='^[0-9]+\.[0-9]+(\.[0-9]+)?$'
+    if [[ ! "${candidate_version}" =~ ${candidate_version_regex} ]]; then
+        echo "VERSION file must use a numeric YY.MM or YY.MM.XX format, got '${candidate_version}'" >&2
+        exit 1
+    fi
+    echo -n "${candidate_version}"
+    exit 0
+fi
+
 if rapids-is-release-build; then
     dunamai_version=$(python -m dunamai from git --format "{base}")
 else
