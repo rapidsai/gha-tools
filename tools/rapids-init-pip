@@ -28,3 +28,9 @@ export PIP_CONSTRAINT
 PIP_CACHE_DIR="${PIP_CACHE_DIR:-${GITHUB_WORKSPACE:-${PWD}}/.cache/pip}"
 mkdir -p "${PIP_CACHE_DIR}"
 export PIP_CACHE_DIR
+
+# activate NVIDIA-hosted proxy cache(s)
+if [[ -n "${NV_GHA_RUNNERS_PYPI_ANACONDA_CACHE_URL:-}" ]]; then
+    # NOTE: this intentionally overwrites 'extra-index-url' in 'pip.conf' that comes installed in CI images
+    pip config --global set global.extra-index-url "${NV_GHA_RUNNERS_PYPI_ANACONDA_CACHE_URL}/rapidsai-wheels-nightly/simple"
+fi
