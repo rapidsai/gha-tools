@@ -92,6 +92,9 @@ function runConda {
         elif grep -q ChunkedEncodingError: "${outfile}"; then
             retryingMsg="Retrying, found 'ChunkedEncodingError:' in output..."
             needToRetry=1
+        elif grep -qE 'requests\.exceptions\.HTTPError: (429|502|503|504)([[:space:]:]|$)' "${outfile}"; then
+            retryingMsg="Retrying, found a transient requests HTTP status (429, 502, 503, or 504) in output..."
+            needToRetry=1
         elif grep -q CondaHTTPError: "${outfile}"; then
             retryingMsg="Retrying, found 'CondaHTTPError:' in output..."
             needToRetry=1
@@ -156,6 +159,7 @@ function runConda {
             rapids-echo-stderr "Exiting, no retryable ${RAPIDS_CONDA_EXE} errors detected: \
 'ChecksumMismatchError:', \
 'ChunkedEncodingError:', \
+'requests.exceptions.HTTPError: 429, 502, 503, or 504', \
 'CondaHTTPError:', \
 'CondaMultiError:', \
 'CondaSSLError:', \
