@@ -15,11 +15,11 @@ def run_retry_wrapper(tmp_path, output):
     fake_conda.write_text(
         "#!/bin/bash\n"
         'calls=$(cat "${FAKE_CONDA_CALLS}" 2>/dev/null || printf 0)\n'
-        'calls=$((calls + 1))\n'
+        "calls=$((calls + 1))\n"
         'printf "%s\\n" "${calls}" > "${FAKE_CONDA_CALLS}"\n'
-        'if (( calls == 1 )); then\n'
+        "if (( calls == 1 )); then\n"
         '  printf "%s\\n" "${FAKE_CONDA_OUTPUT}"\n'
-        '  exit 1\n'
+        "  exit 1\n"
         "fi\n"
         "exit 0\n"
     )
@@ -57,9 +57,7 @@ def test_retry_wrapper_retries_transient_requests_http_errors(tmp_path, status):
         if status == 502
         else f"requests.exceptions.HTTPError: {status} Server Error: transient response"
     )
-    result, calls = run_retry_wrapper(
-        tmp_path, output
-    )
+    result, calls = run_retry_wrapper(tmp_path, output)
 
     assert result.returncode == 0
     assert calls == 2
@@ -79,9 +77,7 @@ def test_retry_wrapper_does_not_retry_permanent_requests_http_errors(tmp_path, s
 
 
 def test_retry_wrapper_does_not_retry_unsatisfiable_environment(tmp_path):
-    result, calls = run_retry_wrapper(
-        tmp_path, "PackagesNotFoundError: the requested package does not exist"
-    )
+    result, calls = run_retry_wrapper(tmp_path, "PackagesNotFoundError: the requested package does not exist")
 
     assert result.returncode == 1
     assert calls == 1
