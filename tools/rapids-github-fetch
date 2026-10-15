@@ -25,6 +25,10 @@ file_path="$2"
 ref="${3:-HEAD}"
 raw_url="https://raw.githubusercontent.com/${repo}/${ref}/${file_path}"
 
+if command -v gh >/dev/null 2>&1; then
+  rapids-prompt-local-github-auth
+fi
+
 # Each attempt writes to a temporary file so that a failed attempt never leaves partial output on stdout.
 output_file="$(mktemp)"
 trap 'rm -f "${output_file}"' EXIT

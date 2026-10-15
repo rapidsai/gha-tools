@@ -43,10 +43,10 @@ def add_fake(env, name, content, status):
     fake.chmod(0o755)
 
 
-def run_fetch(env, *args):
+def run_fetch(env, *args, ci=True):
     result = subprocess.run(
         [path.join(TOOLS_DIR, "rapids-github-fetch"), *args],
-        env={"PATH": env["path"]},
+        env={"PATH": env["path"], **({"CI": "true"} if ci else {})},
         capture_output=True,
         text=True,
     )
@@ -64,6 +64,34 @@ def test_gh_success(env):
     assert calls == [
         "gh api -H Accept: application/vnd.github.raw+json repos/rapidsai/rapids-cmake/contents/dir/file.json?ref=main"
     ]
+
+
+def test_gh_authenticated_locally_checks_auth_before_fetching(env):
+    add_fake(env, "gh", "from-gh", 0)
+    result, calls = run_fetch(env, "rapidsai/rapids-cmake", "dir/file.json", "main", ci=False)
+    assert result.returncode == 0
+    assert result.stdout == "from-gh"
+    assert calls[0] == "gh auth status"
+    assert calls[1].startswith("gh api ")
+    assert len(calls) == 2
+
+
+def test_gh_unauthenticated_locally_aborts_when_login_fails(env):
+    add_fake(env, "gh", "", 1)
+    add_fake(env, "wget", "from-wget", 0)
+    result, calls = run_fetch(env, "rapidsai/rapids-cmake", "dir/file.json", "main", ci=False)
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert [" ".join(c.split()[:2]) for c in calls] == ["gh auth", "gh auth"]
+    assert "GitHub authentication failed" in result.stderr
+
+
+def test_auth_check_skipped_without_gh_locally(env):
+    add_fake(env, "curl", "from-curl", 0)
+    result, calls = run_fetch(env, "rapidsai/rapids-cmake", "dir/file.json", "main", ci=False)
+    assert result.returncode == 0
+    assert result.stdout == "from-curl"
+    assert [c.split()[0] for c in calls] == ["curl"]
 
 
 def test_gh_failure_falls_back_to_wget_without_partial_output(env):
