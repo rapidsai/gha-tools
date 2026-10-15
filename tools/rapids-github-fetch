@@ -1,0 +1,62 @@
+#!/bin/bash
+# Fetches a file from a GitHub repository and prints its contents to stdout.
+#
+# Tries an authenticated GitHub API request with 'gh' first, which avoids the
+# rate limits applied to unauthenticated downloads, then falls back to
+# downloading from raw.githubusercontent.com with 'wget', then 'curl'.
+#
+# Positional Arguments:
+#   1) repository, in the form OWNER/REPO
+#   2) path of the file within the repository
+#   3) git ref to fetch the file from (optional, defaults to HEAD, the default branch)
+#
+# Example usage:
+# $ rapids-github-fetch rapidsai/rapids-cmake cmake-format-rapids-cmake.json main > cmake-format-rapids-cmake.json
+set -euo pipefail
+export RAPIDS_SCRIPT_NAME="rapids-github-fetch"
+
+if [ -z "${1:-}" ] || [ -z "${2:-}" ]; then
+  rapids-echo-stderr "Must specify input arguments: REPO PATH [REF]"
+  exit 1
+fi
+
+repo="$1"
+file_path="$2"
+ref="${3:-HEAD}"
+raw_url="https://raw.githubusercontent.com/${repo}/${ref}/${file_path}"
+
+# Each attempt writes to a temporary file so that a failed attempt never leaves partial output on stdout.
+output_file="$(mktemp)"
+trap 'rm -f "${output_file}"' EXIT
+
+function fetch {
+  case "$1" in
+    gh)
+      gh api \
+        -H "Accept: application/vnd.github.raw+json" \
+        "repos/${repo}/contents/${file_path}?ref=${ref}" \
+        > "${output_file}"
+      ;;
+    wget)
+      wget -q -O "${output_file}" "${raw_url}"
+      ;;
+    curl)
+      curl -fsSL -o "${output_file}" "${raw_url}"
+      ;;
+  esac
+}
+
+for method in gh wget curl; do
+  if ! command -v "${method}" >/dev/null 2>&1; then
+    rapids-echo-stderr "'${method}' not found, skipping"
+    continue
+  fi
+  if fetch "${method}"; then
+    cat "${output_file}"
+    exit 0
+  fi
+  rapids-echo-stderr "Fetching ${file_path} from ${repo}@${ref} with '${method}' failed"
+done
+
+rapids-echo-stderr "Could not fetch ${file_path} from ${repo}@${ref}"
+exit 1
