@@ -48,7 +48,6 @@ function fetch {
 
 for method in gh wget curl; do
   if ! command -v "${method}" >/dev/null 2>&1; then
-    rapids-echo-stderr "'${method}' not found, skipping"
     continue
   fi
   if fetch "${method}"; then

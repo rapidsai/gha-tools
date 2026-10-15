@@ -94,8 +94,7 @@ def test_missing_tools_are_skipped(env):
     assert result.returncode == 0
     assert result.stdout == "from-curl"
     assert [c.split()[0] for c in calls] == ["curl"]
-    assert "'gh' not found, skipping" in result.stderr
-    assert "'wget' not found, skipping" in result.stderr
+    assert result.stderr == ""
 
 
 def test_all_methods_fail(env):
