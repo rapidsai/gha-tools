@@ -48,27 +48,21 @@ def run_retry_wrapper(tmp_path, output):
     return result, calls
 
 
-@pytest.mark.parametrize("status", [429, 502, 503, 504])
-def test_retry_wrapper_retries_transient_requests_http_errors(tmp_path, status):
-    output = (
-        "requests.exceptions.HTTPError: 502 Server Error: Bad Gateway for url: "
-        "https://conda.anaconda.org/conda-forge/noarch/"
-        "91a21f1daadc77692805e364f6b73d7579967053e21eee7ca6d67889a254b17e.msgpack.zst"
-        if status == 502
-        else f"requests.exceptions.HTTPError: {status} Server Error: transient response"
-    )
+@pytest.mark.parametrize("error", ["CondaHTTPError", "CondaSSLError"])
+def test_retry_wrapper_retries_conda_errors(tmp_path, error):
+    output = f"{error}: download failed"
     result, calls = run_retry_wrapper(tmp_path, output)
 
     assert result.returncode == 0
     assert calls == 2
-    assert "transient requests HTTP status" in result.stderr
+    assert f"found '{error}:'" in result.stderr
 
 
-@pytest.mark.parametrize("status", [401, 403, 404])
-def test_retry_wrapper_does_not_retry_permanent_requests_http_errors(tmp_path, status):
+@pytest.mark.parametrize("status", [401, 403, 404, 429, 502, 503, 504])
+def test_retry_wrapper_does_not_classify_requests_http_errors(tmp_path, status):
     result, calls = run_retry_wrapper(
         tmp_path,
-        f"requests.exceptions.HTTPError: {status} Client Error: permanent response",
+        f"requests.exceptions.HTTPError: {status} HTTP request failed",
     )
 
     assert result.returncode == 1
