@@ -15,6 +15,10 @@
 # Required Environment Variables:
 #  - RAPIDS_DOCS_DIR - a path to a directory containing the docs to upload
 #  - RAPIDS_VERSION_NUMBER - the version number of the docs being uploaded
+# Outputs:
+#  - docs-preview-urls - on pull-request builds, written to $GITHUB_OUTPUT as a
+#    JSON object mapping each project to its html preview URL, e.g.
+#    {"cudf": "https://downloads.rapids.ai/ci/cudf/pull-request/123/abc1234/docs/cudf/html/"}
 set -euo pipefail
 source rapids-constants
 
@@ -68,6 +72,7 @@ get_s3_dest() {
 
 copy_docs_to_s3() {
   local PROJECT_DIR PROJECT PROJECT_FORMAT_DIR FORMAT
+  local PREVIEW_URLS='{}'
 
   if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
     {
@@ -121,9 +126,16 @@ copy_docs_to_s3() {
       )"
       echo "Note: NVIDIA VPN access is required to view this URL."
       echo "- ${HTTP_URL}/" | tee --append "${GITHUB_STEP_SUMMARY}"
+      if [[ "${FORMAT}" == "html" ]]; then
+        PREVIEW_URLS=$(jq -c --arg p "${PROJECT}" --arg u "${HTTP_URL}/" '. + {($p): $u}' <<< "${PREVIEW_URLS}")
+      fi
       echo ""
     done
   done
+
+  if [[ "${RAPIDS_BUILD_TYPE}" == "pull-request" ]]; then
+    echo "docs-preview-urls=${PREVIEW_URLS}" >> "${GITHUB_OUTPUT}"
+  fi
 }
 
 checks
