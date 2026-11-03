@@ -4,19 +4,6 @@
 # Explicit UV_* settings take precedence over the pip-compatible defaults.
 #
 
-if ! command -v uv >/dev/null 2>&1; then
-    echo "rapids-init-uv requires uv>=0.12.0; use an updated wheel CI image" >&2
-    return 1
-fi
-rapids_uv_version=$(uv --version) || return
-rapids_uv_version=${rapids_uv_version#uv }
-rapids_uv_version=${rapids_uv_version%% *}
-if ! printf '%s\n' 0.12.0 "${rapids_uv_version}" | sort --version-sort --check=quiet; then
-    echo "rapids-init-uv requires uv>=0.12.0; found ${rapids_uv_version}" >&2
-    return 1
-fi
-unset rapids_uv_version
-
 # Existing constraint generators and local wheel references use this filename.
 PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
 touch "${PIP_CONSTRAINT}" || return
