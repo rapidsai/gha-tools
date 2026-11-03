@@ -4,11 +4,9 @@
 # Explicit UV_* settings take precedence over the pip-compatible defaults.
 #
 
-# Existing constraint generators and local wheel references use this filename.
-PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
-touch "${PIP_CONSTRAINT}" || return
-export PIP_CONSTRAINT
-export UV_CONSTRAINT="${UV_CONSTRAINT:-${PIP_CONSTRAINT}}"
+if [[ -n "${PIP_CONSTRAINT:-}" ]]; then
+    export UV_CONSTRAINT="${UV_CONSTRAINT:-${PIP_CONSTRAINT}}"
+fi
 
 # uv ignores pip.conf and PIP_* settings, including the runner's proxy URL.
 export UV_INDEX_URL="${UV_INDEX_URL:-${PIP_INDEX_URL:-https://pypi.org/simple}}"

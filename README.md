@@ -66,7 +66,7 @@ rapids-uv-pip install -r requirements.txt
 rapids-python-build-retry --wheel --installer uv .
 ```
 
-* `rapids-init-uv`: configures RAPIDS indexes from pip/proxy settings and defaults `UV_CONSTRAINT` to the pip constraint file. Explicit `UV_*` settings take precedence.
+* `rapids-init-uv`: configures RAPIDS indexes from pip/proxy settings and defaults `UV_CONSTRAINT` to `PIP_CONSTRAINT` when supplied. Explicit `UV_*` settings take precedence.
 * `rapids-uv-pip`: runs `uv pip` with the current Python, honoring `--python`/`-p` and `UV_PYTHON` without setting the interpreter for later isolated builds.
 
 `UV_CACHE_DIR` defaults to `${GITHUB_WORKSPACE:-${PWD}}/.cache/uv`; use `uv cache clean` to clear it.
