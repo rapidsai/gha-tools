@@ -1,0 +1,33 @@
+#!/bin/bash
+#
+# Source this helper to opt in to RAPIDS uv defaults. It never installs uv.
+# Explicit UV_* settings take precedence over the pip-compatible defaults.
+#
+
+if ! command -v uv >/dev/null 2>&1; then
+    echo "rapids-init-uv requires uv>=0.12.0; use an updated wheel CI image" >&2
+    return 1
+fi
+rapids_uv_version=$(uv --version) || return
+rapids_uv_version=${rapids_uv_version#uv }
+rapids_uv_version=${rapids_uv_version%% *}
+if ! printf '%s\n' 0.12.0 "${rapids_uv_version}" | sort --version-sort --check=quiet; then
+    echo "rapids-init-uv requires uv>=0.12.0; found ${rapids_uv_version}" >&2
+    return 1
+fi
+unset rapids_uv_version
+
+# Existing constraint generators and local wheel references use this filename.
+PIP_CONSTRAINT="${PIP_CONSTRAINT:-$(mktemp -d)/constraints.txt}"
+touch "${PIP_CONSTRAINT}" || return
+export PIP_CONSTRAINT
+export UV_CONSTRAINT="${UV_CONSTRAINT:-${PIP_CONSTRAINT}}"
+
+# uv ignores pip.conf and PIP_* settings, including the runner's proxy URL.
+export UV_INDEX_URL="${UV_INDEX_URL:-${PIP_INDEX_URL:-https://pypi.org/simple}}"
+export UV_EXTRA_INDEX_URL="${UV_EXTRA_INDEX_URL:-${PIP_EXTRA_INDEX_URL:-${NV_GHA_RUNNERS_PYPI_ANACONDA_CACHE_URL:-https://pypi.anaconda.org}/rapidsai-wheels-nightly/simple}}"
+export UV_INDEX_STRATEGY="${UV_INDEX_STRATEGY:-unsafe-best-match}"
+export UV_HTTP_RETRIES="${UV_HTTP_RETRIES:-10}"
+export UV_CACHE_DIR="${UV_CACHE_DIR:-${GITHUB_WORKSPACE:-${PWD}}/.cache/uv}"
+# Isolated build environments and the cache may reside on different filesystems.
+export UV_LINK_MODE="${UV_LINK_MODE:-copy}"
