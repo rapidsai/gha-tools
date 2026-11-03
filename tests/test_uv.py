@@ -165,10 +165,15 @@ def wheel(directory, name, version, requires=(), console=False):
 @pytest.fixture
 def index(tmp_path):
     root = tmp_path / "index"
-    for name, version, requires in [("root-nightly", "1.0a1", ["leaf-nightly>=1"]), ("leaf-nightly", "2.0a1", [])]:
+    for name, version, requires in [
+        ("root-nightly", "1.0a1", ["leaf-nightly>=2.0a1"]),
+        ("leaf-nightly", "1.0", []),
+        ("leaf-nightly", "2.0a1", []),
+    ]:
         directory = root / name
         package = wheel(directory, name, version, requires)
-        (directory / "index.html").write_text(f'<a href="{package.name}">{package.name}</a>')
+        with (directory / "index.html").open("a") as links:
+            links.write(f'<a href="{package.name}">{package.name}</a>')
     handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
     server = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
     thread = threading.Thread(target=server.serve_forever, daemon=True)
@@ -198,7 +203,7 @@ def test_virtual_environment_console_script_and_target(tmp_path, real_uv, explic
 
 def test_prerelease_constraints_and_warm_cache(tmp_path, real_uv, index):
     constraints = tmp_path / "constraints.txt"
-    constraints.write_text("leaf-nightly==2.0a1\n")
+    constraints.write_text("leaf-nightly<3\n")
     env = dict(
         real_uv,
         UV_INDEX_URL=index,
@@ -253,7 +258,7 @@ def test_no_cache_and_isolated_build(tmp_path, real_uv, index):
         f"    return shutil.copy({str(wheel(tmp_path, 'built-probe', '1.0'))!r}, wheel_directory).rsplit('/', 1)[-1]\n"
     )
     constraints = tmp_path / "build-constraints.txt"
-    constraints.write_text("leaf-nightly==2.0a1\n")
+    constraints.write_text("leaf-nightly<3\n")
     build_env = dict(
         real_uv,
         UV_INDEX_URL=index,
@@ -294,3 +299,16 @@ def test_missing_uv_reports_requirement(tmp_path, environment):
     result = subprocess.run(["bash", "-euc", "source rapids-init-uv"], env=environment, capture_output=True, text=True)
     assert result.returncode != 0
     assert "requires uv>=0.12.0" in result.stderr
+
+
+def test_stable_versions_preferred_without_transitive_prerelease_requirement(tmp_path, real_uv, index):
+    target = tmp_path / "stable environment"
+    run(real_uv, "uv", "venv", "--python", sys.executable, str(target))
+    env = dict(real_uv, UV_INDEX_URL=index, UV_CACHE_DIR=str(tmp_path / "stable-cache"))
+    run(env, str(TOOLS / "rapids-uv-pip"), "install", "--python", str(target / "bin/python"), "leaf-nightly>=1")
+    assert (
+        run(
+            env, str(target / "bin/python"), "-c", "import importlib.metadata as m; print(m.version('leaf-nightly'))"
+        ).stdout.strip()
+        == "1.0"
+    )
