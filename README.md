@@ -55,3 +55,19 @@ For more details, see the RAPIDS maintain docs:
 ### Testing Scripts Locally
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for instructions on how to test these scripts locally.
+
+### Using uv
+
+Requires uv >=0.12.0, installed separately. Opt in with:
+
+```sh
+source rapids-init-uv
+rapids-uv-pip install -r requirements.txt
+rapids-python-build-retry --wheel --installer uv .
+```
+
+* `rapids-init-uv`: configures RAPIDS indexes from pip/proxy settings and defaults `UV_CONSTRAINT` to `PIP_CONSTRAINT` when supplied. Explicit `UV_*` settings take precedence.
+* `rapids-uv-pip`: runs `uv pip` with the current Python, honoring `--python`/`-p` and `UV_PYTHON` without setting the interpreter for later isolated builds.
+
+`UV_CACHE_DIR` defaults to `${GITHUB_WORKSPACE:-${PWD}}/.cache/uv`; use `uv cache clean` to clear it.
+Call `pyenv rehash` after installing console scripts into pyenv.
