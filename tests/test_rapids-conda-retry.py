@@ -78,6 +78,23 @@ def test_retries_on_4xx_http_error(status):
     assert calls == 2
 
 
+def test_retries_on_mamba_5xx_transfer_status():
+    output = (
+        "Transfer finalized, status: 503 [https://conda.anaconda.org/rapidsai-nightly/noarch/repodata.json] 19 bytes"
+    )
+    process, calls = run_rapids_conda_retry(output, fail_times=1)
+    assert process.returncode == 0
+    assert calls == 2
+    assert "Retrying, found 'Transfer finalized, status: 5[0-9]{2}' in output..." in process.stderr
+
+
+def test_does_not_retry_on_mamba_4xx_transfer_status():
+    output = "Transfer finalized, status: 404 [https://conda.anaconda.org/x/noarch/repodata.json] 19 bytes"
+    process, calls = run_rapids_conda_retry(output, fail_times=1)
+    assert process.returncode == 1
+    assert calls == 1
+
+
 def test_does_not_retry_on_unrelated_error():
     process, calls = run_rapids_conda_retry("PackagesNotFoundError: pkg", fail_times=1)
     assert process.returncode == 1
