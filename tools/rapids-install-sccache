@@ -5,6 +5,8 @@ set -euo pipefail
 SCCACHE_VERSION="${SCCACHE_VERSION:-"latest"}"
 SCCACHE_REPO="${SCCACHE_REPO:-"rapidsai/sccache"}"
 SCCACHE_BIN_DIR="$(dirname "$(which sccache 2>/dev/null || echo "/usr/bin/sccache")")"
+SCCACHE_ARCHIVE="$(mktemp)"
+trap 'rm -f -- "$SCCACHE_ARCHIVE"' EXIT
 
 if [ "$SCCACHE_VERSION" = rapids ]; then
     SCCACHE_VERSION="latest"
@@ -17,8 +19,8 @@ if [ "$SCCACHE_VERSION" = latest ]; then
     SCCACHE_LATEST_STABLE_URL="https://github.com/$SCCACHE_REPO/releases/latest/download/sccache-$(uname -m)-unknown-linux-musl.tar.gz";
     if wget -q --method=HEAD --tries=10 "$SCCACHE_LATEST_STABLE_URL"; then
         echo "Downloading latest sccache..." >&2
-        if wget -q -O- --tries=10 "$SCCACHE_LATEST_STABLE_URL" \
-            | tar -C "$SCCACHE_BIN_DIR" -zf - --overwrite --wildcards --strip-components=1 -x '*/sccache'; then
+        if rapids-retry wget -q --tries=1 -O "$SCCACHE_ARCHIVE" "$SCCACHE_LATEST_STABLE_URL" \
+            && tar -C "$SCCACHE_BIN_DIR" -zf "$SCCACHE_ARCHIVE" --overwrite --wildcards --strip-components=1 -x '*/sccache'; then
             # Verify installation
             if command -v sccache &>/dev/null; then
                 SCCACHE_VERSION="$(sccache --version | cut -d' ' -f2)"
@@ -43,8 +45,6 @@ if [ -n "${CURRENT_SCCACHE_VERSION##"${SCCACHE_VERSION}"}" ]; then
     # Retry logs and partial failed downloads must never enter tar's input.
     # Overwrite the temporary archive on every attempt and extract only after
     # the download succeeds. Clean it up on both success and retry exhaustion.
-    SCCACHE_ARCHIVE="$(mktemp)"
-    trap 'rm -f -- "$SCCACHE_ARCHIVE"' EXIT
     rapids-retry gh release download "v${SCCACHE_VERSION}" --repo "${SCCACHE_REPO}" --pattern "${SCCACHE_ASSET}" \
         --output "$SCCACHE_ARCHIVE" --clobber
     tar -C "$SCCACHE_BIN_DIR" -zf "$SCCACHE_ARCHIVE" --overwrite --wildcards --strip-components=1 -x '*/sccache'

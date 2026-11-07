@@ -13,7 +13,11 @@ This tools repo can be installed from GitHub directly with git clone or wget com
 
 - name: Download gha-tools release tarball with wget
   run: |
-    wget https://github.com/rapidsai/gha-tools/releases/latest/download/tools.tar.gz -O - | tar -xz -C /usr/local/bin
+    archive="$(mktemp)"
+    trap 'rm -f -- "$archive"' EXIT
+    wget --tries=4 --retry-on-http-error=429,500,502,503,504 --waitretry=10 \
+      https://github.com/rapidsai/gha-tools/releases/latest/download/tools.tar.gz -O "$archive"
+    tar -xzf "$archive" -C /usr/local/bin
 ```
 
 ### Environment variables and variable naming conventions
