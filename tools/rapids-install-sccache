@@ -40,8 +40,14 @@ if [ -n "${CURRENT_SCCACHE_VERSION##"${SCCACHE_VERSION}"}" ]; then
 
     SCCACHE_ASSET="sccache-v${SCCACHE_VERSION}-$(uname -m)-unknown-linux-musl.tar.gz"
 
-    rapids-retry gh release download "v${SCCACHE_VERSION}" --repo "${SCCACHE_REPO}" --pattern "${SCCACHE_ASSET}" --output - \
-        | tar -C "$SCCACHE_BIN_DIR" -zf - --overwrite --wildcards --strip-components=1 -x '*/sccache'
+    # Retry logs and partial failed downloads must never enter tar's input.
+    # Overwrite the temporary archive on every attempt and extract only after
+    # the download succeeds. Clean it up on both success and retry exhaustion.
+    SCCACHE_ARCHIVE="$(mktemp)"
+    trap 'rm -f -- "$SCCACHE_ARCHIVE"' EXIT
+    rapids-retry gh release download "v${SCCACHE_VERSION}" --repo "${SCCACHE_REPO}" --pattern "${SCCACHE_ASSET}" \
+        --output "$SCCACHE_ARCHIVE" --clobber
+    tar -C "$SCCACHE_BIN_DIR" -zf "$SCCACHE_ARCHIVE" --overwrite --wildcards --strip-components=1 -x '*/sccache'
 
     echo "Installed $(sccache --version) to $(which sccache)" >&2
 fi
