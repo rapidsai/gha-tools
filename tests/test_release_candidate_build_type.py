@@ -25,14 +25,14 @@ def test_release_candidate_is_a_release_build():
     assert "is release build" in result.stderr
 
 
-def test_release_candidate_rattler_channels_exclude_public_rapids_channels():
+def test_release_candidate_rattler_channels_exclude_public_rapids_channels(tmp_path):
     command = f'source "{TOOLS_DIRECTORY / "rapids-rattler-channel-string"}"; printf "%s\\n" "${{RATTLER_CHANNELS[*]}}"'
     result = subprocess.run(
         ["bash", "-c", command],
         env=_environment(
             RAPIDS_BUILD_TYPE="release-candidate",
             GITHUB_REF="refs/heads/main",
-            RAPIDS_CONDA_BLD_OUTPUT_DIR="/tmp/conda-output",
+            RAPIDS_CONDA_BLD_OUTPUT_DIR=str(tmp_path / "conda-output"),
         ),
         text=True,
         capture_output=True,
