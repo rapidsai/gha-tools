@@ -1,0 +1,19 @@
+#!/bin/bash
+#
+# Source this helper to opt in to RAPIDS uv defaults. It never installs uv.
+# Explicit UV_* settings take precedence over the pip-compatible defaults.
+#
+
+if [[ -n "${PIP_CONSTRAINT:-}" ]]; then
+    export UV_CONSTRAINT="${UV_CONSTRAINT:-${PIP_CONSTRAINT}}"
+fi
+
+# uv ignores pip.conf and PIP_* settings, including the runner's proxy URL.
+export UV_INDEX_URL="${UV_INDEX_URL:-${PIP_INDEX_URL:-https://pypi.org/simple}}"
+export UV_EXTRA_INDEX_URL="${UV_EXTRA_INDEX_URL:-${PIP_EXTRA_INDEX_URL:-${NV_GHA_RUNNERS_PYPI_ANACONDA_CACHE_URL:-https://pypi.anaconda.org}/rapidsai-wheels-nightly/simple}}"
+# Match pip's version selection across all configured indexes.
+export UV_INDEX_STRATEGY="${UV_INDEX_STRATEGY:-unsafe-best-match}"
+export UV_HTTP_RETRIES="${UV_HTTP_RETRIES:-10}"
+export UV_CACHE_DIR="${UV_CACHE_DIR:-${GITHUB_WORKSPACE:-${PWD}}/.cache/uv}"
+# Isolated build environments and the cache may reside on different filesystems.
+export UV_LINK_MODE="${UV_LINK_MODE:-copy}"

@@ -1,0 +1,23 @@
+#!/bin/bash
+#
+# Opt-in uv pip interface targeting the Python selected by the caller, like
+# python -m pip. Source rapids-init-uv first for RAPIDS indexes and constraints.
+# uv handles HTTP retries; other failures retain their original exit status.
+#
+
+set -euo pipefail
+
+# An explicit target must work even if the current pyenv selection is invalid.
+for arg in "$@"; do
+    case "${arg}" in
+        --python|--python=*|-p|-p?*)
+            exec uv pip "$@"
+            ;;
+    esac
+done
+
+if [[ -z "${UV_PYTHON:-}" ]]; then
+    UV_PYTHON=$(python -c 'import sys; print(sys.executable)')
+    export UV_PYTHON
+fi
+exec uv pip "$@"
