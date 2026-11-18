@@ -26,6 +26,10 @@
 #                                but unit strings like '2h' for "two hours" will also work.
 #                                Default varies based on the command being run.
 #
+# RAPIDS_CONDA_RETRY_QUIET     - Set to 1 to emit only the successful attempt's
+#                                stdout. Failed-attempt output and diagnostics go
+#                                to stderr. Default is 0 (stream all attempts).
+#
 
 # This must be set in order for the script to recognize failing exit codes when
 # output is piped to tee
@@ -53,6 +57,9 @@ ALSO rapids-conda-retry options can be set using the following env vars:
                                    Positive integers are interpreted as seconds,
                                    but unit strings like '2h' for 'two hours' will also work.
                                    Default varies based on the command being run.
+
+    RAPIDS_CONDA_RETRY_QUIET   - Set to 1 to emit only the successful attempt's stdout.
+                                   Failed attempts are logged to stderr (default: 0).
 ==========
 "
 max_retries=${RAPIDS_CONDA_RETRY_MAX:=3}
@@ -75,9 +82,26 @@ condaCmd=${RAPIDS_CONDA_EXE:=conda}
 #    exitcode: the exit code from running ${condaCmd} ${args}
 #    needToRetry: 1 if the command should be retried, 0 if it should not be
 function runConda {
-    # shellcheck disable=SC2086
-    timeout --verbose "${timeout_duration}" "${condaCmd}" "$@" 2>&1| tee "${outfile}"
-    exitcode=$?
+    if [[ "${RAPIDS_CONDA_RETRY_QUIET:-0}" == "1" ]]; then
+        # Capture stdout separately so failed attempts cannot corrupt a JSON
+        # document consumed by a caller. The combined output is still used
+        # for Conda-specific retry classification.
+        timeout --verbose "${timeout_duration}" "${condaCmd}" "$@" >"${stdoutfile}" 2>"${stderrfile}"
+        exitcode=$?
+        cat "${stdoutfile}" "${stderrfile}" >"${outfile}"
+        if (( exitcode == 0 )); then
+            cat "${stdoutfile}"
+        else
+            # Preserve failed-attempt output for CI diagnostics, not stdout.
+            cat "${stdoutfile}" >&2
+        fi
+        cat "${stderrfile}" >&2
+    else
+        # Preserve existing behavior for callers that do not opt in.
+        # shellcheck disable=SC2086
+        timeout --verbose "${timeout_duration}" "${condaCmd}" "$@" 2>&1 | tee "${outfile}"
+        exitcode=$?
+    fi
     needToRetry=0
     needToClean=0
     retryingMsg=""
@@ -188,7 +212,11 @@ segfault exit code 139"
                 rapids-echo-stderr "${retryingMsg}"
                 if (( needToClean == 1 )); then
                     rapids-echo-stderr "Cleaning tarball cache before retrying..."
-                    ${condaCmd} clean --tarballs -y
+                    if [[ "${RAPIDS_CONDA_RETRY_QUIET:-0}" == "1" ]]; then
+                        "${condaCmd}" clean --tarballs -y >&2
+                    else
+                        ${condaCmd} clean --tarballs -y
+                    fi
                 fi
             fi
         fi
@@ -234,6 +262,10 @@ rapids-echo-stderr "timeout for conda operations: '${timeout_duration}'"
 
 # Run command
 outfile=$(mktemp)
+if [[ "${RAPIDS_CONDA_RETRY_QUIET:-0}" == "1" ]]; then
+    stdoutfile=$(mktemp)
+    stderrfile=$(mktemp)
+fi
 # shellcheck disable=SC2086
 runConda "${args[@]}"
 
@@ -250,5 +282,5 @@ while (( needToRetry == 1 )) && \
    runConda "${args[@]}"
 done
 
-rm -f "${outfile}"
+rm -f "${outfile}" "${stdoutfile:-}" "${stderrfile:-}"
 exit ${exitcode}
